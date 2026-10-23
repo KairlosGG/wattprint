@@ -444,11 +444,12 @@ section{ padding:64px 0; }
     <!-- Newsletter -->
     <div id="newsletter" class="card" style="border-color:color-mix(in srgb,var(--carbon) 60%,transparent);padding:28px;margin-top:40px">
       <h3 class="h2" style="font-size:20px">Esto es solo la foto de hoy.</h3>
-      <p class="muted" style="margin-top:8px">Suscríbete a Neocortech, mi newsletter: cómo medir y reducir la huella de carbono, energía y agua de la IA.</p>
-      <form id="nlForm" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
-        <input id="nlEmail" name="email" type="email" required placeholder="tu@email.com" class="field" style="flex:1;min-width:220px" autocomplete="email" />
+      <p class="muted" style="margin-top:8px">Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.</p>
+      <form id="nlForm" method="post" target="kit-sink-wp" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
+        <input id="nlEmail" name="email_address" type="email" required placeholder="tu@email.com" class="field" style="flex:1;min-width:220px" autocomplete="email" />
         <button id="nlBtn" class="btn btn-primary" type="submit">Suscribirme</button>
       </form>
+      <iframe name="kit-sink-wp" title="kit" hidden></iframe>
       <p id="nlMsg" class="mono muted" style="font-size:12px;margin-top:12px">Sin spam. Baja cuando quieras.</p>
     </div>
   </div>
@@ -985,31 +986,16 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') modal.classList.re
 /* ============================================================
    9 · NEWSLETTER — fetch POST configurable (ver CONFIG arriba)
 ============================================================ */
-$('nlForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const email=$('nlEmail').value.trim(), msg=$('nlMsg'), btn=$('nlBtn');
-  if(!email) return;
-
-  if(!CONFIG.newsletter.endpoint){
-    msg.textContent='✓ Modo demo: añade tu endpoint en CONFIG.newsletter (Buttondown, Formspree o webhook para Beehiiv).';
-    msg.style.color='var(--carbon)'; return;
-  }
-  btn.disabled=true; btn.textContent='Enviando…';
-  try{
-    const body=new URLSearchParams(); // urlencoded, como un formulario normal
-    body.append(CONFIG.newsletter.fieldName,email);
-    Object.entries(CONFIG.newsletter.extraFields).forEach(([k,v])=>body.append(k,v));
-    const res=await fetch(CONFIG.newsletter.endpoint,{method:'POST',body,mode:'no-cors'});
-    if(res.ok || res.type==='opaque'){
-      msg.textContent='✓ Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).';
-      msg.style.color='var(--carbon)'; $('nlEmail').value='';
-    }else{ throw new Error(res.status); }
-  }catch(err){
-    msg.textContent='No se pudo completar la suscripción. Comprueba el email e inténtalo de nuevo.';
-    msg.style.color='var(--alert)';
-  }finally{
-    btn.disabled=false; btn.textContent='Suscribirme';
-  }
+$('nlForm').addEventListener('submit', e=>{
+  const form=$('nlForm'), email=$('nlEmail').value.trim(), msg=$('nlMsg'), btn=$('nlBtn');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ e.preventDefault(); $('nlEmail').focus(); return; }
+  if(!CONFIG.newsletter.endpoint){ e.preventDefault(); msg.textContent='Formulario sin configurar.'; return; }
+  form.action=CONFIG.newsletter.endpoint; // el navegador envía el formulario al iframe oculto
+  setTimeout(()=>{
+    btn.disabled=true; btn.textContent='✓';
+    msg.textContent='✓ Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).';
+    msg.style.color='var(--carbon)';
+  },50);
 });
 
 /* ============================================================
