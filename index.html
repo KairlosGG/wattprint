@@ -4,48 +4,40 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wattprint — ¿Cuánto carbono, energía y agua consume tu IA?</title>
-<meta name="description" content="Calcula la huella de carbono, energía y agua de tus entrenamientos e inferencias de IA en 60 segundos. Sin registro. Basado en la metodología SCI (ISO/IEC 21031) y datos de Ember." />
+<meta name="description" content="Calcula la huella de carbono, energía y agua de tus entrenamientos e inferencias de IA. Sin registro. Metodología SCI (ISO/IEC 21031), datos de Ember, Uptime Institute y WRI." />
 <meta property="og:title" content="Wattprint — la huella de carbono, energía y agua de tu IA" />
-<meta property="og:description" content="Calcula cuánto CO₂e, kWh y litros de agua consume tu carga de IA en 60 segundos. Gratis, sin registro, datos de Ember y Uptime Institute." />
+<meta property="og:description" content="Calcula cuánto CO₂e, kWh y litros de agua consume tu carga de IA. Gratis, sin registro, todo en tu navegador." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0B1210" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B1210'/%3E%3Cpath d='M17.5 4 8 18h6l-1.5 10L22 13h-6l1.5-9z' fill='%234ADE80'/%3E%3C/svg%3E" />
 
 <!-- ============================================================
-     WATTPRINT · v1.0 producción
-     ─ Sin frameworks en runtime: CSS propio con design tokens.
-     ─ Datos de intensidad de carbono: Ember (Global/European
-       Electricity Review, año de datos 2023–2024). Cada valor
-       lleva su vintage en DATA.REGIONS y en el modal.
-     ─ PUE: Uptime Institute Global Survey 2025 (media 1,54;
-       hyperscale 1,08–1,12). WUE: media sectorial 1,9 L/kWh
-       (EESI); hyperscale ~0,49–0,80 (Microsoft/Google).
-     ─ Gamificación: medallas por nivel de huella + retos con
-       reducción en tiempo real.
+     WATTPRINT · v2.0
+     ─ Un solo archivo, sin dependencias. Todo se calcula en el navegador.
+     ─ Marco: Software Carbon Intensity (SCI, ISO/IEC 21031):
+       SCI = ((E × I) + M) por R
+     ─ Carbono de la red: Ember. PUE: Uptime Institute 2025.
+       WUE: EESI 2024 / informes de Google y Microsoft.
+       Agua de la generación eléctrica: WRI 2020 (Reig et al.),
+       el mismo marco que Li et al., "Making AI Less Thirsty".
+     ─ Bilingüe ES/EN (?lang=en).
      ============================================================ -->
 
-<!-- Tipografías (única dependencia externa; con fallbacks del sistema) -->
 <link rel="stylesheet" href="fonts/fonts.css"/>
 
 <style>
-/* ============================================================
-   1 · DESIGN TOKENS
-============================================================ */
 :root{
   --base:#0B1210; --surface:#111A17; --line:#1E2B26;
   --ink:#E8F0EC; --muted:#8BA69B;
   --carbon:#4ADE80; --energy:#FACC15; --water:#38BDF8; --alert:#F87171;
+  --carbon-2:#166534; --energy-2:#854D0E; --water-2:#0C4A6E;
   --f-display:"Space Grotesk",system-ui,sans-serif;
   --f-body:Inter,system-ui,sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,monospace;
   --r-lg:12px; --r-md:8px;
   color-scheme:dark;
 }
-
-/* ============================================================
-   2 · RESET + BASE
-============================================================ */
 *{ box-sizing:border-box; margin:0; }
 html{ scroll-behavior:smooth; }
 body{ background:var(--base); color:var(--ink); font-family:var(--f-body);
@@ -57,22 +49,21 @@ input,select{ font:inherit; color:inherit; }
 .muted{ color:var(--muted); }
 .wrap{ max-width:820px; margin:0 auto; padding:0 20px; }
 
-/* ============================================================
-   3 · COMPONENTES
-============================================================ */
-/* Navbar */
 .nav{ position:fixed; inset:0 0 auto 0; z-index:40; height:56px;
   background:color-mix(in srgb,var(--base) 82%,transparent);
   backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
 .nav-in{ max-width:960px; margin:0 auto; height:100%; padding:0 20px;
-  display:flex; align-items:center; justify-content:space-between; }
+  display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .logo{ font-family:var(--f-display); font-weight:700; font-size:18px; letter-spacing:-.01em; }
 .logo i{ color:var(--carbon); font-style:normal; }
-.nav-links{ display:flex; gap:20px; font-size:14px; color:var(--muted); }
+.nav-links{ display:flex; gap:18px; align-items:center; font-size:14px; color:var(--muted); }
 .nav-links a,.nav-links button{ color:inherit; text-decoration:none; transition:color .15s; }
 .nav-links a:hover,.nav-links button:hover{ color:var(--ink); }
+.lang{ display:flex; border:1px solid var(--line); border-radius:99px; overflow:hidden; font-family:var(--f-mono); font-size:12px; }
+.lang button{ padding:4px 10px; color:var(--muted); }
+.lang button[aria-pressed="true"]{ background:var(--carbon); color:var(--base); font-weight:700; }
+@media (max-width:520px){ .nav-links .hide-sm{ display:none; } }
 
-/* Botones */
 .btn{ display:inline-block; border-radius:var(--r-md); padding:13px 26px;
   font-weight:600; transition:filter .15s, transform .1s; text-decoration:none; }
 .btn:active{ transform:scale(.98); }
@@ -81,25 +72,20 @@ input,select{ font:inherit; color:inherit; }
 .btn-ghost{ border:1px solid var(--line); color:var(--muted); }
 .btn-ghost:hover{ color:var(--ink); border-color:var(--muted); }
 
-/* Tarjetas */
 .card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); }
 .pick{ transition:border-color .18s, box-shadow .18s, transform .18s; cursor:pointer; text-align:left; }
 .pick:hover{ border-color:var(--muted); transform:translateY(-1px); }
 .pick[aria-pressed="true"]{ border-color:var(--carbon);
   box-shadow:0 0 0 1px var(--carbon), 0 0 24px rgba(74,222,128,.12); }
-
-/* Grids responsivas */
 .grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
 .grid-3{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
 
-/* Glow de métricas */
 .glow-c{ text-shadow:0 0 32px rgba(74,222,128,.35); }
 .glow-e{ text-shadow:0 0 32px rgba(250,204,21,.30); }
 .glow-w{ text-shadow:0 0 32px rgba(56,189,248,.30); }
 .t-carbon{ color:var(--carbon);} .t-energy{ color:var(--energy);}
 .t-water{ color:var(--water);}  .t-alert{ color:var(--alert);}
 
-/* Slider */
 input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:99px;
   background:linear-gradient(to right,var(--carbon) var(--fill,50%),var(--line) var(--fill,50%)); outline:none; }
 input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
@@ -107,14 +93,21 @@ input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:22px; he
 input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%;
   background:var(--base); border:2px solid var(--carbon); cursor:grab; }
 
-/* Pasos */
 .step{ display:none; animation:fadeUp .25s ease both; }
 .step.active{ display:block; }
 @keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
 .prog{ height:4px; flex:1; border-radius:99px; background:var(--line); transition:background .3s; }
 .prog.on{ background:var(--carbon); }
 
-/* Resultados */
+/* Selector segmentado (modo estimar / medido, vida útil) */
+.seg{ display:inline-flex; border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden; }
+.seg button{ padding:9px 16px; font-size:14px; color:var(--muted); }
+.seg button[aria-pressed="true"]{ background:color-mix(in srgb,var(--carbon) 18%,transparent); color:var(--ink); box-shadow:inset 0 -2px 0 var(--carbon); }
+.row{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px; margin-top:12px; }
+.row b{ font-size:14px; }
+.row p{ font-size:12px; }
+.num{ width:150px; text-align:right; font-family:var(--f-mono); }
+
 #results{ display:none; }
 #results.show{ display:block; animation:fadeUp .35s ease both; }
 .metric{ text-align:center; padding:24px 16px; }
@@ -122,13 +115,26 @@ input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%;
 .metric span{ font-family:var(--f-mono); font-size:13px; color:var(--muted); margin-top:6px; display:block; }
 .metric small{ font-family:var(--f-mono); font-size:12px; display:block; margin-top:4px; min-height:16px; }
 
-/* Medalla */
 .badge{ display:flex; gap:16px; align-items:center; padding:20px 24px; margin-top:14px; }
 .badge .ico{ font-size:34px; }
 .badge h3{ font-family:var(--f-display); font-size:19px; }
 .badge p{ font-size:14px; color:var(--muted); }
 
-/* Retos */
+/* Desglose visual */
+.bk{ display:grid; gap:18px; }
+.bk-h{ display:flex; justify-content:space-between; gap:8px; font-size:14px; margin-bottom:6px; }
+.bk-h b{ font-weight:600; }
+.bar{ display:flex; height:14px; border-radius:99px; overflow:hidden; background:var(--line); }
+.bar i{ display:block; height:100%; transition:width .6s ease; }
+.leg{ display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:6px; font-family:var(--f-mono); font-size:12px; color:var(--muted); }
+.leg span::before{ content:""; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; background:var(--c); vertical-align:0; }
+
+/* Por petición / al año */
+.kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:14px; }
+.kpi{ padding:18px 20px; }
+.kpi p{ font-family:var(--f-mono); font-size:12px; color:var(--muted); }
+.kpi div{ margin-top:6px; font-family:var(--f-mono); font-size:15px; line-height:1.8; }
+
 .challenge{ display:flex; gap:12px; align-items:flex-start; padding:14px 16px;
   border:1px solid var(--line); border-radius:var(--r-md); cursor:pointer;
   transition:border-color .15s, background .15s; }
@@ -140,14 +146,12 @@ input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%;
 .challenge .save{ margin-left:auto; font-family:var(--f-mono); font-size:12px;
   color:var(--carbon); white-space:nowrap; padding-top:3px; }
 
-/* Toast de reto superado */
 #toast{ position:fixed; left:50%; bottom:88px; transform:translate(-50%,20px); z-index:60;
   background:var(--surface); border:1px solid var(--carbon); border-radius:var(--r-md);
   padding:12px 20px; font-family:var(--f-mono); font-size:14px; opacity:0;
-  pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  pointer-events:none; transition:opacity .25s, transform .25s; box-shadow:0 8px 30px rgba(0,0,0,.5); max-width:92vw; }
 #toast.show{ opacity:1; transform:translate(-50%,0); }
 
-/* Sticky live */
 #live{ position:fixed; right:16px; bottom:16px; z-index:30; padding:12px 16px;
   background:color-mix(in srgb,var(--surface) 92%,transparent); backdrop-filter:blur(6px);
   border:1px solid var(--line); border-radius:var(--r-lg);
@@ -155,28 +159,26 @@ input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%;
   transition:opacity .2s, border-color .3s; }
 #live.saving{ border-color:var(--carbon); }
 
-/* Modal */
 .modal-backdrop{ position:fixed; inset:0; z-index:50; display:none; padding:16px;
   align-items:center; justify-content:center;
   background:rgba(11,18,16,.82); backdrop-filter:blur(4px); }
 .modal-backdrop.open{ display:flex; animation:fadeUp .2s ease both; }
-.modal{ max-width:560px; width:100%; max-height:82vh; overflow-y:auto; padding:28px; }
+.modal{ max-width:620px; width:100%; max-height:84vh; overflow-y:auto; padding:28px; }
 .modal h3{ font-family:var(--f-display); font-size:20px; }
 .modal .src{ font-size:13.5px; color:var(--muted); line-height:1.65; }
 .modal .src strong{ color:var(--ink); }
 .modal code{ font-family:var(--f-mono); font-size:12.5px; }
 .modal table{ width:100%; border-collapse:collapse; font-family:var(--f-mono); font-size:12px; margin:10px 0; }
+.modal th{ text-align:left; font-weight:500; color:var(--ink); padding:4px 6px; border-bottom:1px solid var(--muted); }
 .modal td{ padding:4px 6px; border-bottom:1px solid var(--line); color:var(--muted); }
-.modal td:last-child{ text-align:right; color:var(--ink); }
+.modal td+td, .modal th+th{ text-align:right; }
 
-/* Formularios */
 .field{ background:var(--base); border:1px solid var(--line); border-radius:var(--r-md);
   padding:12px 16px; width:100%; }
 .field::placeholder{ color:color-mix(in srgb,var(--muted) 60%,transparent); }
 .field:focus{ border-color:var(--carbon); outline:none; }
 select.field{ appearance:none; font-family:var(--f-mono); font-size:14px; }
 
-/* Utilidades varias */
 .eyebrow{ font-family:var(--f-mono); font-size:13px; color:var(--muted); }
 .h1{ font-family:var(--f-display); font-weight:700; font-size:clamp(34px,6.4vw,56px); line-height:1.08; }
 .h2{ font-family:var(--f-display); font-weight:700; font-size:clamp(22px,4vw,28px); }
@@ -187,6 +189,31 @@ section{ padding:64px 0; }
   background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md);
   color:var(--muted); transition:color .15s,border-color .15s; }
 .chip:hover{ color:var(--ink); border-color:var(--muted); }
+.note{ font-family:var(--f-mono); font-size:12px; color:var(--muted); margin-top:8px; }
+
+/* ============ Informe imprimible (Guardar como PDF) ============ */
+#report{ display:none; }
+@media print{
+  @page{ size:A4; margin:16mm 14mm; }
+  html,body{ background:#fff !important; color:#111 !important; color-scheme:light; }
+  body > *:not(#report){ display:none !important; }
+  #report{ display:block !important; font-family:Inter,system-ui,sans-serif; font-size:10.5pt; line-height:1.45; color:#111; }
+  #report h1{ font-family:"Space Grotesk",sans-serif; font-size:20pt; margin-bottom:2pt; }
+  #report h2{ font-family:"Space Grotesk",sans-serif; font-size:12.5pt; margin:14pt 0 5pt; border-bottom:1px solid #ccc; padding-bottom:3pt; }
+  #report .sub{ color:#555; font-size:9.5pt; }
+  #report table{ width:100%; border-collapse:collapse; margin-top:4pt; }
+  #report td,#report th{ border-bottom:1px solid #e3e3e3; padding:4pt 6pt; text-align:left; vertical-align:top; }
+  #report th{ background:#f3f5f4; font-weight:600; }
+  #report td.n,#report th.n{ text-align:right; font-family:"JetBrains Mono",monospace; white-space:nowrap; }
+  #report .big{ display:flex; gap:10pt; margin-top:8pt; }
+  #report .big div{ flex:1; border:1px solid #ddd; border-radius:6pt; padding:8pt 10pt; }
+  #report .big b{ display:block; font-family:"JetBrains Mono",monospace; font-size:17pt; }
+  #report .big span{ color:#555; font-size:9pt; }
+  #report .rbar{ display:flex; height:9pt; border-radius:5pt; overflow:hidden; background:#eee; margin:3pt 0 1pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #report .rbar i{ display:block; height:100%; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #report .small{ font-size:8.8pt; color:#444; }
+  #report ul{ padding-left:14pt; }
+}
 
 @media (prefers-reduced-motion: reduce){
   *{ animation:none !important; transition:none !important; }
@@ -197,13 +224,16 @@ section{ padding:64px 0; }
 
 <body>
 
-<!-- ============================================================ NAVBAR -->
 <header class="nav">
   <div class="nav-in">
     <a href="#" class="logo" style="text-decoration:none;color:var(--ink)">wattpr<i>i</i>nt</a>
     <nav class="nav-links">
-      <button data-open-method>Metodología</button>
-      <a href="#newsletter">Newsletter</a>
+      <button data-open-method data-i="nav_method">Metodología</button>
+      <a href="#newsletter" class="hide-sm">Newsletter</a>
+      <div class="lang" role="group" aria-label="Idioma / Language">
+        <button data-lang="es" aria-pressed="true">ES</button>
+        <button data-lang="en" aria-pressed="false">EN</button>
+      </div>
     </nav>
   </div>
 </header>
@@ -211,29 +241,27 @@ section{ padding:64px 0; }
 <!-- ============================================================ HERO -->
 <section style="padding-top:128px">
   <div class="wrap" style="text-align:center">
-    <p class="eyebrow" style="margin-bottom:20px">// calculadora de huella de IA</p>
-    <h1 class="h1">¿Cuánto <span class="t-carbon">carbono</span>, <span class="t-energy">energía</span> y <span class="t-water">agua</span> consume tu IA?</h1>
-    <p class="muted" style="font-size:18px;max-width:560px;margin:24px auto 0">
-      Estima la huella de tus entrenamientos e inferencias en 60 segundos.
-      Sin registro. Basado en la metodología SCI (ISO/IEC 21031) y datos de Ember.
+    <p class="eyebrow" style="margin-bottom:20px" data-i="hero_eyebrow">// calculadora de huella de IA</p>
+    <h1 class="h1" data-i="hero_h1">¿Cuánto <span class="t-carbon">carbono</span>, <span class="t-energy">energía</span> y <span class="t-water">agua</span> consume tu IA?</h1>
+    <p class="muted" style="font-size:18px;max-width:600px;margin:24px auto 0" data-i="hero_p">
+      Estima la huella de tus entrenamientos e inferencias en un minuto. Sin registro. Metodología SCI (ISO/IEC 21031) y datos de Ember, Uptime Institute y WRI.
     </p>
-    <a href="#calc" class="btn btn-primary" style="margin-top:32px">Calcular mi huella →</a>
-    <p class="mono muted" style="font-size:12px;margin-top:16px">
-      Gratis · Open data · Cálculo 100% en tu navegador (tus datos no salen de aquí)
+    <a href="#calc" class="btn btn-primary" style="margin-top:32px" data-i="hero_cta">Calcular mi huella →</a>
+    <p class="mono muted" style="font-size:12px;margin-top:16px" data-i="hero_note">
+      Gratis · Código abierto · Cálculo 100% en tu navegador (tus datos no salen de aquí)
     </p>
-
     <div class="grid-3" style="margin-top:56px;text-align:left">
       <div class="card" style="padding:16px">
         <p class="mono t-carbon" style="font-size:14px">CO₂e</p>
-        <p class="muted" style="font-size:14px;margin-top:4px">Emisiones según la red eléctrica real de tu región (datos Ember).</p>
+        <p class="muted" style="font-size:14px;margin-top:4px" data-i="hero_c">Emisiones de la electricidad según la red de tu región, más la fabricación del hardware.</p>
       </div>
       <div class="card" style="padding:16px">
         <p class="mono t-energy" style="font-size:14px">kWh</p>
-        <p class="muted" style="font-size:14px;margin-top:4px">Electricidad del hardware más el overhead del datacenter (PUE).</p>
+        <p class="muted" style="font-size:14px;margin-top:4px" data-i="hero_e">Electricidad del hardware más el consumo extra del centro de datos (PUE).</p>
       </div>
       <div class="card" style="padding:16px">
-        <p class="mono t-water" style="font-size:14px">Litros</p>
-        <p class="muted" style="font-size:14px;margin-top:4px">Agua de refrigeración de los servidores (WUE).</p>
+        <p class="mono t-water" style="font-size:14px" data-i="hero_w_t">Litros</p>
+        <p class="muted" style="font-size:14px;margin-top:4px" data-i="hero_w">Agua de refrigeración (WUE) y agua usada para generar la electricidad.</p>
       </div>
     </div>
   </div>
@@ -242,144 +270,183 @@ section{ padding:64px 0; }
 <!-- ============================================================ CALCULADORA -->
 <section id="calc" class="bt">
   <div class="wrap">
-    <p id="stepLabel" class="eyebrow" style="margin-bottom:8px">paso 1/4 — tipo de carga</p>
+    <p id="stepLabel" class="eyebrow" style="margin-bottom:8px">—</p>
     <div style="display:flex;gap:6px;margin-bottom:40px" aria-hidden="true">
       <div class="prog on"></div><div class="prog"></div><div class="prog"></div><div class="prog"></div>
     </div>
 
-    <!-- PASO 1 · workload -->
+    <!-- PASO 1 · tipo de carga -->
     <div class="step active" data-step="1">
-      <h2 class="h2">¿Qué tipo de carga quieres medir?</h2>
+      <h2 class="h2" data-i="s1_h">¿Qué tipo de carga quieres medir?</h2>
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px">
-        <span class="mono muted" style="font-size:12px">¿Sin datos técnicos? Prueba un ejemplo:</span>
-        <button class="chip" data-preset="0">🧪 Notebook de pruebas</button>
-        <button class="chip" data-preset="1">🔧 Fine-tuning típico</button>
-        <button class="chip" data-preset="2">🤖 Entrenamiento grande</button>
-        <button class="chip" data-preset="3">🌐 API 1 mes en producción</button>
+        <span class="mono muted" style="font-size:12px" data-i="s1_try">¿Sin datos técnicos? Prueba un ejemplo:</span>
+        <button class="chip" data-preset="0" data-i="pr0">🧪 Notebook de pruebas</button>
+        <button class="chip" data-preset="1" data-i="pr1">🔧 Fine-tuning típico</button>
+        <button class="chip" data-preset="2" data-i="pr2">🤖 Entrenamiento grande</button>
+        <button class="chip" data-preset="3" data-i="pr3">🌐 API un año en producción</button>
       </div>
-      <div class="grid-2" style="margin-top:24px" role="group" aria-label="Tipo de carga">
-        <button class="pick card" style="padding:20px" data-workload="Entrenamiento" data-util="0.85" aria-pressed="true">
-          <b>Entrenamiento de modelo</b>
-          <span class="muted" style="font-size:14px;display:block;margin-top:4px">GPUs a alta utilización durante horas o semanas.</span>
+      <div class="grid-2" style="margin-top:24px" role="group" data-ia="aria-label:s1_h">
+        <button class="pick card" style="padding:20px" data-workload="train" data-util="0.85" aria-pressed="true">
+          <b data-i="wl_train">Entrenamiento de modelo</b>
+          <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_train_d">GPUs a alta utilización durante horas o semanas.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="Fine-tuning" data-util="0.70" aria-pressed="false">
-          <b>Fine-tuning</b>
-          <span class="muted" style="font-size:14px;display:block;margin-top:4px">Ajuste de un modelo existente, cargas más cortas.</span>
+        <button class="pick card" style="padding:20px" data-workload="ft" data-util="0.70" aria-pressed="false">
+          <b data-i="wl_ft">Fine-tuning</b>
+          <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_ft_d">Ajuste de un modelo existente, cargas más cortas.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="Inferencia" data-util="0.40" aria-pressed="false">
-          <b>Inferencia / API en producción</b>
-          <span class="muted" style="font-size:14px;display:block;margin-top:4px">Servir el modelo: utilización media más baja.</span>
+        <button class="pick card" style="padding:20px" data-workload="inf" data-util="0.40" aria-pressed="false">
+          <b data-i="wl_inf">Inferencia / API en producción</b>
+          <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_inf_d">Servir el modelo. Puedes calcular la huella por petición.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="Experimentación" data-util="0.55" aria-pressed="false">
-          <b>Experimentación / notebooks</b>
-          <span class="muted" style="font-size:14px;display:block;margin-top:4px">Sesiones intermitentes en GPU compartida.</span>
+        <button class="pick card" style="padding:20px" data-workload="exp" data-util="0.55" aria-pressed="false">
+          <b data-i="wl_exp">Experimentación / notebooks</b>
+          <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_exp_d">Sesiones intermitentes en GPU compartida.</span>
         </button>
       </div>
     </div>
 
-    <!-- PASO 2 · hardware + duración -->
+    <!-- PASO 2 · energía: estimada o medida -->
     <div class="step" data-step="2">
-      <h2 class="h2">¿En qué hardware corre y cuánto tiempo?</h2>
-      <p class="mono muted" style="font-size:12px;margin-top:8px">💡 ¿No conoces el hardware? Elige "No lo sé": usamos una GPU media y el resultado sigue siendo útil.</p>
-      <div class="grid-3" style="margin-top:24px" role="group" aria-label="Hardware">
-        <button class="pick card" style="padding:16px" data-gpu="NVIDIA H100" data-w="700" aria-pressed="false">
-          <b style="font-size:14px">NVIDIA H100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 700 W</span>
-        </button>
-        <button class="pick card" style="padding:16px" data-gpu="NVIDIA A100" data-w="400" aria-pressed="true">
-          <b style="font-size:14px">NVIDIA A100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 400 W</span>
-        </button>
-        <button class="pick card" style="padding:16px" data-gpu="NVIDIA V100" data-w="300" aria-pressed="false">
-          <b style="font-size:14px">NVIDIA V100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 300 W</span>
-        </button>
-        <button class="pick card" style="padding:16px" data-gpu="NVIDIA T4" data-w="70" aria-pressed="false">
-          <b style="font-size:14px">NVIDIA T4</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 70 W</span>
-        </button>
-        <button class="pick card" style="padding:16px" data-gpu="Instancia CPU" data-w="150" aria-pressed="false">
-          <b style="font-size:14px">Instancia CPU</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">~150 W</span>
-        </button>
-        <button class="pick card" style="padding:16px" data-gpu="GPU media" data-w="300" aria-pressed="false">
-          <b style="font-size:14px">No lo sé</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">media ~300 W</span>
-        </button>
+      <h2 class="h2" data-i="s2_h">¿Cuánta energía consume?</h2>
+      <div class="seg" role="group" style="margin-top:16px" data-ia="aria-label:s2_h">
+        <button data-mode="est" aria-pressed="true" data-i="mode_est">Estimar con el hardware</button>
+        <button data-mode="meas" aria-pressed="false" data-i="mode_meas">Tengo kWh medidos</button>
       </div>
 
-      <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:16px;margin-top:16px">
+      <div id="estBox">
+        <p class="note" data-i="s2_tip">💡 ¿No conoces el hardware? Elige "No lo sé": usamos una GPU media y el resultado sigue siendo útil.</p>
+        <div class="grid-3" style="margin-top:18px" role="group" data-ia="aria-label:hw">
+          <button class="pick card" style="padding:16px" data-gpu="h100" data-w="700" aria-pressed="false">
+            <b style="font-size:14px">NVIDIA H100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 700 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="a100" data-w="400" aria-pressed="true">
+            <b style="font-size:14px">NVIDIA A100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 400 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="v100" data-w="300" aria-pressed="false">
+            <b style="font-size:14px">NVIDIA V100</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 300 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="t4" data-w="70" aria-pressed="false">
+            <b style="font-size:14px">NVIDIA T4</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 70 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="cpu" data-w="150" aria-pressed="false">
+            <b style="font-size:14px" data-i="gpu_cpu">Instancia CPU</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">~150 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="avg" data-w="300" aria-pressed="false">
+            <b style="font-size:14px" data-i="gpu_avg">No lo sé</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px" data-i="gpu_avg_d">media ~300 W</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="measBox" class="hidden">
+        <div class="card row">
+          <div>
+            <b data-i="meas_l">Energía medida de los servidores (kWh)</b>
+            <p class="muted" data-i="meas_d">Consumo de GPU/CPU medido con CodeCarbon, nvidia-smi, DCGM o el panel de tu proveedor. Encima aplicamos el PUE del centro de datos.</p>
+          </div>
+          <input id="measKwh" class="field num" type="number" min="0" step="any" inputmode="decimal" placeholder="kWh" />
+        </div>
+      </div>
+
+      <div class="card row">
         <div>
-          <b style="font-size:14px">Unidades en paralelo</b>
-          <p class="muted" style="font-size:12px">GPUs o instancias simultáneas</p>
+          <b data-i="units_l">Aceleradores o instancias en paralelo</b>
+          <p class="muted" data-i="units_d">Se usa también para la huella de fabricación del hardware.</p>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <button id="unitsMinus" class="mono" style="width:36px;height:36px;border:1px solid var(--line);border-radius:var(--r-md)" aria-label="Menos unidades">−</button>
+          <button id="unitsMinus" class="mono" style="width:36px;height:36px;border:1px solid var(--line);border-radius:var(--r-md)" data-ia="aria-label:units_minus">−</button>
           <span id="unitsVal" class="mono" style="font-weight:700;font-size:18px;min-width:44px;text-align:center">1</span>
-          <button id="unitsPlus" class="mono" style="width:36px;height:36px;border:1px solid var(--line);border-radius:var(--r-md)" aria-label="Más unidades">+</button>
+          <button id="unitsPlus" class="mono" style="width:36px;height:36px;border:1px solid var(--line);border-radius:var(--r-md)" data-ia="aria-label:units_plus">+</button>
         </div>
       </div>
 
-      <div style="margin-top:32px">
+      <div style="margin-top:28px">
         <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px">
-          <label for="hours" style="font-size:14px;font-weight:500">Horas de ejecución</label>
+          <label for="hours" style="font-size:14px;font-weight:500" data-i="hours_l">Horas de ejecución</label>
           <span id="hoursVal" class="mono" style="font-weight:700;font-size:24px">24 h</span>
         </div>
-        <input id="hours" type="range" min="0" max="100" value="47" aria-label="Horas de ejecución" />
+        <input id="hours" type="range" min="0" max="100" value="48" data-ia="aria-label:hours_l" />
         <div class="mono muted" style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px">
-          <span>1 h</span><span>24 h</span><span>1 semana</span><span>1 mes</span>
+          <span>1 h</span><span>24 h</span><span data-i="tick_w">1 semana</span><span data-i="tick_m">1 mes</span>
         </div>
+      </div>
+
+      <div id="reqRow" class="card row hidden">
+        <div>
+          <b data-i="req_l">Peticiones atendidas en ese tiempo (opcional)</b>
+          <p class="muted" data-i="req_d">Con este dato calculamos la huella por petición, la unidad funcional (R) de la metodología SCI.</p>
+        </div>
+        <input id="reqs" class="field num" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+      </div>
+
+      <div class="card row">
+        <div>
+          <b data-i="reps_l">¿Cuántas veces al año se repite?</b>
+          <p class="muted" data-i="reps_d">Para la vista anual. Un servicio que funciona todo el mes, 12 veces; un entrenamiento único, 1.</p>
+        </div>
+        <input id="reps" class="field num" type="number" min="1" step="1" inputmode="numeric" value="1" />
       </div>
     </div>
 
     <!-- PASO 3 · región -->
     <div class="step" data-step="3">
-      <h2 class="h2">¿Dónde está el datacenter?</h2>
-      <p class="muted" style="margin-top:8px">La intensidad de la red eléctrica local cambia el resultado hasta 20×. Fuente: Ember.</p>
-      <p class="mono muted" style="font-size:12px;margin-top:6px">💡 ¿Usas APIs de OpenAI/Anthropic o no lo sabes? "EE. UU. Este (Virginia)" o "Media global" son buenas aproximaciones.</p>
-      <select id="region" class="field" style="margin-top:28px" aria-label="Región del datacenter"></select>
+      <h2 class="h2" data-i="s3_h">¿Dónde está el centro de datos?</h2>
+      <p class="muted" style="margin-top:8px" data-i="s3_p">La red eléctrica de cada país cambia el carbono hasta 20 veces, y también el agua que se gasta al generar la electricidad.</p>
+      <p class="note" data-i="s3_tip">💡 ¿Usas APIs de OpenAI o Anthropic, o no lo sabes? "EE. UU. Este (Virginia)" o "Media mundial" son buenas aproximaciones.</p>
+      <select id="region" class="field" style="margin-top:24px" data-ia="aria-label:s3_h"></select>
     </div>
 
-    <!-- PASO 4 · tipo de datacenter -->
+    <!-- PASO 4 · centro de datos -->
     <div class="step" data-step="4">
-      <h2 class="h2">¿Qué tipo de datacenter?</h2>
-      <p class="muted" style="margin-top:8px">La eficiencia energética (PUE) y de agua (WUE) varía mucho entre operadores.</p>
-      <p class="mono muted" style="font-size:12px;margin-top:6px">💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Datacenter medio".</p>
-      <div class="grid-2" style="margin-top:28px" role="group" aria-label="Tipo de datacenter">
-        <button class="pick card" style="padding:20px" data-dc="Cloud hyperscale" data-pue="1.12" data-wue="0.65" aria-pressed="true">
-          <b>Cloud hyperscale</b>
+      <h2 class="h2" data-i="s4_h">¿Qué tipo de centro de datos?</h2>
+      <p class="muted" style="margin-top:8px" data-i="s4_p">La eficiencia energética (PUE) y el uso de agua (WUE) varían mucho entre operadores.</p>
+      <p class="note" data-i="s4_tip">💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Centro de datos medio".</p>
+      <div class="grid-2" style="margin-top:24px" role="group" data-ia="aria-label:s4_h">
+        <button class="pick card" style="padding:20px" data-dc="hyper" data-pue="1.12" data-wue="0.65" aria-pressed="true">
+          <b data-i="dc_hyper">Cloud hyperscale</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px">AWS, Google Cloud, Azure…</span>
-          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px">PUE 1,12 · WUE 0,65 L/kWh</span>
+          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px" data-i="dc_hyper_m">PUE 1,12 · WUE 0,65 L/kWh</span>
         </button>
-        <button class="pick card" style="padding:20px" data-dc="Datacenter medio" data-pue="1.54" data-wue="1.9" aria-pressed="false">
-          <b>Datacenter medio / on-prem</b>
-          <span class="muted" style="font-size:14px;display:block;margin-top:4px">Colocation o sala propia típica.</span>
-          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px">PUE 1,54 · WUE 1,9 L/kWh</span>
+        <button class="pick card" style="padding:20px" data-dc="avg" data-pue="1.54" data-wue="1.9" aria-pressed="false">
+          <b data-i="dc_avg">Centro de datos medio / propio</b>
+          <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="dc_avg_d">Colocation o sala propia típica.</span>
+          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px" data-i="dc_avg_m">PUE 1,54 · WUE 1,9 L/kWh</span>
         </button>
+      </div>
+      <div class="card row">
+        <div>
+          <b data-i="life_l">Vida útil del hardware</b>
+          <p class="muted" data-i="life_d">Años en los que se reparte la huella de fabricación. Las grandes nubes amortizan sus servidores en 5–6 años.</p>
+        </div>
+        <div class="seg" role="group" data-ia="aria-label:life_l">
+          <button data-life="4" aria-pressed="false">4</button>
+          <button data-life="5" aria-pressed="false">5</button>
+          <button data-life="6" aria-pressed="true">6</button>
+        </div>
       </div>
     </div>
 
-    <!-- Navegación -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:40px">
-      <button id="btnBack" class="muted" style="visibility:hidden">← Atrás</button>
-      <button id="btnNext" class="btn btn-primary">Siguiente →</button>
+      <button id="btnBack" class="muted" style="visibility:hidden" data-i="back">← Atrás</button>
+      <button id="btnNext" class="btn btn-primary">—</button>
     </div>
   </div>
 </section>
 
-<!-- Sticky: estimación en vivo (aparece al llegar a la calculadora) -->
 <div id="live" aria-live="polite" style="opacity:0;pointer-events:none">
-  <span class="muted">estimación:</span>
+  <span class="muted" data-i="live">estimación:</span>
   <b id="livekg" class="t-carbon" style="margin-left:4px">—</b>
   <span id="liveSave" class="t-carbon hidden" style="font-size:12px;display:block;margin-top:2px"></span>
 </div>
-
-<!-- Toast de gamificación -->
 <div id="toast" role="status"></div>
 
 <!-- ============================================================ RESULTADOS -->
 <section id="results" class="bt">
   <div class="wrap">
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-      <h2 class="h2">La huella de tu carga</h2>
+      <h2 class="h2" data-i="r_h">La huella de tu carga</h2>
       <button id="editInputs" class="chip"><span id="inputsChip">—</span> ✎</button>
     </div>
 
-    <!-- Medalla -->
     <div id="badge" class="badge card">
       <div class="ico" id="badgeIco">🌿</div>
       <div>
@@ -389,7 +456,6 @@ section{ padding:64px 0; }
       </div>
     </div>
 
-    <!-- Tríptico -->
     <div class="grid-3" style="margin-top:14px">
       <div class="metric card">
         <b id="rCO2" class="t-carbon glow-c">0</b><span>kg CO₂e</span>
@@ -400,66 +466,62 @@ section{ padding:64px 0; }
         <small id="dKWH" class="t-energy"></small>
       </div>
       <div class="metric card">
-        <b id="rH2O" class="t-water glow-w">0</b><span>litros de agua</span>
+        <b id="rH2O" class="t-water glow-w">0</b><span data-i="u_water">litros de agua</span>
         <small id="dH2O" class="t-water"></small>
       </div>
     </div>
 
-    <!-- Equivalencias gamificadas -->
+    <!-- Desglose visual -->
     <div class="card" style="padding:24px;margin-top:14px">
-      <p class="eyebrow" style="margin-bottom:16px">// esto equivale a…</p>
+      <p class="eyebrow" style="margin-bottom:16px" data-i="bk_h">// de dónde sale cada cifra</p>
+      <div id="breakdown" class="bk"></div>
+    </div>
+
+    <!-- Por petición y al año -->
+    <div id="kpis" class="kpis"></div>
+
+    <div class="card" style="padding:24px;margin-top:14px">
+      <p class="eyebrow" style="margin-bottom:16px" data-i="eq_h">// esto equivale a…</p>
       <ul id="eqList" style="list-style:none;display:grid;gap:12px;font-size:17px"></ul>
     </div>
 
-    <!-- Retos -->
     <div class="card" style="padding:24px;margin-top:14px">
       <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px">
-        <b>Retos de optimización</b>
+        <b data-i="ch_h">Retos de optimización</b>
         <span id="totalSave" class="mono t-carbon" style="font-size:14px"></span>
       </div>
-      <p class="muted" style="font-size:14px;margin-top:4px">Marca los que podrías aplicar y mira caer tu huella en tiempo real.</p>
+      <p class="muted" style="font-size:14px;margin-top:4px" data-i="ch_p">Marca los que podrías aplicar y mira cómo cambia tu huella.</p>
       <div id="challenges" style="display:grid;gap:10px;margin-top:16px"></div>
     </div>
 
-    <!-- Acciones -->
     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:32px">
-      <button id="btnCard" class="btn btn-primary">Descargar tarjeta para compartir</button>
-      <button id="btnLink" class="btn btn-ghost">Copiar enlace del resultado</button>
-      <button id="btnCopy" class="btn btn-ghost">Copiar resultados</button>
-      <button id="btnReset" class="btn btn-ghost">Nueva estimación</button>
-      <button id="btnSci" class="mono muted" style="font-size:14px;text-decoration:underline;text-underline-offset:4px">Ver el cálculo completo</button>
+      <button id="btnPdf" class="btn btn-primary" data-i="b_pdf">Descargar informe (PDF)</button>
+      <button id="btnCsv" class="btn btn-ghost" data-i="b_csv">Datos en CSV</button>
+      <button id="btnCard" class="btn btn-ghost" data-i="b_card">Tarjeta para compartir</button>
+      <button id="btnLink" class="btn btn-ghost" data-i="b_link">Copiar enlace</button>
+      <button id="btnReset" class="btn btn-ghost" data-i="b_reset">Nueva estimación</button>
+      <button id="btnSci" class="mono muted" style="font-size:14px;text-decoration:underline;text-underline-offset:4px" data-i="b_sci">Ver el cálculo completo</button>
     </div>
 
-    <!-- Desglose SCI -->
-    <div id="sciPanel" class="hidden card mono" style="background:var(--base);padding:20px;margin-top:16px;font-size:14px;line-height:1.9">
-      <p class="muted">// SCI = ((E × I) + M) por R</p>
-      <p>E (energía) = <span id="sE" class="t-energy">—</span> kWh</p>
-      <p>I (intensidad regional) = <span id="sI" class="t-carbon">—</span> gCO₂eq/kWh</p>
-      <p>M (embodied amortizado) = <span id="sM" class="muted">—</span> kg CO₂e</p>
-      <p>R (unidad funcional) = 1 ejecución</p>
-      <p style="border-top:1px solid var(--line);padding-top:8px;margin-top:8px">
-        SCI ≈ <b id="sTotal" class="t-carbon">—</b> kg CO₂e / ejecución</p>
-    </div>
+    <div id="sciPanel" class="hidden card mono" style="background:var(--base);padding:20px;margin-top:16px;font-size:14px;line-height:1.9"></div>
 
-    <!-- Newsletter -->
     <div id="newsletter" class="card" style="border-color:color-mix(in srgb,var(--carbon) 60%,transparent);padding:28px;margin-top:40px">
-      <h3 class="h2" style="font-size:20px">Esto es solo la foto de hoy.</h3>
-      <p class="muted" style="margin-top:8px">Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.</p>
+      <h3 class="h2" style="font-size:20px" data-i="nl_h">Esto es solo la foto de hoy.</h3>
+      <p class="muted" style="margin-top:8px" data-i="nl_p">Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.</p>
       <form id="nlForm" method="post" target="kit-sink-wp" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
-        <input id="nlEmail" name="email_address" type="email" required placeholder="tu@email.com" class="field" style="flex:1;min-width:220px" autocomplete="email" />
-        <button id="nlBtn" class="btn btn-primary" type="submit">Suscribirme</button>
+        <input id="nlEmail" name="email_address" type="email" required class="field" style="flex:1;min-width:220px" autocomplete="email" data-ia="placeholder:nl_ph" placeholder="tu@email.com" />
+        <button id="nlBtn" class="btn btn-primary" type="submit" data-i="nl_btn">Suscribirme</button>
       </form>
       <iframe name="kit-sink-wp" title="kit" hidden></iframe>
-      <p id="nlMsg" class="mono muted" style="font-size:12px;margin-top:12px">Sin spam. Baja cuando quieras.</p>
+      <p id="nlMsg" class="mono muted" style="font-size:12px;margin-top:12px" data-i="nl_note">Sin spam. Baja cuando quieras.</p>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
 <footer class="bt" style="padding:32px 0;text-align:center">
-  <p class="mono muted" style="font-size:12px">
-    wattprint v1.0 · hecho por <a href="https://neocortech-kohl.vercel.app/" style="text-decoration:underline;text-underline-offset:2px">Carlos Gallego Galán</a> · <a href="https://github.com/KairlosGG/wattprint" target="_blank" rel="noopener" style="text-decoration:underline;text-underline-offset:2px">código en GitHub</a> ·
-    <button data-open-method style="text-decoration:underline;text-underline-offset:2px">metodología y fuentes</button>
+  <p class="mono muted" style="font-size:12px;padding:0 16px">
+    wattprint v2.0 · <span data-i="f_by">hecho por</span> <a href="https://neocortech-kohl.vercel.app/" style="text-decoration:underline;text-underline-offset:2px">Carlos Gallego Galán</a> · <a href="https://github.com/KairlosGG/wattprint" target="_blank" rel="noopener" style="text-decoration:underline;text-underline-offset:2px" data-i="f_code">código en GitHub</a> ·
+    <button data-open-method style="text-decoration:underline;text-underline-offset:2px" data-i="f_method">metodología y fuentes</button>
   </p>
 </footer>
 
@@ -467,221 +529,458 @@ section{ padding:64px 0; }
 <div id="methodModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="methodTitle">
   <div class="modal card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <h3 id="methodTitle">Metodología y fuentes</h3>
-      <button id="closeMethod" class="muted" style="font-size:24px;line-height:1" aria-label="Cerrar">×</button>
+      <h3 id="methodTitle" data-i="m_h">Metodología y fuentes</h3>
+      <button id="closeMethod" class="muted" style="font-size:24px;line-height:1" data-ia="aria-label:close">×</button>
     </div>
     <div class="src" style="margin-top:16px;display:grid;gap:12px">
-      <p><strong>Energía:</strong> <code class="t-energy">kWh = TDP(W) × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según especificación del fabricante (NVIDIA). Utilización media por tipo de carga (0,40–0,85).</p>
-      <p><strong>PUE:</strong> media sectorial <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025). Flotas hyperscale: 1,08–1,12 (Google informa 1,10 de media de flota). Usamos 1,12 para "cloud hyperscale" y 1,54 para "datacenter medio".</p>
-      <p><strong>Carbono:</strong> <code class="t-carbon">kg CO₂e = kWh × intensidad regional ÷ 1000</code>. Intensidades de <strong>Ember</strong> (Global/European Electricity Review; año de datos entre paréntesis en la tabla). Las regiones cloud sub-nacionales (p. ej. Virginia, Oregón) son aproximaciones de su sub-red marcadas con ≈; para producción con SLA de datos, conecta el dataset anual descargable de Ember o electricityMaps.</p>
+      <div data-i="m_body"></div>
       <div id="srcTable"></div>
-      <p><strong>Agua:</strong> <code class="t-water">litros = kWh_IT × WUE</code>. Media sectorial ≈ <strong>1,9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0,80 · Microsoft 0,49 L/kWh (informes de sostenibilidad 2024) → usamos 0,65 como media hyperscale.</p>
-      <p><strong>Embodied (M):</strong> ≈ <strong>300 kg CO₂e por acelerador</strong> (chip + placa + parte proporcional de servidor), amortizado en 6 años. Orden de magnitud a partir de Luccioni et al. (2022) y Semiconductor Climate Consortium (2025: 20–25 kg solo el chip avanzado).</p>
-      <p><strong>Equivalencias:</strong> coche gasolina ≈170 g CO₂/km · carga de smartphone ≈0,0127 kWh (EPA) · árbol ≈21 kg CO₂/año absorbidos · ducha 10 min ≈60 L · hogar medio ≈270 kWh/mes.</p>
-      <p><strong>Retos:</strong> región limpia (recalcula con Noruega, 30 g/kWh) · hyperscale (PUE 1,54→1,12, WUE 1,9→0,65) · auto-scaling/right-sizing −25% energía · precisión mixta/cuantización −30% energía · carbon-aware scheduling −15% intensidad (rango conservador de la literatura de demand shifting).</p>
-      <p style="border-top:1px solid var(--line);padding-top:12px">Estimaciones de orden de magnitud, no medición certificada. Marco conceptual: especificación SCI (ISO/IEC 21031). Contenido formativo derivado del material CC-BY 4.0 de la Green Software Foundation (learn.greensoftware.foundation). Proyecto independiente, no afiliado a la GSF ni a los proveedores citados.</p>
+      <div data-i="m_body2"></div>
     </div>
   </div>
 </div>
 
+<!-- Informe para imprimir / guardar como PDF (se rellena al pulsar el botón) -->
+<div id="report" aria-hidden="true"></div>
+
 <script>
 'use strict';
 /* ============================================================
-   0 · CONFIGURACIÓN — edita solo este bloque para conectar
-       tu proveedor de newsletter.
-   ─ Buttondown:  endpoint:'https://buttondown.com/api/emails/embed-subscribe/TU_USUARIO'
-                  (acepta POST de formulario; fieldName:'email')
-   ─ Formspree:   endpoint:'https://formspree.io/f/TU_ID'
-   ─ Beehiiv:     su API requiere clave secreta → usa un webhook
-                  intermedio (Make/Zapier/Cloudflare Worker) y pon
-                  aquí la URL del webhook.
-   Si endpoint queda vacío, el formulario funciona en modo demo.
+   0 · CONFIGURACIÓN
 ============================================================ */
 const CONFIG = {
-  newsletter: {
-    endpoint: 'https://app.kit.com/forms/10085804/subscriptions', // Kit · Neocortech
-    fieldName: 'email_address', // campo que espera Kit
-    extraFields: {},         // p. ej. { tag: 'wattprint' }
-  },
-  shareUrl: 'neocortech-kohl.vercel.app/tool/wattprint/', // URL impresa en la tarjeta PNG
+  newsletter: { endpoint:'https://app.kit.com/forms/10085804/subscriptions' },
+  shareUrl: 'neocortech-kohl.vercel.app/tool/wattprint/',
 };
 
 /* ============================================================
-   1 · DATOS — intensidades de carbono (Ember) y constantes
-   Cada región: [nombre, gCO2/kWh, 'año de datos', aproximada?]
+   1 · DATOS
+   REGIONS: [id, nombre ES, nombre EN, gCO2e/kWh, año Ember,
+             intensidad aproximada?, L/kWh agua de generación, agua aproximada?]
+   Agua de generación: WRI (Reig et al., 2020), consumo medio de la red por
+   país (EE. UU. por subred eGRID), gal/kWh × 3,785. Si el país no está en
+   el estudio se usa la media mundial (marcado como aproximado).
 ============================================================ */
 const DATA = {
   REGIONS: [
-    ['Media global',            473, '2024', false],
-    ['Noruega',                   30, '2023', false],
-    ['Suecia',                    41, '2023', false],
-    ['Francia',                   56, '2023', false],
-    ['EE. UU. Oeste (Oregón) ≈', 130, '2023', true ],
-    ['España',                   174, '2023', false],
-    ['Media UE',                 213, '2024', false],
-    ['Reino Unido',              238, '2023', false],
-    ['Irlanda ≈',                290, '2023', true ],
-    ['EE. UU. Este (Virginia) ≈',360, '2023', true ],
-    ['Alemania',                 371, '2023', false],
-    ['Singapur',                 417, '2023', false],
-    ['Japón ≈',                  460, '2023', true ],
-    ['China',                    560, '2024', false],
-    ['India',                    632, '2022', false],
-    ['Polonia',                  662, '2023', false],
+    ['world', 'Media mundial',            'World average',          473, '2024', false, 4.81, false],
+    ['no',    'Noruega',                  'Norway',                  30, '2023', false, 6.66, false],
+    ['se',    'Suecia',                   'Sweden',                  41, '2023', false, 6.02, false],
+    ['fr',    'Francia',                  'France',                  56, '2023', false, 3.67, false],
+    ['usw',   'EE. UU. Oeste (Oregón)',   'US West (Oregon)',       130, '2023', true,  9.50, false],
+    ['es',    'España',                   'Spain',                  174, '2023', false, 6.21, false],
+    ['eu',    'Media UE',                 'EU average',             213, '2024', false, 4.81, true ],
+    ['uk',    'Reino Unido',              'United Kingdom',         238, '2023', false, 2.35, false],
+    ['ie',    'Irlanda',                  'Ireland',                290, '2023', true,  1.48, false],
+    ['use',   'EE. UU. Este (Virginia)',  'US East (Virginia)',     360, '2023', true,  2.38, false],
+    ['de',    'Alemania',                 'Germany',                371, '2023', false, 1.93, false],
+    ['sg',    'Singapur',                 'Singapore',              417, '2023', false, 4.81, true ],
+    ['jp',    'Japón',                    'Japan',                  460, '2023', true,  2.31, false],
+    ['cn',    'China',                    'China',                  560, '2024', false, 6.02, false],
+    ['in',    'India',                    'India',                  632, '2022', false, 3.44, false],
+    ['pl',    'Polonia',                  'Poland',                 662, '2023', false, 2.50, false],
   ],
-  CLEANEST: 30,          // Noruega — usada por el reto "región limpia"
-  PUE_AVG: 1.54,         // Uptime Institute 2025
-  PUE_HYPER: 1.12,       // flotas hyperscale (Google ~1,10)
-  WUE_AVG: 1.9,          // EESI 2024
-  WUE_HYPER: 0.65,       // media Google 0,80 / Microsoft 0,49
+  CLEAN_ID: 'no',        // región usada por el reto "región más limpia"
+  PUE_HYPER: 1.12, WUE_HYPER: 0.65,
   EMBODIED_KG: 300,      // kg CO2e por acelerador (ver metodología)
-  LIFE_HOURS: 6*365*24,  // vida útil 6 años
   EQ: { car:170, phone:0.0127, tree:21, shower:60, homeMonth:270 },
 };
+const regionById = id => DATA.REGIONS.find(r=>r[0]===id);
 
-/* Retos: id, título, descripción, tipo de efecto y factor */
 const CHALLENGES = [
-  { id:'region', t:'Mover a la región más limpia', d:'Ejecutar en una red baja en carbono (p. ej. Noruega, 30 g/kWh).',
-    fx:{ type:'intensity-clean' } },
-  { id:'hyper',  t:'Migrar a cloud hyperscale eficiente', d:'PUE 1,54 → 1,12 y WUE 1,9 → 0,65 L/kWh.',
-    fx:{ type:'dc-hyper' } },
-  { id:'auto',   t:'Auto-scaling y right-sizing', d:'Apagar y dimensionar instancias según demanda real.',
-    fx:{ type:'energy', mult:0.75 } },
-  { id:'quant',  t:'Precisión mixta / cuantización', d:'FP16-INT8 donde no penalice la calidad del modelo.',
-    fx:{ type:'energy', mult:0.70 } },
-  { id:'sched',  t:'Carbon-aware scheduling', d:'Programar la carga en las horas más limpias de la red.',
-    fx:{ type:'intensity', mult:0.85 } },
+  { id:'region', fx:{type:'clean'} },
+  { id:'hyper',  fx:{type:'hyper'} },
+  { id:'auto',   fx:{type:'energy', mult:0.75} },
+  { id:'quant',  fx:{type:'energy', mult:0.70} },
+  { id:'sched',  fx:{type:'intensity', mult:0.85} },
 ];
-
-/* Medallas por nivel de huella (kg CO2e) */
 const BADGES = [
-  { max:1,        ico:'🪶', name:'Huella pluma',                     color:'var(--carbon)', msg:'Menos de 1 kg CO₂e: impacto muy bajo.' },
-  { max:20,       ico:'🌿', name:'Código verde',                     color:'var(--carbon)', msg:'Menos de 20 kg CO₂e: huella baja. Los retos pueden bajarla aún más.' },
-  { max:200,      ico:'⚡', name:'Zona ámbar',                       color:'var(--energy)', msg:'Hay margen claro de mejora. Prueba los retos de optimización.' },
-  { max:2000,     ico:'🔥', name:'Alerta climática',                 color:'var(--alert)',  msg:'Huella alta. Optimiza tu infraestructura: los retos pueden recortarla a la mitad.' },
-  { max:Infinity, ico:'🚨', name:'Impacto crítico',                  color:'var(--alert)',  msg:'Escala industrial. Región limpia + eficiencia deberían ser prioridad de ingeniería.' },
+  { max:1,        ico:'🪶', key:'bd1', color:'var(--carbon)' },
+  { max:20,       ico:'🌿', key:'bd2', color:'var(--carbon)' },
+  { max:200,      ico:'⚡', key:'bd3', color:'var(--energy)' },
+  { max:2000,     ico:'🔥', key:'bd4', color:'var(--alert)'  },
+  { max:Infinity, ico:'🚨', key:'bd5', color:'var(--alert)'  },
 ];
 
 /* ============================================================
-   2 · ESTADO
+   2 · TEXTOS ES / EN
+============================================================ */
+const I18N = {
+es:{
+  _title:'Wattprint — ¿Cuánto carbono, energía y agua consume tu IA?',
+  nav_method:'Metodología', close:'Cerrar',
+  hero_eyebrow:'// calculadora de huella de IA',
+  hero_h1:'¿Cuánto <span class="t-carbon">carbono</span>, <span class="t-energy">energía</span> y <span class="t-water">agua</span> consume tu IA?',
+  hero_p:'Estima la huella de tus entrenamientos e inferencias en un minuto. Sin registro. Metodología SCI (ISO/IEC 21031) y datos de Ember, Uptime Institute y WRI.',
+  hero_cta:'Calcular mi huella →',
+  hero_note:'Gratis · Código abierto · Cálculo 100% en tu navegador (tus datos no salen de aquí)',
+  hero_c:'Emisiones de la electricidad según la red de tu región, más la fabricación del hardware.',
+  hero_e:'Electricidad del hardware más el consumo extra del centro de datos (PUE).',
+  hero_w_t:'Litros',
+  hero_w:'Agua de refrigeración (WUE) y agua usada para generar la electricidad.',
+  step:'paso {n}/4 — {name}', st1:'tipo de carga', st2:'energía', st3:'región', st4:'centro de datos',
+  next:'Siguiente →', see:'Ver mi huella →', back:'← Atrás',
+  s1_h:'¿Qué tipo de carga quieres medir?', s1_try:'¿Sin datos técnicos? Prueba un ejemplo:',
+  pr0:'🧪 Notebook de pruebas', pr1:'🔧 Fine-tuning típico', pr2:'🤖 Entrenamiento grande', pr3:'🌐 API un año en producción',
+  wl_train:'Entrenamiento de modelo', wl_train_d:'GPUs a alta utilización durante horas o semanas.',
+  wl_ft:'Fine-tuning', wl_ft_d:'Ajuste de un modelo existente, cargas más cortas.',
+  wl_inf:'Inferencia / API en producción', wl_inf_d:'Servir el modelo. Puedes calcular la huella por petición.',
+  wl_exp:'Experimentación / notebooks', wl_exp_d:'Sesiones intermitentes en GPU compartida.',
+  s2_h:'¿Cuánta energía consume?', mode_est:'Estimar con el hardware', mode_meas:'Tengo kWh medidos', hw:'Hardware',
+  s2_tip:'💡 ¿No conoces el hardware? Elige "No lo sé": usamos una GPU media y el resultado sigue siendo útil.',
+  gpu_cpu:'Instancia CPU', gpu_avg:'No lo sé', gpu_avg_d:'media ~300 W',
+  meas_l:'Energía medida de los servidores (kWh)',
+  meas_d:'Consumo de GPU/CPU medido con CodeCarbon, nvidia-smi, DCGM o el panel de tu proveedor. Encima aplicamos el PUE del centro de datos.',
+  units_l:'Aceleradores o instancias en paralelo', units_d:'Se usa también para la huella de fabricación del hardware.',
+  units_minus:'Menos unidades', units_plus:'Más unidades',
+  hours_l:'Horas de ejecución', tick_w:'1 semana', tick_m:'1 mes', days:'{n} días',
+  req_l:'Peticiones atendidas en ese tiempo (opcional)',
+  req_d:'Con este dato calculamos la huella por petición, la unidad funcional (R) de la metodología SCI.',
+  reps_l:'¿Cuántas veces al año se repite?',
+  reps_d:'Para la vista anual. Un servicio que funciona todo el mes, 12 veces; un entrenamiento único, 1.',
+  s3_h:'¿Dónde está el centro de datos?',
+  s3_p:'La red eléctrica de cada país cambia el carbono hasta 20 veces, y también el agua que se gasta al generar la electricidad.',
+  s3_tip:'💡 ¿Usas APIs de OpenAI o Anthropic, o no lo sabes? "EE. UU. Este (Virginia)" o "Media mundial" son buenas aproximaciones.',
+  s4_h:'¿Qué tipo de centro de datos?', s4_p:'La eficiencia energética (PUE) y el uso de agua (WUE) varían mucho entre operadores.',
+  s4_tip:'💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Centro de datos medio".',
+  dc_hyper_m:'PUE 1,12 · WUE 0,65 L/kWh', dc_avg_m:'PUE 1,54 · WUE 1,9 L/kWh',
+  dc_hyper:'Cloud hyperscale', dc_avg:'Centro de datos medio / propio', dc_avg_d:'Colocation o sala propia típica.',
+  life_l:'Vida útil del hardware',
+  life_d:'Años en los que se reparte la huella de fabricación. Las grandes nubes amortizan sus servidores en 5–6 años.',
+  live:'estimación:', live_save:'−{p}% con tus retos',
+  r_h:'La huella de tu carga', u_water:'litros de agua', with_ch:'con retos',
+  bk_h:'// de dónde sale cada cifra',
+  bk_c:'Carbono', bk_c1:'Electricidad', bk_c2:'Fabricación del hardware',
+  bk_e:'Energía', bk_e1:'Servidores (IT)', bk_e2:'Extra del centro de datos (PUE)',
+  bk_w:'Agua', bk_w1:'Refrigeración (centro de datos)', bk_w2:'Generación de la electricidad',
+  bk_w_note:'≈ = el país no está en el estudio del WRI; se usa la media mundial.',
+  k_req:'// por petición (SCI)', k_year:'// al año (×{n})',
+  eq_h:'// esto equivale a…',
+  eq_car:'km en un coche de gasolina', eq_phone:'cargas completas de smartphone',
+  eq_tree:'árboles trabajando un año para absorberlo', eq_shower:'duchas de 10 minutos',
+  eq_home:'de electricidad de un hogar medio', months:'{n} meses', days2:'{n} días',
+  ch_h:'Retos de optimización', ch_p:'Marca los que podrías aplicar y mira cómo cambia tu huella.',
+  ch_total:'Ahorro total: −{p}% CO₂e',
+  ch_region:'Mover a la región más limpia', ch_region_d:'Red de Noruega (30 g/kWh). Ojo: con tanta hidráulica, el agua de generación sube.',
+  ch_hyper:'Migrar a cloud hyperscale eficiente', ch_hyper_d:'PUE 1,54 → 1,12 y WUE 1,9 → 0,65 L/kWh.',
+  ch_auto:'Auto-scaling y right-sizing', ch_auto_d:'Apagar y dimensionar instancias según la demanda real (−25 % energía).',
+  ch_quant:'Precisión mixta / cuantización', ch_quant_d:'FP16-INT8 donde no penalice la calidad del modelo (−30 % energía).',
+  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Programar la carga en las horas más limpias de la red (−15 % intensidad).',
+  t_up:'{ico} ¡Subes a "{name}"! Has ahorrado un {p}% de CO₂e', t_ok:'🏆 ¡Reto superado! Has ahorrado un {p}% de CO₂e',
+  bd1:'Huella pluma', bd1_m:'Menos de 1 kg CO₂e: impacto muy bajo.',
+  bd2:'Código verde', bd2_m:'Menos de 20 kg CO₂e: huella baja. Los retos pueden bajarla aún más.',
+  bd3:'Zona ámbar', bd3_m:'Hay margen claro de mejora. Prueba los retos de optimización.',
+  bd4:'Alerta climática', bd4_m:'Huella alta. Los retos pueden recortarla mucho.',
+  bd5:'Impacto crítico', bd5_m:'Escala industrial. Región limpia y eficiencia deberían ser prioridad.',
+  bd_next:'↓ A {kg} kg CO₂e de "{name}" — usa los retos', bd_top:'★ Nivel más bajo de huella',
+  b_pdf:'Descargar informe (PDF)', b_csv:'Datos en CSV', b_card:'Tarjeta para compartir',
+  b_link:'Copiar enlace', b_reset:'Nueva estimación', b_sci:'Ver el cálculo completo',
+  copied:'¡Enlace copiado!', na:'No disponible', t_link:'🔗 Enlace listo para compartir',
+  t_card:'🖼️ Tarjeta descargada', t_card_err:'No se pudo generar la tarjeta. Recarga e inténtalo de nuevo.',
+  t_pdf:'🖨️ Elige "Guardar como PDF" en la ventana de impresión', t_csv:'📄 CSV descargado',
+  t_preset:'⚡ Ejemplo cargado: edita cualquier dato cuando quieras', t_url:'📊 Resultado cargado desde el enlace',
+  t_meas:'Escribe los kWh medidos o cambia a "Estimar con el hardware".',
+  generating:'Generando…',
+  nl_h:'Esto es solo la foto de hoy.',
+  nl_p:'Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.',
+  nl_ph:'tu@email.com', nl_btn:'Suscribirme', nl_note:'Sin spam. Baja cuando quieras.',
+  nl_ok:'✓ Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).',
+  f_by:'hecho por', f_code:'código en GitHub', f_method:'metodología y fuentes',
+  m_h:'Metodología y fuentes',
+  m_body:`<p><strong>Marco:</strong> especificación <strong>Software Carbon Intensity (SCI)</strong> de la Green Software Foundation, publicada como norma ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) por R</code>. E es la energía, I la intensidad de carbono de la red, M la huella de fabricación del hardware y R la unidad funcional (una ejecución o una petición).</p>
+<p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según el fabricante (NVIDIA). La utilización media por tipo de carga (0,40–0,85) es una hipótesis de trabajo: si has medido el consumo, usa la opción «Tengo kWh medidos», que sustituye la estimación por tu dato. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); flotas hyperscale 1,08–1,12 (Google informa 1,10). Usamos 1,12 para cloud hyperscale.</p>
+<p><strong>Carbono (I):</strong> intensidad media de la red de cada país, de <strong>Ember</strong> (licencia CC BY 4.0; año de datos en la tabla). Las regiones cloud subnacionales (Virginia, Oregón) y algunas otras se marcan como aproximadas. Se usa la intensidad de la red física (método location-based), como pide SCI: no se descuentan compras de renovables ni compensaciones.</p>`,
+  m_body2:`<p><strong>Agua de refrigeración:</strong> <code class="t-water">litros = kWh de servidores × WUE</code>. Media del sector ≈ <strong>1,9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0,80 y Microsoft 0,49 L/kWh (informes de sostenibilidad 2024) → usamos 0,65.</p>
+<p><strong>Agua de generación eléctrica:</strong> <code class="t-water">litros = kWh totales × factor de agua de la red</code>. Factores de consumo de agua de la red de cada país de <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; mix de generación de 2016, incluye la evaporación de los embalses hidroeléctricos). Es el mismo marco que usan Li et al. en <em>Making AI Less "Thirsty"</em> (agua de alcance 1 y 2). Por eso los países con mucha hidráulica, como Noruega, tienen poco carbono pero más agua.</p>
+<p><strong>Fabricación (M):</strong> ≈ <strong>300 kg CO₂e por acelerador</strong> (chip, placa y parte proporcional del servidor), repartidos en la vida útil elegida (4–6 años). Orden de magnitud a partir de Luccioni et al. (2022) y del Semiconductor Climate Consortium (2025: 20–25 kg solo el chip avanzado). Las grandes nubes amortizan sus servidores en 5–6 años (informes anuales 2025 de Amazon y Meta).</p>
+<p><strong>Retos:</strong> región limpia (red de Noruega) · hyperscale (PUE 1,54→1,12, WUE 1,9→0,65) · auto-scaling −25 % energía · precisión mixta/cuantización −30 % energía · carbon-aware scheduling −15 % intensidad. Son reducciones de referencia para comparar, no garantías.</p>
+<p><strong>Equivalencias:</strong> coche de gasolina ≈170 g CO₂/km · carga de smartphone ≈0,0127 kWh (EPA) · árbol ≈21 kg CO₂/año · ducha de 10 min ≈60 L · hogar medio ≈270 kWh/mes.</p>
+<p style="border-top:1px solid var(--line);padding-top:12px">Son estimaciones de orden de magnitud, no una medición certificada. Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.</p>`,
+  m_tbl_r:'Región', m_tbl_c:'gCO₂e/kWh (Ember, año)', m_tbl_w:'L/kWh agua de generación (WRI)', approx:'≈',
+  sci_r_run:'1 ejecución', sci_r_req:'{n} peticiones', sci_per_run:'kg CO₂e / ejecución', sci_per_req:'g CO₂e / petición',
+  sci_E:'E (energía)', sci_I:'I (intensidad de la red)', sci_M:'M (fabricación amortizada)', sci_R:'R (unidad funcional)',
+  sci_W:'Agua = refrigeración + generación',
+  rp_title:'Informe de huella de IA', rp_gen:'Generado con Wattprint v2.0 el {d}', rp_inputs:'Datos de partida',
+  rp_res:'Resultados', rp_bk:'Desglose', rp_unit:'Por petición y al año', rp_ch:'Optimización',
+  rp_ch_none:'No se ha marcado ningún reto de optimización.', rp_ch_on:'Retos aplicados: {list}. Resultado optimizado:',
+  rp_meth:'Método y fuentes', rp_lim:'Limitaciones',
+  rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP y una utilización media salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador.',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0), método location-based. PUE: Uptime Institute 2025. WUE: EESI 2024; Google y Microsoft 2024. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  in_wl:'Tipo de carga', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, utilización {u}', in_mode_meas:'Medida: {k} kWh de servidores',
+  in_units:'Aceleradores / instancias', in_hours:'Horas', in_region:'Región', in_dc:'Centro de datos', in_life:'Vida útil del hardware',
+  in_reqs:'Peticiones', in_reps:'Repeticiones al año', years:'{n} años',
+  col_item:'Concepto', col_val:'Valor', col_unit:'Unidad', col_base:'Actual', col_opt:'Con retos',
+  csv_name:'wattprint-informe.csv', card_head:'// la huella de mi IA', card_cta:'Calcula la tuya →', card_opt:'🏆 Optimizada: −{p}% CO₂e con {n} retos',
+  card_eq:'= {phone} cargas de smartphone · {tree} árboles-año · {shower} duchas',
+},
+en:{
+  _title:'Wattprint — How much carbon, energy and water does your AI use?',
+  nav_method:'Methodology', close:'Close',
+  hero_eyebrow:'// AI footprint calculator',
+  hero_h1:'How much <span class="t-carbon">carbon</span>, <span class="t-energy">energy</span> and <span class="t-water">water</span> does your AI use?',
+  hero_p:'Estimate the footprint of your training and inference runs in a minute. No sign-up. SCI methodology (ISO/IEC 21031) with data from Ember, Uptime Institute and WRI.',
+  hero_cta:'Calculate my footprint →',
+  hero_note:'Free · Open source · Runs 100% in your browser (your data never leaves it)',
+  hero_c:'Emissions from electricity based on your region\'s grid, plus hardware manufacturing.',
+  hero_e:'Hardware electricity plus the data centre overhead (PUE).',
+  hero_w_t:'Litres',
+  hero_w:'Cooling water (WUE) and the water used to generate the electricity.',
+  step:'step {n}/4 — {name}', st1:'workload', st2:'energy', st3:'region', st4:'data centre',
+  next:'Next →', see:'See my footprint →', back:'← Back',
+  s1_h:'What kind of workload do you want to measure?', s1_try:'No technical data? Try an example:',
+  pr0:'🧪 Test notebook', pr1:'🔧 Typical fine-tune', pr2:'🤖 Large training run', pr3:'🌐 One year of API in production',
+  wl_train:'Model training', wl_train_d:'GPUs at high utilisation for hours or weeks.',
+  wl_ft:'Fine-tuning', wl_ft_d:'Adapting an existing model, shorter runs.',
+  wl_inf:'Inference / API in production', wl_inf_d:'Serving the model. You can get the footprint per request.',
+  wl_exp:'Experiments / notebooks', wl_exp_d:'Intermittent sessions on a shared GPU.',
+  s2_h:'How much energy does it use?', mode_est:'Estimate from hardware', mode_meas:'I have measured kWh', hw:'Hardware',
+  s2_tip:'💡 Don\'t know the hardware? Choose "Not sure": we use an average GPU and the result is still useful.',
+  gpu_cpu:'CPU instance', gpu_avg:'Not sure', gpu_avg_d:'average ~300 W',
+  meas_l:'Measured server energy (kWh)',
+  meas_d:'GPU/CPU consumption measured with CodeCarbon, nvidia-smi, DCGM or your provider\'s dashboard. We apply the data centre PUE on top.',
+  units_l:'Accelerators or instances in parallel', units_d:'Also used for the hardware manufacturing footprint.',
+  units_minus:'Fewer units', units_plus:'More units',
+  hours_l:'Run time (hours)', tick_w:'1 week', tick_m:'1 month', days:'{n} days',
+  req_l:'Requests served in that time (optional)',
+  req_d:'With this we calculate the footprint per request, the functional unit (R) of the SCI methodology.',
+  reps_l:'How many times a year does it run?',
+  reps_d:'For the annual view. A service running all month: 12. A one-off training run: 1.',
+  s3_h:'Where is the data centre?',
+  s3_p:'Each country\'s grid can change the carbon by up to 20×, and also the water used to generate the electricity.',
+  s3_tip:'💡 Using OpenAI or Anthropic APIs, or not sure? "US East (Virginia)" or "World average" are good approximations.',
+  s4_h:'What kind of data centre?', s4_p:'Energy efficiency (PUE) and water use (WUE) vary a lot between operators.',
+  s4_tip:'💡 Rule of thumb: AWS, Google Cloud or Azure → "Hyperscale cloud". Your own servers or a local provider → "Average data centre".',
+  dc_hyper_m:'PUE 1.12 · WUE 0.65 L/kWh', dc_avg_m:'PUE 1.54 · WUE 1.9 L/kWh',
+  dc_hyper:'Hyperscale cloud', dc_avg:'Average / on-prem data centre', dc_avg_d:'Typical colocation or in-house server room.',
+  life_l:'Hardware lifetime',
+  life_d:'Years over which the manufacturing footprint is spread. Large clouds depreciate servers over 5–6 years.',
+  live:'estimate:', live_save:'−{p}% with your challenges',
+  r_h:'Your workload\'s footprint', u_water:'litres of water', with_ch:'with challenges',
+  bk_h:'// where each number comes from',
+  bk_c:'Carbon', bk_c1:'Electricity', bk_c2:'Hardware manufacturing',
+  bk_e:'Energy', bk_e1:'Servers (IT)', bk_e2:'Data centre overhead (PUE)',
+  bk_w:'Water', bk_w1:'Cooling (data centre)', bk_w2:'Electricity generation',
+  bk_w_note:'≈ = the country is not in the WRI study; the world average is used.',
+  k_req:'// per request (SCI)', k_year:'// per year (×{n})',
+  eq_h:'// that is the same as…',
+  eq_car:'km in a petrol car', eq_phone:'full smartphone charges',
+  eq_tree:'trees working for a year to absorb it', eq_shower:'10-minute showers',
+  eq_home:'of electricity for an average home', months:'{n} months', days2:'{n} days',
+  ch_h:'Optimisation challenges', ch_p:'Tick the ones you could apply and see how your footprint changes.',
+  ch_total:'Total saving: −{p}% CO₂e',
+  ch_region:'Move to the cleanest region', ch_region_d:'Norway\'s grid (30 g/kWh). Note: with so much hydropower, generation water goes up.',
+  ch_hyper:'Move to an efficient hyperscale cloud', ch_hyper_d:'PUE 1.54 → 1.12 and WUE 1.9 → 0.65 L/kWh.',
+  ch_auto:'Auto-scaling and right-sizing', ch_auto_d:'Turn off and size instances to real demand (−25% energy).',
+  ch_quant:'Mixed precision / quantisation', ch_quant_d:'FP16-INT8 where it doesn\'t hurt model quality (−30% energy).',
+  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Run the workload in the grid\'s cleanest hours (−15% intensity).',
+  t_up:'{ico} Up to "{name}"! You saved {p}% CO₂e', t_ok:'🏆 Challenge done! You saved {p}% CO₂e',
+  bd1:'Featherweight', bd1_m:'Under 1 kg CO₂e: very low impact.',
+  bd2:'Green code', bd2_m:'Under 20 kg CO₂e: low footprint. The challenges can lower it further.',
+  bd3:'Amber zone', bd3_m:'Clear room for improvement. Try the optimisation challenges.',
+  bd4:'Climate alert', bd4_m:'High footprint. The challenges can cut it a lot.',
+  bd5:'Critical impact', bd5_m:'Industrial scale. A clean region and efficiency should be a priority.',
+  bd_next:'↓ {kg} kg CO₂e away from "{name}" — use the challenges', bd_top:'★ Lowest footprint level',
+  b_pdf:'Download report (PDF)', b_csv:'Data as CSV', b_card:'Share card',
+  b_link:'Copy link', b_reset:'New estimate', b_sci:'See the full calculation',
+  copied:'Link copied!', na:'Not available', t_link:'🔗 Link ready to share',
+  t_card:'🖼️ Card downloaded', t_card_err:'Could not create the card. Reload and try again.',
+  t_pdf:'🖨️ Choose "Save as PDF" in the print dialog', t_csv:'📄 CSV downloaded',
+  t_preset:'⚡ Example loaded: edit any value whenever you like', t_url:'📊 Result loaded from the link',
+  t_meas:'Enter the measured kWh or switch to "Estimate from hardware".',
+  generating:'Generating…',
+  nl_h:'This is just today\'s snapshot.',
+  nl_p:'Subscribe to Neocortech, my newsletter on AI governance: agents, generative AI, ethics, risk and sustainability (in Spanish).',
+  nl_ph:'you@email.com', nl_btn:'Subscribe', nl_note:'No spam. Unsubscribe anytime.',
+  nl_ok:'✓ Almost there: confirm your subscription in the email you just received (check spam too).',
+  f_by:'made by', f_code:'code on GitHub', f_method:'methodology and sources',
+  m_h:'Methodology and sources',
+  m_body:`<p><strong>Framework:</strong> the Green Software Foundation's <strong>Software Carbon Intensity (SCI)</strong> specification, published as ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) per R</code>. E is energy, I the grid carbon intensity, M the hardware manufacturing footprint and R the functional unit (one run or one request).</p>
+<p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation ÷ 1000 × PUE</code>. TDP from the manufacturer (NVIDIA). Average utilisation by workload (0.40–0.85) is a working assumption: if you have measured consumption, use "I have measured kWh", which replaces the estimate with your figure. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); hyperscale fleets 1.08–1.12 (Google reports 1.10). We use 1.12 for hyperscale cloud.</p>
+<p><strong>Carbon (I):</strong> average grid intensity by country from <strong>Ember</strong> (CC BY 4.0 licence; data year in the table). Sub-national cloud regions (Virginia, Oregon) and a few others are marked as approximate. We use the physical grid intensity (location-based), as SCI requires: renewable purchases and offsets are not deducted.</p>`,
+  m_body2:`<p><strong>Cooling water:</strong> <code class="t-water">litres = server kWh × WUE</code>. Industry average ≈ <strong>1.9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0.80 and Microsoft 0.49 L/kWh (2024 sustainability reports) → we use 0.65.</p>
+<p><strong>Electricity generation water:</strong> <code class="t-water">litres = total kWh × grid water factor</code>. Grid water consumption factors by country from <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; 2016 generation mix, includes hydropower reservoir evaporation). It is the same framework used by Li et al. in <em>Making AI Less "Thirsty"</em> (scope 1 and 2 water). That is why hydro-heavy countries such as Norway have low carbon but more water.</p>
+<p><strong>Manufacturing (M):</strong> ≈ <strong>300 kg CO₂e per accelerator</strong> (chip, board and a share of the server), spread over the chosen lifetime (4–6 years). Order of magnitude from Luccioni et al. (2022) and the Semiconductor Climate Consortium (2025: 20–25 kg for the advanced chip alone). Large clouds depreciate servers over 5–6 years (Amazon and Meta 2025 annual reports).</p>
+<p><strong>Challenges:</strong> clean region (Norway's grid) · hyperscale (PUE 1.54→1.12, WUE 1.9→0.65) · auto-scaling −25% energy · mixed precision/quantisation −30% energy · carbon-aware scheduling −15% intensity. These are reference reductions for comparison, not guarantees.</p>
+<p><strong>Equivalences:</strong> petrol car ≈170 g CO₂/km · smartphone charge ≈0.0127 kWh (EPA) · tree ≈21 kg CO₂/year · 10-minute shower ≈60 L · average home ≈270 kWh/month.</p>
+<p style="border-top:1px solid var(--line);padding-top:12px">These are order-of-magnitude estimates, not certified measurements. Independent project, not affiliated with the Green Software Foundation, Ember, WRI or any provider mentioned.</p>`,
+  m_tbl_r:'Region', m_tbl_c:'gCO₂e/kWh (Ember, year)', m_tbl_w:'L/kWh generation water (WRI)', approx:'≈',
+  sci_r_run:'1 run', sci_r_req:'{n} requests', sci_per_run:'kg CO₂e / run', sci_per_req:'g CO₂e / request',
+  sci_E:'E (energy)', sci_I:'I (grid intensity)', sci_M:'M (amortised manufacturing)', sci_R:'R (functional unit)',
+  sci_W:'Water = cooling + generation',
+  rp_title:'AI footprint report', rp_gen:'Generated with Wattprint v2.0 on {d}', rp_inputs:'Inputs',
+  rp_res:'Results', rp_bk:'Breakdown', rp_unit:'Per request and per year', rp_ch:'Optimisation',
+  rp_ch_none:'No optimisation challenge was selected.', rp_ch_on:'Challenges applied: {list}. Optimised result:',
+  rp_meth:'Method and sources', rp_lim:'Limitations',
+  rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP and an average utilisation unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation.',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0), location-based. PUE: Uptime Institute 2025. WUE: EESI 2024; Google and Microsoft 2024. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  in_wl:'Workload', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, utilisation {u}', in_mode_meas:'Measured: {k} kWh at the servers',
+  in_units:'Accelerators / instances', in_hours:'Hours', in_region:'Region', in_dc:'Data centre', in_life:'Hardware lifetime',
+  in_reqs:'Requests', in_reps:'Runs per year', years:'{n} years',
+  col_item:'Item', col_val:'Value', col_unit:'Unit', col_base:'Current', col_opt:'With challenges',
+  csv_name:'wattprint-report.csv', card_head:'// my AI footprint', card_cta:'Calculate yours →', card_opt:'🏆 Optimised: −{p}% CO₂e with {n} challenges',
+  card_eq:'= {phone} smartphone charges · {tree} tree-years · {shower} showers',
+}};
+const GPU_NAMES = { h100:'NVIDIA H100', a100:'NVIDIA A100', v100:'NVIDIA V100', t4:'NVIDIA T4', cpu:null, avg:null };
+
+let LANG = 'es';
+const t  = k => (I18N[LANG][k] ?? I18N.es[k] ?? k);
+const tf = (k,o) => t(k).replace(/\{(\w+)\}/g,(_,x)=>o[x]);
+const loc = () => LANG==='en' ? 'en-GB' : 'es-ES';
+const fmt = n => {
+  const L=loc();
+  if(!isFinite(n)) return '—';
+  if(n>=100) return Math.round(n).toLocaleString(L);
+  if(n>=1)   return (Math.round(n*10)/10).toLocaleString(L);
+  if(n>=0.01)return (Math.round(n*100)/100).toLocaleString(L,{minimumFractionDigits:2});
+  if(n>0)    return n.toLocaleString(L,{maximumSignificantDigits:2});
+  return '0';
+};
+const dec = v => Number(v).toLocaleString(loc(),{maximumFractionDigits:2});
+const regionName = r => LANG==='en' ? r[2] : r[1];
+const gpuName = id => GPU_NAMES[id] || t(id==='cpu'?'gpu_cpu':'gpu_avg');
+const wlName  = id => t('wl_'+id);
+const dcName  = id => t('dc_'+id);
+
+/* ============================================================
+   3 · ESTADO
 ============================================================ */
 const state = {
-  workload:'Entrenamiento', util:0.85,
-  gpu:'NVIDIA A100', watts:400, units:1, hours:24,
-  intensity:473, regionName:'Media global',
-  pue:DATA.PUE_HYPER, wue:DATA.WUE_HYPER, dcName:'Cloud hyperscale',
-  step:1,
-  active:new Set(),   // ids de retos marcados
+  workload:'train', util:0.85,
+  mode:'est', measKwh:0,
+  gpu:'a100', watts:400, units:1, hours:24,
+  region:'world',
+  dc:'hyper', pue:1.12, wue:0.65,
+  life:6, reqs:0, reps:1,
+  step:1, active:new Set(),
 };
 
 /* ============================================================
-   3 · MOTOR DE CÁLCULO
-   opts.optimized aplica los retos activos.
+   4 · MOTOR DE CÁLCULO (SCI)
 ============================================================ */
 function compute(opts={}){
-  let watts=state.watts, util=state.util, hours=state.hours,
-      pue=state.pue, wue=state.wue, intensity=state.intensity;
+  const reg=regionById(state.region);
+  let intensity=reg[3], ewif=reg[6], pue=state.pue, wue=state.wue;
   let energyMult=1, intensityMult=1;
-
   if(opts.optimized){
     for(const ch of CHALLENGES){
       if(!state.active.has(ch.id)) continue;
       const f=ch.fx;
-      if(f.type==='energy')          energyMult    *= f.mult;
-      if(f.type==='intensity')       intensityMult *= f.mult;
-      if(f.type==='intensity-clean') intensity      = Math.min(intensity, DATA.CLEANEST);
-      if(f.type==='dc-hyper'){       pue=Math.min(pue,DATA.PUE_HYPER); wue=Math.min(wue,DATA.WUE_HYPER); }
+      if(f.type==='energy')    energyMult*=f.mult;
+      if(f.type==='intensity') intensityMult*=f.mult;
+      if(f.type==='clean'){ const c=regionById(DATA.CLEAN_ID); if(c[3]<intensity){ intensity=c[3]; ewif=c[6]; } }
+      if(f.type==='hyper'){ pue=Math.min(pue,DATA.PUE_HYPER); wue=Math.min(wue,DATA.WUE_HYPER); }
     }
   }
-  const kwhIT = watts*state.units*hours*util/1000 * energyMult; // energía IT
-  const kwh   = kwhIT*pue;                                      // con overhead
-  const operational = kwh * intensity*intensityMult / 1000;     // kg CO2e
-  const embodied = DATA.EMBODIED_KG*state.units*(hours/DATA.LIFE_HOURS);
-  return { kwh, kwhIT, co2:operational+embodied, operational, embodied, water:kwhIT*wue };
+  const kwhIT0 = state.mode==='meas' ? state.measKwh : state.watts*state.units*state.hours*state.util/1000;
+  const kwhIT = kwhIT0*energyMult;
+  const kwh = kwhIT*pue;
+  const I = intensity*intensityMult;
+  const operational = kwh*I/1000;
+  const embodied = DATA.EMBODIED_KG*state.units*(state.hours/(state.life*365*24));
+  const waterOn = kwhIT*wue, waterOff = kwh*ewif;
+  return { kwhIT, kwh, overhead:kwh-kwhIT, I, operational, embodied, co2:operational+embodied,
+           waterOn, waterOff, water:waterOn+waterOff, pue, wue, ewif };
 }
-const fmt = n =>
-  n>=100 ? Math.round(n).toLocaleString('es')
-: n>=1   ? (Math.round(n*10)/10).toLocaleString('es')
-: n>0    ? (Math.round(n*100)/100).toLocaleString('es',{minimumFractionDigits:2})
-: '0';
 
 /* ============================================================
-   4 · WIZARD (4 pasos)
+   5 · INTERFAZ: idioma
 ============================================================ */
 const $=id=>document.getElementById(id);
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=t('_title');
+  document.querySelectorAll('[data-i]').forEach(el=>{ el.innerHTML=t(el.dataset.i); });
+  document.querySelectorAll('[data-ia]').forEach(el=>{
+    el.dataset.ia.split(';').forEach(p=>{ const [a,k]=p.split(':'); el.setAttribute(a,t(k)); });
+  });
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));
+  buildRegionSelect(); buildSrcTable(); goStep(state.step); renderHours(); updateLive();
+  if($('results').classList.contains('show')) renderAll(false);
+}
+function setLang(l){
+  LANG = l==='en'?'en':'es';
+  try{ localStorage.setItem('nc_lang',LANG); }catch(_){}
+  applyLang(); syncURL();
+}
+document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ============================================================
+   6 · ASISTENTE
+============================================================ */
 const steps=[...document.querySelectorAll('.step')];
 const progs=[...document.querySelectorAll('.prog')];
-const stepNames={1:'tipo de carga',2:'hardware',3:'región',4:'datacenter'};
-
 function goStep(n){
   state.step=n;
   steps.forEach(s=>s.classList.toggle('active',+s.dataset.step===n));
   progs.forEach((p,i)=>p.classList.toggle('on',i<n));
-  $('stepLabel').textContent=`paso ${n}/4 — ${stepNames[n]}`;
+  $('stepLabel').textContent=tf('step',{n,name:t('st'+n)});
   $('btnBack').style.visibility = n===1?'hidden':'visible';
-  $('btnNext').textContent = n===4?'Ver mi huella →':'Siguiente →';
+  $('btnNext').textContent = n===4?t('see'):t('next');
 }
-$('btnNext').addEventListener('click',()=> state.step<4 ? goStep(state.step+1) : showResults());
+$('btnNext').addEventListener('click',()=>{
+  if(state.step===2 && state.mode==='meas' && !(state.measKwh>0)){ toast(t('t_meas')); $('measKwh').focus(); return; }
+  state.step<4 ? goStep(state.step+1) : showResults();
+});
 $('btnBack').addEventListener('click',()=> goStep(state.step-1));
 document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && !e.target.matches('input[type=email],select,button,textarea')){
-    e.preventDefault(); $('btnNext').click();
-  }
+  if(e.key==='Enter' && !e.target.matches('input,select,button,textarea')){ e.preventDefault(); $('btnNext').click(); }
 });
 
-/* Grupos de tarjetas seleccionables */
 function bindPicks(sel,onPick){
   document.querySelectorAll(sel).forEach(btn=>{
     btn.addEventListener('click',()=>{
-      btn.closest('[role=group]').querySelectorAll('.pick')
-         .forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.closest('[role=group]').querySelectorAll(sel.replace(/=.*\]/,']')).forEach(b=>b.setAttribute('aria-pressed','false'));
       btn.setAttribute('aria-pressed','true');
       onPick(btn); updateLive();
     });
   });
 }
-bindPicks('[data-workload]', b=>{ state.workload=b.dataset.workload; state.util=+b.dataset.util; });
-bindPicks('[data-gpu]',      b=>{ state.gpu=b.dataset.gpu; state.watts=+b.dataset.w; });
-bindPicks('[data-dc]',       b=>{ state.dcName=b.dataset.dc; state.pue=+b.dataset.pue; state.wue=+b.dataset.wue; });
+bindPicks('[data-workload]', b=>{ state.workload=b.dataset.workload; state.util=+b.dataset.util;
+  $('reqRow').classList.toggle('hidden',state.workload!=='inf'); });
+bindPicks('[data-gpu]',  b=>{ state.gpu=b.dataset.gpu; state.watts=+b.dataset.w; });
+bindPicks('[data-dc]',   b=>{ state.dc=b.dataset.dc; state.pue=+b.dataset.pue; state.wue=+b.dataset.wue; });
+bindPicks('[data-mode]', b=>{ state.mode=b.dataset.mode;
+  $('estBox').classList.toggle('hidden',state.mode!=='est'); $('measBox').classList.toggle('hidden',state.mode!=='meas'); });
+bindPicks('[data-life]', b=>{ state.life=+b.dataset.life; });
 
-/* Unidades (escala ×2 a partir de 8) */
+const numIn=(id,key,min)=>$(id).addEventListener('input',e=>{
+  const v=parseFloat(String(e.target.value).replace(',','.')); state[key]=isFinite(v)&&v>=min?v:(key==='reps'?1:0); updateLive(); });
+numIn('measKwh','measKwh',0); numIn('reqs','reqs',0); numIn('reps','reps',1);
+
 $('unitsPlus').addEventListener('click',()=>{
   state.units=Math.min(4096, state.units<8?state.units+1:state.units*2);
-  $('unitsVal').textContent=state.units; updateLive();
-});
+  $('unitsVal').textContent=state.units; updateLive(); });
 $('unitsMinus').addEventListener('click',()=>{
   state.units=Math.max(1, state.units<=8?state.units-1:state.units/2);
-  $('unitsVal').textContent=state.units; updateLive();
-});
+  $('unitsVal').textContent=state.units; updateLive(); });
 
-/* Slider logarítmico 1h → 720h */
 const hoursInput=$('hours');
-const sliderToHours=v=>Math.round(Math.exp((v/100)*Math.log(720)));
+const sliderToHours=v=>Math.max(1,Math.round(Math.exp((v/100)*Math.log(720))));
 function renderHours(){
-  state.hours=sliderToHours(+hoursInput.value);
-  $('hoursVal').textContent = state.hours>=168 ? `${Math.round(state.hours/24)} días` : `${state.hours} h`;
+  $('hoursVal').textContent = state.hours>=168 ? tf('days',{n:Math.round(state.hours/24)}) : `${state.hours} h`;
   hoursInput.style.setProperty('--fill',hoursInput.value+'%');
 }
-hoursInput.addEventListener('input',()=>{ renderHours(); updateLive(); });
+hoursInput.addEventListener('input',()=>{ state.hours=sliderToHours(+hoursInput.value); renderHours(); updateLive(); });
 
-/* Selector de región: se construye desde DATA (una sola fuente de verdad) */
 const regionSel=$('region');
-DATA.REGIONS.forEach(([name,g,yr],i)=>{
-  const o=document.createElement('option');
-  o.value=i; o.textContent=`${name} · ${g} g/kWh (${yr})`;
-  regionSel.appendChild(o);
-});
-regionSel.addEventListener('change',e=>{
-  const [name,g]=DATA.REGIONS[+e.target.value];
-  state.intensity=g; state.regionName=name.replace(' ≈',''); updateLive();
-});
+function buildRegionSelect(){
+  regionSel.innerHTML='';
+  DATA.REGIONS.forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r[0]; o.textContent=`${regionName(r)}${r[5]?' ≈':''} · ${r[3]} g/kWh · ${dec(r[6])} L/kWh`;
+    regionSel.appendChild(o);
+  });
+  regionSel.value=state.region;
+}
+regionSel.addEventListener('change',e=>{ state.region=e.target.value; updateLive(); });
 
-/* Tabla de fuentes en el modal, generada desde los mismos datos */
-$('srcTable').innerHTML = '<table>'+DATA.REGIONS.map(([n,g,yr,ap])=>
-  `<tr><td>${n}${ap?' (aprox. sub-red)':''}</td><td>${g} g/kWh · Ember ${yr}</td></tr>`).join('')+'</table>';
+function buildSrcTable(){
+  $('srcTable').innerHTML=`<table><tr><th>${t('m_tbl_r')}</th><th>${t('m_tbl_c')}</th><th>${t('m_tbl_w')}</th></tr>`+
+    DATA.REGIONS.map(r=>`<tr><td>${regionName(r)}${r[5]?' ≈':''}</td><td>${r[3]} · ${r[4]}</td><td>${r[7]?'≈ ':''}${dec(r[6])}</td></tr>`).join('')+'</table>';
+}
 
 /* ============================================================
-   5 · ESTIMACIÓN EN VIVO + AHORRO POR RETOS
+   7 · ESTIMACIÓN EN VIVO
 ============================================================ */
 function updateLive(){
   const base=compute(), opt=compute({optimized:true});
@@ -689,56 +988,74 @@ function updateLive(){
   const saving=state.active.size>0 && opt.co2<base.co2;
   $('live').classList.toggle('saving',saving);
   $('liveSave').classList.toggle('hidden',!saving);
-  if(saving) $('liveSave').textContent=`−${Math.round((1-opt.co2/base.co2)*100)}% con tus retos`;
+  if(saving) $('liveSave').textContent=tf('live_save',{p:Math.round((1-opt.co2/base.co2)*100)});
 }
 
 /* ============================================================
-   6 · RESULTADOS + GAMIFICACIÓN
+   8 · RESULTADOS
 ============================================================ */
-function countUp(el,target){
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=fmt(target); return; }
+function countUp(el,target,animate){
+  if(!animate || matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=fmt(target); return; }
   const t0=performance.now(), dur=900;
-  (function tick(now){
-    const p=Math.min(1,(now-t0)/dur);
-    el.textContent=fmt(target*(1-Math.pow(1-p,3)));
-    if(p<1) requestAnimationFrame(tick);
-  })(t0);
+  (function tick(now){ const p=Math.min(1,(now-t0)/dur);
+    el.textContent=fmt(target*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(tick); })(t0);
 }
-
 function renderBadge(co2){
   const i=BADGES.findIndex(x=>co2<=x.max), b=BADGES[i];
-  $('badgeIco').textContent=b.ico;
-  $('badgeName').textContent=b.name;
-  $('badgeName').style.color=b.color;
-  $('badgeMsg').textContent=b.msg;
+  $('badgeIco').textContent=b.ico; $('badgeName').textContent=t(b.key);
+  $('badgeName').style.color=b.color; $('badgeMsg').textContent=t(b.key+'_m');
   $('badge').style.borderColor=b.color;
-  /* Progresión: cuánto falta para bajar a la medalla anterior */
-  $('badgeNext').textContent = i>0
-    ? `↓ A ${fmt(co2-BADGES[i-1].max)} kg CO₂e de "${BADGES[i-1].name}" — usa los retos`
-    : '★ Nivel máximo de eficiencia alcanzado';
+  $('badgeNext').textContent = i>0 ? tf('bd_next',{kg:fmt(co2-BADGES[i-1].max),name:t(BADGES[i-1].key)}) : t('bd_top');
   return b;
 }
-
-function renderEquivalences(r){
-  const E=DATA.EQ;
-  const items=[
-    ['🚗', fmt(r.co2*1000/E.car),  'km en un coche de gasolina'],
-    ['📱', fmt(r.kwh/E.phone),      'cargas completas de smartphone'],
-    ['🌳', fmt(r.co2/E.tree),       'árboles trabajando un año para absorberlo'],
-    ['🚿', fmt(r.water/E.shower),   'duchas de 10 minutos'],
-  ];
-  const months=r.kwh/E.homeMonth;
-  items.push(['🏠', months>=1?`${fmt(months)} meses`:`${fmt(months*30)} días`, 'de electricidad de un hogar medio']);
-  $('eqList').innerHTML=items.map(([i,v,t])=>
-    `<li>${i} <b>${v}</b> ${t}</li>`).join('');
+function barHTML(title,total,unit,parts){
+  const sum=parts.reduce((a,p)=>a+p.v,0)||1;
+  return `<div><div class="bk-h"><b>${title}</b><span class="mono">${fmt(total)} ${unit}</span></div>
+    <div class="bar">${parts.map(p=>`<i style="width:${(p.v/sum*100).toFixed(2)}%;background:${p.c}" title="${p.l}"></i>`).join('')}</div>
+    <div class="leg">${parts.map(p=>`<span style="--c:${p.c}">${p.l} · ${fmt(p.v)} ${unit} (${Math.round(p.v/sum*100)}%)</span>`).join('')}</div></div>`;
 }
-
-/* Retos: render + interacción */
+function renderBreakdown(r){
+  const reg=regionById(state.active.has('region')&&regionById(DATA.CLEAN_ID)[3]<regionById(state.region)[3]?DATA.CLEAN_ID:state.region);
+  $('breakdown').innerHTML=
+    barHTML(t('bk_c'),r.co2,'kg CO₂e',[{l:t('bk_c1'),v:r.operational,c:'var(--carbon)'},{l:t('bk_c2'),v:r.embodied,c:'var(--carbon-2)'}])+
+    barHTML(t('bk_e'),r.kwh,'kWh',[{l:t('bk_e1'),v:r.kwhIT,c:'var(--energy)'},{l:t('bk_e2'),v:r.overhead,c:'var(--energy-2)'}])+
+    barHTML(t('bk_w'),r.water,'L',[{l:t('bk_w1'),v:r.waterOn,c:'var(--water)'},{l:t('bk_w2')+(reg[7]?' ≈':''),v:r.waterOff,c:'var(--water-2)'}])+
+    (reg[7]?`<p class="note">${t('bk_w_note')}</p>`:'');
+}
+function renderKpis(r){
+  let h='';
+  if(state.workload==='inf' && state.reqs>0){
+    const q=state.reqs;
+    h+=`<div class="card kpi"><p>${t('k_req')}</p><div>
+      <span class="t-carbon">${fmt(r.co2*1000/q)} g CO₂e</span><br>
+      <span class="t-energy">${fmt(r.kwh*1000/q)} Wh</span><br>
+      <span class="t-water">${fmt(r.water*1000/q)} mL</span></div></div>`;
+  }
+  if(state.reps>1){
+    const n=state.reps;
+    h+=`<div class="card kpi"><p>${tf('k_year',{n})}</p><div>
+      <span class="t-carbon">${fmt(r.co2*n)} kg CO₂e</span><br>
+      <span class="t-energy">${fmt(r.kwh*n)} kWh</span><br>
+      <span class="t-water">${fmt(r.water*n)} L</span></div></div>`;
+  }
+  $('kpis').innerHTML=h; $('kpis').classList.toggle('hidden',!h);
+}
+function renderEquivalences(r){
+  const E=DATA.EQ, months=r.kwh/E.homeMonth;
+  const items=[
+    ['🚗',fmt(r.co2*1000/E.car),t('eq_car')],
+    ['📱',fmt(r.kwh/E.phone),t('eq_phone')],
+    ['🌳',fmt(r.co2/E.tree),t('eq_tree')],
+    ['🚿',fmt(r.water/E.shower),t('eq_shower')],
+    ['🏠',months>=1?tf('months',{n:fmt(months)}):tf('days2',{n:fmt(months*30)}),t('eq_home')],
+  ];
+  $('eqList').innerHTML=items.map(([i,v,x])=>`<li>${i} <b>${v}</b> ${x}</li>`).join('');
+}
 function renderChallenges(){
   $('challenges').innerHTML=CHALLENGES.map(ch=>`
     <label class="challenge ${state.active.has(ch.id)?'on':''}" data-ch="${ch.id}">
-      <input type="checkbox" ${state.active.has(ch.id)?'checked':''} aria-label="${ch.t}">
-      <div><b>${ch.t}</b><span>${ch.d}</span></div>
+      <input type="checkbox" ${state.active.has(ch.id)?'checked':''} aria-label="${t('ch_'+ch.id)}">
+      <div><b>${t('ch_'+ch.id)}</b><span>${t('ch_'+ch.id+'_d')}</span></div>
       <span class="save" data-save></span>
     </label>`).join('');
   document.querySelectorAll('.challenge').forEach(el=>{
@@ -749,346 +1066,306 @@ function renderChallenges(){
       refreshOptimized(e.target.checked);
     });
   });
-  refreshOptimized(false);
+}
+function renderSci(r){
+  const perReq = state.workload==='inf' && state.reqs>0;
+  $('sciPanel').innerHTML=`<p class="muted">// SCI = ((E × I) + M) ${LANG==='en'?'per':'por'} R</p>
+    <p>${t('sci_E')} = <span class="t-energy">${fmt(r.kwh)}</span> kWh <span class="muted">(${fmt(r.kwhIT)} IT × PUE ${dec(r.pue)})</span></p>
+    <p>${t('sci_I')} = <span class="t-carbon">${fmt(r.I)}</span> gCO₂e/kWh</p>
+    <p>${t('sci_M')} = <span class="muted">${fmt(r.embodied)}</span> kg CO₂e</p>
+    <p>${t('sci_R')} = ${perReq?tf('sci_r_req',{n:state.reqs.toLocaleString(loc())}):t('sci_r_run')}</p>
+    <p style="border-top:1px solid var(--line);padding-top:8px;margin-top:8px">SCI ≈ <b class="t-carbon">${perReq?fmt(r.co2*1000/state.reqs):fmt(r.co2)}</b> ${perReq?t('sci_per_req'):t('sci_per_run')}</p>
+    <p class="muted" style="margin-top:8px">${t('sci_W')}: ${fmt(r.kwhIT)} × ${dec(r.wue)} + ${fmt(r.kwh)} × ${dec(r.ewif)} = <span class="t-water">${fmt(r.water)}</span> L</p>`;
 }
 
-/* Recalcula el impacto optimizado, deltas y ahorro por reto */
 let baseResult=null;
+function current(){ return state.active.size ? compute({optimized:true}) : (baseResult??compute()); }
 function refreshOptimized(justChecked){
-  const base=baseResult ?? compute();
-  const opt=compute({optimized:true});
+  const base=baseResult??compute(), opt=compute({optimized:true});
   const pct=Math.round((1-opt.co2/base.co2)*100);
-
-  /* Deltas bajo cada métrica */
-  const delta=(el,b,o,unit)=> $(el).textContent =
-    o<b ? `→ ${fmt(o)} ${unit} con retos` : '';
-  delta('dCO2',base.co2,opt.co2,'kg');
-  delta('dKWH',base.kwh,opt.kwh,'kWh');
-  delta('dH2O',base.water,opt.water,'L');
-
-  /* Ahorro individual estimado de cada reto (marginal sobre el estado actual) */
+  const delta=(el,b,o,unit)=>{ $(el).textContent = Math.abs(o-b)/Math.max(b,1e-9)>0.005 ? `${o<b?'↓':'↑'} ${fmt(o)} ${unit} ${t('with_ch')}` : ''; };
+  delta('dCO2',base.co2,opt.co2,'kg'); delta('dKWH',base.kwh,opt.kwh,'kWh'); delta('dH2O',base.water,opt.water,'L');
   document.querySelectorAll('.challenge').forEach(el=>{
     const id=el.dataset.ch, had=state.active.has(id);
-    if(!had) state.active.add(id);
-    const withIt=compute({optimized:true}).co2;
-    if(!had) state.active.delete(id);
-    let saveTxt='';
-    if(had){ // si está activo, cuánto aporta: quitarlo y comparar
-      state.active.delete(id);
-      const without=compute({optimized:true}).co2;
-      state.active.add(id);
-      const s=Math.round((1-withIt/without)*100);
-      saveTxt=s>0?`−${s}%`:'';
-    } else {
-      const current=compute({optimized:true}).co2;
-      const s=Math.round((1-withIt/current)*100);
-      saveTxt=s>0?`−${s}%`:'—';
-    }
-    el.querySelector('[data-save]').textContent=saveTxt;
+    let a,b;
+    if(had){ a=compute({optimized:true}).co2; state.active.delete(id); b=compute({optimized:true}).co2; state.active.add(id); }
+    else   { b=compute({optimized:true}).co2; state.active.add(id); a=compute({optimized:true}).co2; state.active.delete(id); }
+    const s=Math.round((1-a/b)*100);
+    el.querySelector('[data-save]').textContent = s>0?`−${s}%`:'—';
   });
-
-  $('totalSave').textContent = pct>0 ? `Ahorro total: −${pct}% CO₂e` : '';
-
-  /* La medalla refleja la huella optimizada: subir de nivel se celebra */
+  $('totalSave').textContent = pct>0 ? tf('ch_total',{p:pct}) : '';
   const prevName=$('badgeName').textContent;
   const nb=renderBadge(opt.co2);
-  if(justChecked && pct>0){
-    toast(nb.name!==prevName
-      ? `${nb.ico} ¡Subes a "${nb.name}"! Has ahorrado un ${pct}% de CO₂e`
-      : `🏆 ¡Reto superado! Has ahorrado un ${pct}% de CO₂e`);
-  }
-  updateLive();
+  const r=current();
+  renderBreakdown(r); renderKpis(r); renderEquivalences(r); renderSci(r);
+  if(justChecked && pct>0) toast(t(nb.key)!==prevName ? tf('t_up',{ico:nb.ico,name:t(nb.key),p:pct}) : tf('t_ok',{p:pct}));
+  updateLive(); if($('results').classList.contains('show')) syncURL();
 }
-
-/* Toast */
-let toastTimer;
-function toast(msg){
-  const t=$('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+function inputsSummary(){
+  const reg=regionById(state.region);
+  const e = state.mode==='meas' ? `${fmt(state.measKwh)} kWh` : `${gpuName(state.gpu).replace('NVIDIA ','')} ×${state.units}`;
+  return `${e} × ${state.hours}h × ${regionName(reg)} × ${dcName(state.dc)}`;
 }
-
-/* Mostrar resultados */
+function renderAll(animate){
+  const r=baseResult;
+  countUp($('rCO2'),r.co2,animate); countUp($('rKWH'),r.kwh,animate); countUp($('rH2O'),r.water,animate);
+  $('inputsChip').textContent=inputsSummary();
+  renderChallenges(); refreshOptimized(false);
+}
 function showResults(){
   baseResult=compute();
-  const r=baseResult;
   $('results').classList.add('show');
-  countUp($('rCO2'),r.co2); countUp($('rKWH'),r.kwh); countUp($('rH2O'),r.water);
-  renderBadge(r.co2);
-  renderEquivalences(r);
-  renderChallenges();
-  $('inputsChip').textContent=
-    `${state.gpu.replace('NVIDIA ','')} ×${state.units} × ${state.hours}h × ${state.regionName} × ${state.dcName}`;
-  $('sE').textContent=fmt(r.kwh); $('sI').textContent=state.intensity;
-  $('sM').textContent=fmt(r.embodied); $('sTotal').textContent=fmt(r.co2);
+  renderAll(true);
   $('results').scrollIntoView({behavior:'smooth'});
+  syncURL();
 }
 $('editInputs').addEventListener('click',()=>$('calc').scrollIntoView({behavior:'smooth'}));
 $('btnSci').addEventListener('click',()=>$('sciPanel').classList.toggle('hidden'));
-
-/* Nueva estimación: limpia retos y URL, vuelve al paso 1 */
 $('btnReset').addEventListener('click',()=>{
   state.active.clear(); baseResult=null;
   $('results').classList.remove('show');
-  try{ history.replaceState(null,'',location.pathname); }catch(_){}
-  goStep(1); updateLive();
-  $('calc').scrollIntoView({behavior:'smooth'});
+  try{ history.replaceState(null,'',location.pathname+(LANG==='en'?'?lang=en':'')); }catch(_){}
+  goStep(1); updateLive(); $('calc').scrollIntoView({behavior:'smooth'});
 });
 
-/* El sticky vive solo donde ayuda: visible en la calculadora,
-   oculto en el hero y en resultados (allí ya están los deltas) */
+let toastTimer;
+function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
+
 const liveEl=$('live');
 function setLive(on){ liveEl.style.opacity=on?1:0; liveEl.style.pointerEvents=on?'auto':'none'; }
 if('IntersectionObserver' in window){
   const seen=new Map();
-  const io=new IntersectionObserver(es=>{
-    es.forEach(e=>seen.set(e.target.id,e.isIntersecting));
-    setLive(seen.get('calc') && !seen.get('results'));
-  },{threshold:.15});
+  const io=new IntersectionObserver(es=>{ es.forEach(e=>seen.set(e.target.id,e.isIntersecting));
+    setLive(seen.get('calc') && !seen.get('results')); },{threshold:.15});
   io.observe($('calc')); io.observe($('results'));
 }else{ setLive(true); }
 
 /* ============================================================
-   7 · TARJETA PNG (canvas robusto)
-   ─ Espera a que las webfonts estén cargadas (document.fonts)
-     y usa toBlob para una descarga fiable en todos los navegadores.
+   9 · INFORME (PDF vía impresión) Y CSV
 ============================================================ */
-async function ensureFonts(){
-  try{
-    await Promise.all([
-      document.fonts.load('700 84px "JetBrains Mono"'),
-      document.fonts.load('500 24px "JetBrains Mono"'),
-      document.fonts.load('700 40px "Space Grotesk"'),
-      document.fonts.load('400 28px "Inter"'),
-      document.fonts.ready,
-    ]);
-  }catch(_){/* si falla, canvas usará los fallbacks del sistema */}
+function inputRows(){
+  const reg=regionById(state.region);
+  const rows=[
+    [t('in_wl'), wlName(state.workload)],
+    [t('in_mode'), state.mode==='meas' ? tf('in_mode_meas',{k:fmt(state.measKwh)}) : tf('in_mode_est',{gpu:gpuName(state.gpu),u:dec(state.util)})],
+    [t('in_units'), String(state.units)],
+    [t('in_hours'), String(state.hours)],
+    [t('in_region'), `${regionName(reg)} (${reg[3]} gCO₂e/kWh · Ember ${reg[4]}; ${reg[7]?'≈ ':''}${dec(reg[6])} L/kWh · WRI)`],
+    [t('in_dc'), `${dcName(state.dc)} (PUE ${dec(state.pue)} · WUE ${dec(state.wue)} L/kWh)`],
+    [t('in_life'), tf('years',{n:state.life})],
+  ];
+  if(state.workload==='inf' && state.reqs>0) rows.push([t('in_reqs'), state.reqs.toLocaleString(loc())]);
+  if(state.reps>1) rows.push([t('in_reps'), String(state.reps)]);
+  return rows;
 }
+function resultRows(r){
+  return [
+    ['CO₂e', r.co2, 'kg'], ['  '+t('bk_c1'), r.operational, 'kg'], ['  '+t('bk_c2'), r.embodied, 'kg'],
+    [t('bk_e'), r.kwh, 'kWh'], ['  '+t('bk_e1'), r.kwhIT, 'kWh'], ['  '+t('bk_e2'), r.overhead, 'kWh'],
+    [t('bk_w'), r.water, 'L'], ['  '+t('bk_w1'), r.waterOn, 'L'], ['  '+t('bk_w2'), r.waterOff, 'L'],
+  ];
+}
+function rbar(parts){ const s=parts.reduce((a,p)=>a+p.v,0)||1;
+  return `<div class="rbar">${parts.map(p=>`<i style="width:${(p.v/s*100).toFixed(2)}%;background:${p.c}"></i>`).join('')}</div>
+  <div class="small">${parts.map(p=>`${p.l}: ${Math.round(p.v/s*100)}%`).join(' · ')}</div>`; }
 
-$('btnCard').addEventListener('click', async ()=>{
-  const btn=$('btnCard'), prev=btn.textContent;
-  btn.textContent='Generando…'; btn.disabled=true;
-  try{
-    await ensureFonts();
-    const base=baseResult??compute(), opt=compute({optimized:true});
-    const r=state.active.size?opt:base;
-    const badge=BADGES.find(x=>r.co2<=x.max);
-
-    const c=document.createElement('canvas'); c.width=1200; c.height=627;
-    const x=c.getContext('2d');
-    const MONO='"JetBrains Mono",monospace', DISP='"Space Grotesk",sans-serif', BODY='Inter,sans-serif';
-    const badgeColor = badge.color.includes('alert')?'#F87171'
-                     : badge.color.includes('energy')?'#FACC15':'#4ADE80';
-    /* roundRect con fallback para navegadores antiguos */
-    const rr=(px,py,w,h,rad)=>{ x.beginPath();
-      if(x.roundRect) x.roundRect(px,py,w,h,rad);
-      else x.rect(px,py,w,h); };
-
-    /* Fondo + marco de tarjeta */
-    x.fillStyle='#0B1210'; x.fillRect(0,0,1200,627);
-    x.fillStyle='#111A17'; rr(36,36,1128,555,20); x.fill();
-    x.strokeStyle='#1E2B26'; x.lineWidth=2; rr(36,36,1128,555,20); x.stroke();
-
-    /* Cabecera */
-    x.fillStyle='#8BA69B'; x.font=`500 22px ${MONO}`;
-    x.fillText('// la huella de mi IA',76,100);
-    x.fillStyle='#E8F0EC'; x.font=`700 30px ${DISP}`;
-    x.fillText(`${state.workload} · ${state.gpu.replace('NVIDIA ','')} ×${state.units} · ${state.hours}h`,76,148);
-    x.fillStyle='#8BA69B'; x.font=`400 21px ${BODY}`;
-    x.fillText(`${state.regionName} · ${state.dcName}`,76,182);
-
-    /* Medalla en píldora (arriba a la derecha) */
-    x.font=`700 24px ${DISP}`;
-    const bw=x.measureText(badge.name).width+96;
-    x.fillStyle='#0B1210'; rr(1124-bw,72,bw,52,26); x.fill();
-    x.strokeStyle=badgeColor; x.lineWidth=2; rr(1124-bw,72,bw,52,26); x.stroke();
-    x.fillStyle='#E8F0EC'; x.font='26px system-ui'; x.fillText(badge.ico,1124-bw+18,108);
-    x.fillStyle=badgeColor; x.font=`700 24px ${DISP}`;
-    x.fillText(badge.name,1124-bw+58,107);
-
-    /* Tríptico con barra de acento */
-    const cols=[
-      {v:fmt(r.co2),  u:'kg CO₂e',        col:'#4ADE80'},
-      {v:fmt(r.kwh),  u:'kWh',            col:'#FACC15'},
-      {v:fmt(r.water),u:'litros de agua', col:'#38BDF8'},
-    ];
-    cols.forEach((m,i)=>{
-      const px=76+i*372;
-      x.fillStyle=m.col; rr(px,236,6,136,3); x.fill();
-      x.font=`700 68px ${MONO}`; x.fillText(m.v,px+26,326);
-      x.fillStyle='#8BA69B'; x.font=`500 23px ${MONO}`; x.fillText(m.u,px+26,364);
-    });
-
-    /* Equivalencias + ahorro */
-    x.fillStyle='#E8F0EC'; x.font=`400 25px ${BODY}`;
-    x.fillText(`= ${fmt(r.kwh/DATA.EQ.phone)} cargas de smartphone · ${fmt(r.co2/DATA.EQ.tree)} árboles-año · ${fmt(r.water/DATA.EQ.shower)} duchas`,76,442);
-    if(state.active.size){
-      const pct=Math.round((1-opt.co2/base.co2)*100);
-      if(pct>0){ x.fillStyle='#4ADE80'; x.font=`600 25px ${BODY}`;
-        x.fillText(`🏆 Optimizada: −${pct}% CO₂e aplicando ${state.active.size} retos`,76,488); }
-    }
-
-    /* Pie de marca */
-    x.strokeStyle='#1E2B26'; x.lineWidth=1;
-    x.beginPath(); x.moveTo(76,524); x.lineTo(1124,524); x.stroke();
-    x.fillStyle='#E8F0EC'; x.font=`700 24px ${DISP}`;
-    x.fillText('wattprint',76,564);
-    const cta=`Calcula la tuya → ${CONFIG.shareUrl}`;
-    x.fillStyle='#4ADE80';
-    x.fillText(cta,1124-x.measureText(cta).width,564);
-
-    /* Descarga vía blob (más fiable que dataURL en móvil) */
-    c.toBlob(blob=>{
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.download='mi-huella-ia-wattprint.png'; a.href=url;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),4000);
-    },'image/png');
-    toast('🖼️ Tarjeta descargada');
-  }catch(err){
-    console.error('Error generando la tarjeta:',err);
-    toast('No se pudo generar la tarjeta. Recarga e inténtalo de nuevo.');
-  }finally{
-    btn.textContent=prev; btn.disabled=false;
+$('btnPdf').addEventListener('click',()=>{
+  const base=baseResult??compute(), opt=compute({optimized:true}), has=state.active.size>0;
+  const d=new Date().toLocaleDateString(loc(),{year:'numeric',month:'long',day:'numeric'});
+  const perReq=state.workload==='inf'&&state.reqs>0, n=state.reps;
+  let unit='';
+  if(perReq||n>1){
+    const r=has?opt:base;
+    unit=`<h2>${t('rp_unit')}</h2><table><tr><th></th><th class="n">CO₂e</th><th class="n">${t('bk_e')}</th><th class="n">${t('bk_w')}</th></tr>`+
+      (perReq?`<tr><td>${t('k_req').replace('// ','')}</td><td class="n">${fmt(r.co2*1000/state.reqs)} g</td><td class="n">${fmt(r.kwh*1000/state.reqs)} Wh</td><td class="n">${fmt(r.water*1000/state.reqs)} mL</td></tr>`:'')+
+      (n>1?`<tr><td>${tf('k_year',{n}).replace('// ','')}</td><td class="n">${fmt(r.co2*n)} kg</td><td class="n">${fmt(r.kwh*n)} kWh</td><td class="n">${fmt(r.water*n)} L</td></tr>`:'')+`</table>`;
   }
+  const r=has?opt:base;
+  $('report').innerHTML=`
+    <h1>${t('rp_title')}</h1><p class="sub">${tf('rp_gen',{d})} · ${CONFIG.shareUrl}</p>
+    <h2>${t('rp_inputs')}</h2><table>${inputRows().map(([a,b])=>`<tr><td style="width:34%">${a}</td><td>${b}</td></tr>`).join('')}</table>
+    <h2>${t('rp_res')}</h2>
+    <div class="big"><div><b>${fmt(base.co2)}</b><span>kg CO₂e</span></div><div><b>${fmt(base.kwh)}</b><span>kWh</span></div><div><b>${fmt(base.water)}</b><span>${t('u_water')}</span></div></div>
+    <h2>${t('rp_bk')}</h2>
+    <p><b>${t('bk_c')}</b></p>${rbar([{l:t('bk_c1'),v:base.operational,c:'#16a34a'},{l:t('bk_c2'),v:base.embodied,c:'#86efac'}])}
+    <p style="margin-top:6pt"><b>${t('bk_e')}</b></p>${rbar([{l:t('bk_e1'),v:base.kwhIT,c:'#ca8a04'},{l:t('bk_e2'),v:base.overhead,c:'#fde68a'}])}
+    <p style="margin-top:6pt"><b>${t('bk_w')}</b></p>${rbar([{l:t('bk_w1'),v:base.waterOn,c:'#0284c7'},{l:t('bk_w2'),v:base.waterOff,c:'#7dd3fc'}])}
+    <table style="margin-top:8pt"><tr><th>${t('col_item')}</th><th class="n">${t('col_base')}</th>${has?`<th class="n">${t('col_opt')}</th>`:''}<th>${t('col_unit')}</th></tr>
+      ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${fmt(row[1])}</td>${has?`<td class="n">${fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
+    ${unit}
+    <h2>${t('rp_ch')}</h2><p>${has?tf('rp_ch_on',{list:[...state.active].map(id=>t('ch_'+id)).join(', ')})+` <b>${fmt(opt.co2)} kg CO₂e · ${fmt(opt.kwh)} kWh · ${fmt(opt.water)} L</b> (−${Math.round((1-opt.co2/base.co2)*100)}% CO₂e).`:t('rp_ch_none')}</p>
+    <h2>${t('rp_meth')}</h2><p class="small">${t('rp_meth_t')}</p>
+    <h2>${t('rp_lim')}</h2><p class="small">${t('rp_lim_t')}</p>`;
+  toast(t('t_pdf'));
+  setTimeout(()=>window.print(),150);
 });
 
-/* Copiar resultados */
-$('btnCopy').addEventListener('click',async e=>{
-  const base=baseResult??compute(), opt=compute({optimized:true});
-  const r=state.active.size?opt:base;
-  const lines=[
-    `Huella de mi carga de IA (${state.workload}, ${state.gpu} ×${state.units}, ${state.hours}h, ${state.regionName}, ${state.dcName}):`,
-    `· ${fmt(r.co2)} kg CO₂e`, `· ${fmt(r.kwh)} kWh`, `· ${fmt(r.water)} litros de agua`,
-  ];
-  if(state.active.size){
-    const pct=Math.round((1-opt.co2/base.co2)*100);
-    if(pct>0) lines.push(`· Optimizada −${pct}% con ${state.active.size} retos`);
-  }
-  lines.push(`Calculado con wattprint · datos Ember / Uptime Institute`);
-  try{ await navigator.clipboard.writeText(lines.join('\n'));
-       e.target.textContent='¡Copiado!'; }
-  catch(_){ e.target.textContent='No disponible'; }
-  setTimeout(()=>e.target.textContent='Copiar resultados',1600);
+$('btnCsv').addEventListener('click',()=>{
+  const base=baseResult??compute(), opt=compute({optimized:true}), has=state.active.size>0;
+  const sep = LANG==='en' ? ',' : ';';
+  const num = v => { const s=(Math.round(v*1e4)/1e4).toString(); return LANG==='en'?s:s.replace('.',','); };
+  const q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const lines=[];
+  lines.push([t('col_item'),t('col_val'),t('col_unit')].map(q).join(sep));
+  inputRows().forEach(([a,b])=>lines.push([q(a),q(b),q('')].join(sep)));
+  lines.push('');
+  lines.push([t('col_item'),t('col_base'),...(has?[t('col_opt')]:[]),t('col_unit')].map(q).join(sep));
+  const ob=resultRows(opt);
+  const grp=[ 'CO₂e','CO₂e','CO₂e', t('bk_e'),t('bk_e'),t('bk_e'), t('bk_w'),t('bk_w'),t('bk_w') ];
+  resultRows(base).forEach((row,i)=>lines.push([q(row[0].startsWith('  ')?grp[i]+' · '+row[0].trim():row[0]),num(row[1]),...(has?[num(ob[i][1])]:[]),q(row[2])].join(sep)));
+  if(state.workload==='inf'&&state.reqs>0){ const r=has?opt:base, k=state.reqs;
+    lines.push([q('CO₂e / req'),num(r.co2*1000/k),q('g')].join(sep), [q('Energy / req'),num(r.kwh*1000/k),q('Wh')].join(sep), [q('Water / req'),num(r.water*1000/k),q('mL')].join(sep)); }
+  if(state.reps>1){ const r=has?opt:base, n=state.reps;
+    lines.push([q('CO₂e / year'),num(r.co2*n),q('kg')].join(sep), [q('Energy / year'),num(r.kwh*n),q('kWh')].join(sep), [q('Water / year'),num(r.water*n),q('L')].join(sep)); }
+  lines.push('');
+  lines.push(q(t('rp_meth_t'))); lines.push(q(t('rp_lim_t'))); lines.push(q('Wattprint v2.0 · '+CONFIG.shareUrl));
+  const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=t('csv_name'); document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000); toast(t('t_csv'));
 });
 
 /* ============================================================
-   8 · MODAL
+   10 · TARJETA PNG
+============================================================ */
+async function ensureFonts(){
+  try{ await Promise.all([ document.fonts.load('700 84px "JetBrains Mono"'), document.fonts.load('500 24px "JetBrains Mono"'),
+    document.fonts.load('700 40px "Space Grotesk"'), document.fonts.load('400 28px "Inter"'), document.fonts.ready ]); }catch(_){}
+}
+$('btnCard').addEventListener('click', async ()=>{
+  const btn=$('btnCard'), prev=btn.textContent; btn.textContent=t('generating'); btn.disabled=true;
+  try{
+    await ensureFonts();
+    const base=baseResult??compute(), opt=compute({optimized:true});
+    const r=state.active.size?opt:base, badge=BADGES.find(x=>r.co2<=x.max);
+    const c=document.createElement('canvas'); c.width=1200; c.height=627; const x=c.getContext('2d');
+    const MONO='"JetBrains Mono",monospace', DISP='"Space Grotesk",sans-serif', BODY='Inter,sans-serif';
+    const bc = badge.color.includes('alert')?'#F87171':badge.color.includes('energy')?'#FACC15':'#4ADE80';
+    const rr=(px,py,w,h,rad)=>{ x.beginPath(); if(x.roundRect) x.roundRect(px,py,w,h,rad); else x.rect(px,py,w,h); };
+    x.fillStyle='#0B1210'; x.fillRect(0,0,1200,627);
+    x.fillStyle='#111A17'; rr(36,36,1128,555,20); x.fill();
+    x.strokeStyle='#1E2B26'; x.lineWidth=2; rr(36,36,1128,555,20); x.stroke();
+    x.fillStyle='#8BA69B'; x.font=`500 22px ${MONO}`; x.fillText(t('card_head'),76,100);
+    x.fillStyle='#E8F0EC'; x.font=`700 30px ${DISP}`;
+    const e = state.mode==='meas' ? `${fmt(state.measKwh)} kWh` : `${gpuName(state.gpu).replace('NVIDIA ','')} ×${state.units}`;
+    x.fillText(`${wlName(state.workload)} · ${e} · ${state.hours}h`,76,148);
+    x.fillStyle='#8BA69B'; x.font=`400 21px ${BODY}`;
+    x.fillText(`${regionName(regionById(state.region))} · ${dcName(state.dc)}`,76,182);
+    const bn=t(badge.key); x.font=`700 24px ${DISP}`;
+    const bw=x.measureText(bn).width+96;
+    x.fillStyle='#0B1210'; rr(1124-bw,72,bw,52,26); x.fill();
+    x.strokeStyle=bc; x.lineWidth=2; rr(1124-bw,72,bw,52,26); x.stroke();
+    x.fillStyle='#E8F0EC'; x.font='26px system-ui'; x.fillText(badge.ico,1124-bw+18,108);
+    x.fillStyle=bc; x.font=`700 24px ${DISP}`; x.fillText(bn,1124-bw+58,107);
+    [{v:fmt(r.co2),u:'kg CO₂e',col:'#4ADE80'},{v:fmt(r.kwh),u:'kWh',col:'#FACC15'},{v:fmt(r.water),u:t('u_water'),col:'#38BDF8'}]
+      .forEach((m,i)=>{ const px=76+i*372; x.fillStyle=m.col; rr(px,236,6,136,3); x.fill();
+        x.font=`700 68px ${MONO}`; x.fillText(m.v,px+26,326); x.fillStyle='#8BA69B'; x.font=`500 23px ${MONO}`; x.fillText(m.u,px+26,364); });
+    x.fillStyle='#E8F0EC'; x.font=`400 25px ${BODY}`;
+    x.fillText(tf('card_eq',{phone:fmt(r.kwh/DATA.EQ.phone),tree:fmt(r.co2/DATA.EQ.tree),shower:fmt(r.water/DATA.EQ.shower)}),76,442);
+    if(state.active.size){ const pct=Math.round((1-opt.co2/base.co2)*100);
+      if(pct>0){ x.fillStyle='#4ADE80'; x.font=`600 25px ${BODY}`; x.fillText(tf('card_opt',{p:pct,n:state.active.size}).replace(state.active.size===1?/(retos|challenges)$/:/$^/,m=>m.slice(0,-1)),76,488); } }
+    x.strokeStyle='#1E2B26'; x.lineWidth=1; x.beginPath(); x.moveTo(76,524); x.lineTo(1124,524); x.stroke();
+    x.fillStyle='#E8F0EC'; x.font=`700 24px ${DISP}`; x.fillText('wattprint',76,564);
+    const cta=`${t('card_cta')} ${CONFIG.shareUrl}`; x.fillStyle='#4ADE80'; x.fillText(cta,1124-x.measureText(cta).width,564);
+    c.toBlob(blob=>{ const url=URL.createObjectURL(blob), a=document.createElement('a');
+      a.download='wattprint.png'; a.href=url; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000); },'image/png');
+    toast(t('t_card'));
+  }catch(err){ console.error(err); toast(t('t_card_err')); }
+  finally{ btn.textContent=prev; btn.disabled=false; }
+});
+
+/* ============================================================
+   11 · MODAL Y NEWSLETTER
 ============================================================ */
 const modal=$('methodModal');
-document.querySelectorAll('[data-open-method]').forEach(b=>
-  b.addEventListener('click',()=>modal.classList.add('open')));
+document.querySelectorAll('[data-open-method]').forEach(b=>b.addEventListener('click',()=>modal.classList.add('open')));
 $('closeMethod').addEventListener('click',()=>modal.classList.remove('open'));
 modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') modal.classList.remove('open'); });
 
-/* ============================================================
-   9 · NEWSLETTER — fetch POST configurable (ver CONFIG arriba)
-============================================================ */
 $('nlForm').addEventListener('submit', e=>{
   const form=$('nlForm'), email=$('nlEmail').value.trim(), msg=$('nlMsg'), btn=$('nlBtn');
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ e.preventDefault(); $('nlEmail').focus(); return; }
-  if(!CONFIG.newsletter.endpoint){ e.preventDefault(); msg.textContent='Formulario sin configurar.'; return; }
-  form.action=CONFIG.newsletter.endpoint; // el navegador envía el formulario al iframe oculto
-  setTimeout(()=>{
-    btn.disabled=true; btn.textContent='✓';
-    msg.textContent='✓ Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).';
-    msg.style.color='var(--carbon)';
-  },50);
+  form.action=CONFIG.newsletter.endpoint; // envío normal al iframe oculto
+  setTimeout(()=>{ btn.disabled=true; btn.textContent='✓'; msg.textContent=t('nl_ok'); msg.style.color='var(--carbon)'; },50);
 });
 
 /* ============================================================
-   10 · URL COMPARTIBLE — el resultado vive en los parámetros
-   ?w,g,d = índice de tarjeta en su grupo · u=unidades · h=horas
-   r = índice de región · c = retos activos (ids separados por .)
+   12 · URL COMPARTIBLE
+   w,g,d,m,l = ids · u unidades · h horas · r región · k kWh medidos
+   q peticiones · y repeticiones/año · c retos · lang idioma
 ============================================================ */
-const groups={
-  w:[...document.querySelectorAll('[data-workload]')],
-  g:[...document.querySelectorAll('[data-gpu]')],
-  d:[...document.querySelectorAll('[data-dc]')],
-};
-const idxOf=k=>groups[k].findIndex(b=>b.getAttribute('aria-pressed')==='true');
-
 function shareParams(){
-  const p=new URLSearchParams({
-    w:idxOf('w'), g:idxOf('g'), d:idxOf('d'),
-    u:state.units, h:state.hours, r:regionSel.value,
-  });
+  const p=new URLSearchParams({ w:state.workload, d:state.dc, u:state.units, h:state.hours, r:state.region, l:state.life });
+  if(state.mode==='meas') { p.set('m','meas'); p.set('k',state.measKwh); } else p.set('g',state.gpu);
+  if(state.reqs>0) p.set('q',state.reqs);
+  if(state.reps>1) p.set('y',state.reps);
   if(state.active.size) p.set('c',[...state.active].join('.'));
+  if(LANG==='en') p.set('lang','en');
   return p;
 }
-
-/* replaceState falla en entornos sandbox (previews, about:srcdoc):
-   debe degradar en silencio, la URL solo es azúcar en esos casos. */
 function syncURL(){
-  try{ history.replaceState(null,'',`${location.pathname}?${shareParams()}`); }
-  catch(_){/* sandbox: sin URL viva, el botón de enlace sigue funcionando */}
+  try{
+    if($('results').classList.contains('show')) history.replaceState(null,'',`${location.pathname}?${shareParams()}`);
+    else history.replaceState(null,'',location.pathname+(LANG==='en'?'?lang=en':''));
+  }catch(_){}
 }
-
-/* Base canónica del enlace: el dominio real si existe; si estamos
-   en un sandbox/preview, la URL de producción de CONFIG. */
 function shareBase(){
   const sandboxed=!/^https?:$/.test(location.protocol)||location.href.includes('srcdoc');
   return sandboxed ? `https://${CONFIG.shareUrl}` : location.origin+location.pathname;
 }
-
-/* Aplicar una configuración completa (usada por presets y por la URL) */
+function clickPick(attr,val){ const b=document.querySelector(`[${attr}="${val}"]`); if(b) b.click(); }
 function applyConfig(cfg){
-  const pick=(k,i)=>{ const b=groups[k][i]; if(b) b.click(); };
-  pick('w',cfg.w); pick('g',cfg.g); pick('d',cfg.d);
-  state.units=Math.max(1,cfg.u||1); $('unitsVal').textContent=state.units;
-  const h=Math.min(720,Math.max(1,cfg.h||24));
-  hoursInput.value=Math.round(100*Math.log(h)/Math.log(720)); renderHours();
-  if(DATA.REGIONS[cfg.r]){ regionSel.value=cfg.r;
-    regionSel.dispatchEvent(new Event('change')); }
-  (cfg.c||[]).forEach(id=>{ if(CHALLENGES.some(ch=>ch.id===id)) state.active.add(id); });
-  showResults();
+  if(cfg.w) clickPick('data-workload',cfg.w);
+  clickPick('data-mode',cfg.m==='meas'?'meas':'est');
+  if(cfg.m==='meas'){ state.measKwh=Math.max(0,+cfg.k||0); $('measKwh').value=state.measKwh||''; }
+  else if(cfg.g) clickPick('data-gpu',cfg.g);
+  if(cfg.d) clickPick('data-dc',cfg.d);
+  if(cfg.l) clickPick('data-life',cfg.l);
+  state.units=Math.max(1,+cfg.u||1); $('unitsVal').textContent=state.units;
+  const h=Math.min(720,Math.max(1,+cfg.h||24));
+  state.hours=h; hoursInput.value=Math.round(100*Math.log(h)/Math.log(720)); renderHours();
+  if(regionById(cfg.r)){ state.region=cfg.r; regionSel.value=cfg.r; }
+  state.reqs=Math.max(0,+cfg.q||0); $('reqs').value=state.reqs||'';
+  state.reps=Math.max(1,+cfg.y||1); $('reps').value=state.reps;
+  state.active.clear(); (cfg.c||[]).forEach(id=>{ if(CHALLENGES.some(ch=>ch.id===id)) state.active.add(id); });
+  goStep(4); showResults();
 }
-
-/* Presets de ejemplo: configuraciones típicas para quien no tiene datos.
-   Índices de región según DATA.REGIONS. */
 const PRESETS=[
-  { w:3, g:3, d:0, u:1,  h:3,   r:0 },  // 🧪 Experimentación · T4 ×1 · 3h · global
-  { w:1, g:1, d:0, u:4,  h:12,  r:9 },  // 🔧 Fine-tuning · A100 ×4 · 12h · Virginia
-  { w:0, g:0, d:0, u:64, h:168, r:9 },  // 🤖 Entrenamiento · H100 ×64 · 1 semana · Virginia
-  { w:2, g:1, d:0, u:2,  h:720, r:0 },  // 🌐 Inferencia · A100 ×2 · 1 mes · global
+  { w:'exp',   g:'t4',   d:'hyper', u:1,  h:3,   r:'world' },
+  { w:'ft',    g:'a100', d:'hyper', u:4,  h:12,  r:'use' },
+  { w:'train', g:'h100', d:'hyper', u:64, h:168, r:'use' },
+  { w:'inf',   g:'a100', d:'hyper', u:2,  h:720, r:'world', y:12 },
 ];
-document.querySelectorAll('[data-preset]').forEach(b=>
-  b.addEventListener('click',()=>{
-    state.active.clear();
-    applyConfig(PRESETS[+b.dataset.preset]);
-    toast('⚡ Ejemplo cargado: edita cualquier dato cuando quieras');
-  }));
-
+document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{
+  applyConfig(PRESETS[+b.dataset.preset]); toast(t('t_preset')); }));
 function restoreFromURL(){
   const p=new URLSearchParams(location.search);
   if(!p.has('h')) return false;
-  applyConfig({
-    w:+p.get('w'), g:+p.get('g'), d:+p.get('d'),
-    u:+p.get('u'), h:+p.get('h'), r:+p.get('r'),
-    c:(p.get('c')||'').split('.').filter(Boolean),
-  });
+  const legacy={w:['train','ft','inf','exp'],g:['h100','a100','v100','t4','cpu','avg'],d:['hyper','avg']};
+  const val=(k)=>{ const v=p.get(k); return /^\d+$/.test(v||'') && legacy[k] ? legacy[k][+v] : v; };
+  let r=p.get('r'); if(/^\d+$/.test(r||'')) r=DATA.REGIONS[+r]?.[0];
+  applyConfig({ w:val('w'), g:val('g'), d:val('d'), m:p.get('m'), k:p.get('k'), l:p.get('l'),
+    u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c:(p.get('c')||'').split('.').filter(Boolean) });
   return true;
 }
-
 $('btnLink').addEventListener('click',async e=>{
   syncURL();
-  try{ await navigator.clipboard.writeText(`${shareBase()}?${shareParams()}`);
-       e.target.textContent='¡Enlace copiado!'; toast('🔗 Enlace listo para compartir'); }
-  catch(_){ e.target.textContent='No disponible'; }
-  setTimeout(()=>e.target.textContent='Copiar enlace del resultado',1600);
+  try{ await navigator.clipboard.writeText(`${shareBase()}?${shareParams()}`); e.target.textContent=t('copied'); toast(t('t_link')); }
+  catch(_){ e.target.textContent=t('na'); }
+  setTimeout(()=>e.target.textContent=t('b_link'),1600);
 });
 
-/* Mantener la URL al día tras calcular o cambiar retos */
-const _showResults=showResults;
-showResults=function(){ _showResults(); syncURL(); };
-const _refresh=refreshOptimized;
-refreshOptimized=function(j){ _refresh(j); if($('results').classList.contains('show')) syncURL(); };
-
 /* ============================================================ INIT */
-renderHours(); updateLive(); goStep(1);
-if(restoreFromURL()) toast('📊 Resultado cargado desde el enlace');
+(function init(){
+  const p=new URLSearchParams(location.search);
+  let l=p.get('lang'); if(!l){ try{ l=localStorage.getItem('nc_lang'); }catch(_){} }
+  LANG = l==='en'?'en':'es';
+  applyLang(); goStep(1);
+  if(restoreFromURL()) toast(t('t_url'));
+})();
 </script>
 </body>
 </html>
