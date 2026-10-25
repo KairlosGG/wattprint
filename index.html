@@ -451,8 +451,8 @@ section{ padding:64px 0; }
 </section>
 
 <div id="live" aria-live="polite" style="opacity:0;pointer-events:none">
-  <span class="muted" data-i="live">estimación:</span>
-  <b id="livekg" class="t-carbon" style="margin-left:4px">—</b>
+  <span class="muted" style="display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase" data-i="live">Huella estimada</span>
+  <b id="livekg" class="t-carbon" style="font-size:16px">—</b>
   <span id="liveSave" class="t-carbon hidden" style="font-size:12px;display:block;margin-top:2px"></span>
 </div>
 <div id="toast" role="status"></div>
@@ -523,8 +523,14 @@ section{ padding:64px 0; }
 
     <div id="sciPanel" class="hidden card mono" style="background:var(--base);padding:20px;margin-top:16px;font-size:14px;line-height:1.9"></div>
 
-    <div id="newsletter" class="card" style="border-color:color-mix(in srgb,var(--carbon) 60%,transparent);padding:28px;margin-top:40px">
-      <h3 class="h2" style="font-size:20px" data-i="nl_h">Esto es solo la foto de hoy.</h3>
+  </div>
+</section>
+
+<!-- Newsletter: siempre visible, no depende de calcular -->
+<section style="padding:24px 0 56px">
+  <div class="wrap">
+    <div id="newsletter" class="card" style="border-color:color-mix(in srgb,var(--carbon) 60%,transparent);padding:28px;scroll-margin-top:80px">
+      <h3 class="h2" style="font-size:20px" data-i="nl_h">¿Te interesa el impacto de la IA?</h3>
       <p class="muted" style="margin-top:8px" data-i="nl_p">Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.</p>
       <form id="nlForm" method="post" target="kit-sink-wp" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:20px">
         <input id="nlEmail" name="email_address" type="email" required class="field" style="flex:1;min-width:220px" autocomplete="email" data-ia="placeholder:nl_ph" placeholder="tu@email.com" />
@@ -671,7 +677,7 @@ es:{
   dc_hyper:'Cloud hyperscale', dc_avg:'Centro de datos medio / propio', dc_avg_d:'Colocation o sala propia típica.',
   life_l:'Vida útil del hardware',
   life_d:'Años en los que se reparte la huella de fabricación. Las grandes nubes amortizan sus servidores en 5–6 años.',
-  live:'estimación:', live_save:'−{p}% con tus retos',
+  live:'Huella estimada', live_save:'−{p}% con tus retos',
   r_h:'La huella de tu carga', u_water:'litros de agua', with_ch:'con retos',
   bk_h:'// de dónde sale cada cifra',
   bk_c:'Carbono', bk_c1:'Electricidad', bk_c2:'Fabricación del hardware',
@@ -705,7 +711,7 @@ es:{
   t_preset:'⚡ Ejemplo cargado: edita cualquier dato cuando quieras', t_url:'📊 Resultado cargado desde el enlace',
   t_meas:'Escribe los kWh medidos o cambia a "Estimar con el hardware".',
   generating:'Generando…',
-  nl_h:'Esto es solo la foto de hoy.',
+  nl_h:'¿Te interesa el impacto de la IA?',
   nl_p:'Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.',
   nl_ph:'tu@email.com', nl_btn:'Suscribirme', nl_note:'Sin spam. Baja cuando quieras.',
   nl_ok:'✓ Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).',
@@ -779,7 +785,7 @@ en:{
   dc_hyper:'Hyperscale cloud', dc_avg:'Average / on-prem data centre', dc_avg_d:'Typical colocation or in-house server room.',
   life_l:'Hardware lifetime',
   life_d:'Years over which the manufacturing footprint is spread. Large clouds depreciate servers over 5–6 years.',
-  live:'estimate:', live_save:'−{p}% with your challenges',
+  live:'Estimated footprint', live_save:'−{p}% with your challenges',
   r_h:'Your workload\'s footprint', u_water:'litres of water', with_ch:'with challenges',
   bk_h:'// where each number comes from',
   bk_c:'Carbon', bk_c1:'Electricity', bk_c2:'Hardware manufacturing',
@@ -813,7 +819,7 @@ en:{
   t_preset:'⚡ Example loaded: edit any value whenever you like', t_url:'📊 Result loaded from the link',
   t_meas:'Enter the measured kWh or switch to "Estimate from hardware".',
   generating:'Generating…',
-  nl_h:'This is just today\'s snapshot.',
+  nl_h:'Interested in the impact of AI?',
   nl_p:'Subscribe to Neocortech, my newsletter on AI governance: agents, generative AI, ethics, risk and sustainability (in Spanish).',
   nl_ph:'you@email.com', nl_btn:'Subscribe', nl_note:'No spam. Unsubscribe anytime.',
   nl_ok:'✓ Almost there: confirm your subscription in the email you just received (check spam too).',
@@ -942,6 +948,7 @@ function goStep(n){
   $('stepLabel').textContent=tf('step',{n,name:t('st'+n)});
   $('btnBack').style.visibility = n===1?'hidden':'visible';
   $('btnNext').textContent = n===4?t('see'):t('next');
+  if(typeof setLive==='function') setLive();
 }
 $('btnNext').addEventListener('click',()=>{
   if(state.step===2 && state.mode==='meas' && !(state.measKwh>0)){ toast(t('t_meas')); $('measKwh').focus(); return; }
@@ -1161,14 +1168,16 @@ let toastTimer;
 function toast(msg){ const el=$('toast'); el.textContent=msg; el.classList.add('show');
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600); }
 
-const liveEl=$('live');
-function setLive(on){ liveEl.style.opacity=on?1:0; liveEl.style.pointerEvents=on?'auto':'none'; }
+/* La estimación en vivo solo aparece mientras rellenas el asistente (desde el paso 2) */
+const liveEl=$('live'), seen=new Map();
+function setLive(){
+  const on = state.step>=2 && (!('IntersectionObserver' in window) || (seen.get('calc') && !seen.get('results')));
+  liveEl.style.opacity=on?1:0; liveEl.style.pointerEvents=on?'auto':'none';
+}
 if('IntersectionObserver' in window){
-  const seen=new Map();
-  const io=new IntersectionObserver(es=>{ es.forEach(e=>seen.set(e.target.id,e.isIntersecting));
-    setLive(seen.get('calc') && !seen.get('results')); },{threshold:.15});
+  const io=new IntersectionObserver(es=>{ es.forEach(e=>seen.set(e.target.id,e.isIntersecting)); setLive(); },{threshold:.15});
   io.observe($('calc')); io.observe($('results'));
-}else{ setLive(true); }
+}
 
 /* ============================================================
    9 · INFORME (PDF vía impresión) Y CSV
