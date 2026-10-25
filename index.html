@@ -1023,9 +1023,11 @@ function updateLive(){
 ============================================================ */
 function countUp(el,target,animate){
   if(!animate || matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent=fmt(target); return; }
-  const t0=performance.now(), dur=900;
-  (function tick(now){ const p=Math.min(1,(now-t0)/dur);
+  const t0=performance.now(), dur=900, id=(el._cu=(el._cu||0)+1);
+  (function tick(now){ if(el._cu!==id) return; const p=Math.min(1,(now-t0)/dur);
     el.textContent=fmt(target*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(tick); })(t0);
+  // Si el navegador pausa la animación (pestaña en segundo plano), el valor final llega igual
+  setTimeout(()=>{ if(el._cu===id) el.textContent=fmt(target); }, dur+60);
 }
 function renderBadge(co2){
   const i=BADGES.findIndex(x=>co2<=x.max), b=BADGES[i];
