@@ -23,11 +23,15 @@ Marco: especificación **Software Carbon Intensity (SCI)** de la Green Software 
 
 | Magnitud | Fórmula | Fuente de los datos |
 |---|---|---|
-| Energía (E) | `kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE`, o kWh medidos × PUE | TDP del fabricante (NVIDIA). PUE: media del sector 1,54 (Uptime Institute, 2025); hyperscale 1,12 |
+| Energía (E) | `kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE`, o kWh medidos × PUE | TDP del fabricante (NVIDIA). PUE: media del sector 1,54 (Uptime Institute, 2025); grandes nubes 1,13 (Google 1,09 y Microsoft 1,17, 2025) |
 | Carbono (I) | `kg CO₂e = kWh × intensidad de la red ÷ 1000` | Intensidad de ciclo de vida por país de [Ember](https://ember-energy.org/data/yearly-electricity-data/) (CC BY 4.0), vía [Our World in Data](https://github.com/owid/energy-data); estados de EE. UU. de [Ember US Electricity Data](https://ember-energy.org/data/us-electricity-data/). Método location-based |
 | Fabricación (M) | ≈300 kg CO₂e por acelerador ÷ vida útil (4–6 años) | Luccioni et al. (2022); Semiconductor Climate Consortium (2025) |
-| Agua de refrigeración | `litros = kWh de servidores × WUE` | Media del sector ≈1,9 L/kWh (EESI, 2024); hyperscale 0,65 L/kWh (Google y Microsoft, 2024) |
+| Agua de refrigeración | `litros = kWh de servidores × WUE` | Media del sector ≈1,9 L/kWh (EESI, 2025); grandes nubes 0,27 L/kWh (Microsoft, año fiscal 2025; AWS informa 0,12) |
 | Agua de generación eléctrica | `litros = kWh totales × factor de agua de la red` | [WRI, Reig et al. (2020)](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity), factores de consumo por país; mismo marco que [Li et al., *Making AI Less "Thirsty"*](https://arxiv.org/abs/2304.03271) |
+
+Equivalencias de la calculadora de la EPA de EE. UU. y ducha media de la Water Research Foundation (2016).
+
+**Límites y referencias.** No existe ninguna norma que limite la huella de una carga de IA. Las medallas de la herramienta son una escala orientativa propia. Como referencia legal real se muestra el PUE frente a la ley de eficiencia energética de Alemania (EnEfG: ≤ 1,5 desde 2027 y ≤ 1,3 desde 2030 para centros existentes, ≤ 1,2 para nuevos). La etiqueta europea de centros de datos (A–G, por PUE y WUE) se añadirá cuando se publiquen sus umbrales.
 
 Son **estimaciones de orden de magnitud, no una medición certificada**. La metodología completa y la tabla de factores por región están dentro de la herramienta, en «Metodología».
 

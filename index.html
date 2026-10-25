@@ -25,7 +25,7 @@
      ─ Un solo archivo, sin dependencias. Todo se calcula en el navegador.
      ─ Marco: Software Carbon Intensity (SCI, ISO/IEC 21031):
        SCI = ((E × I) + M) por R
-     ─ Carbono de la red: Ember. PUE: Uptime Institute 2025.
+     ─ Carbono de la red: Ember. PUE: Uptime Institute 2025; Google y Microsoft 2025.
        WUE: EESI 2024 / informes de Google y Microsoft.
        Agua de la generación eléctrica: WRI 2020 (Reig et al.),
        el mismo marco que Li et al., "Making AI Less Thirsty".
@@ -419,10 +419,10 @@ section{ padding:64px 0; }
       <p class="muted" style="margin-top:8px" data-i="s4_p">La eficiencia energética (PUE) y el uso de agua (WUE) varían mucho entre operadores.</p>
       <p class="note" data-i="s4_tip">💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Centro de datos medio".</p>
       <div class="grid-2" style="margin-top:24px" role="group" data-ia="aria-label:s4_h">
-        <button class="pick card" style="padding:20px" data-dc="hyper" data-pue="1.12" data-wue="0.65" aria-pressed="true">
+        <button class="pick card" style="padding:20px" data-dc="hyper" data-pue="1.13" data-wue="0.27" aria-pressed="true">
           <b data-i="dc_hyper">Cloud hyperscale</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px">AWS, Google Cloud, Azure…</span>
-          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px" data-i="dc_hyper_m">PUE 1,12 · WUE 0,65 L/kWh</span>
+          <span class="mono muted" style="font-size:12px;display:block;margin-top:6px" data-i="dc_hyper_m">PUE 1,13 · WUE 0,27 L/kWh</span>
         </button>
         <button class="pick card" style="padding:20px" data-dc="avg" data-pue="1.54" data-wue="1.9" aria-pressed="false">
           <b data-i="dc_avg">Centro de datos medio / propio</b>
@@ -471,6 +471,7 @@ section{ padding:64px 0; }
         <h3 id="badgeName">—</h3>
         <p id="badgeMsg">—</p>
         <p id="badgeNext" class="mono muted" style="font-size:12px;margin-top:6px"></p>
+        <p class="mono muted" style="font-size:11px;margin-top:4px;opacity:.75" data-i="bd_note">Escala orientativa de Wattprint, no un límite legal.</p>
       </div>
     </div>
 
@@ -611,9 +612,10 @@ const DATA = {
   ],
   UPDATED: '2026-10-25', // fecha de la última actualización de datos de carbono (scripts/update-data.mjs)
   CLEAN_ID: 'no',        // región usada por el reto "región más limpia"
-  PUE_HYPER: 1.12, WUE_HYPER: 0.65,
+  PUE_HYPER: 1.13, WUE_HYPER: 0.27,  // Google 1,09 y Microsoft 1,17 (2025); WUE Microsoft FY25
+  PUE_LEGAL_DE: [[1.5,'2027'],[1.3,'2030']], PUE_LEGAL_DE_NEW: 1.2,
   EMBODIED_KG: 300,      // kg CO2e por acelerador (ver metodología)
-  EQ: { car:170, phone:0.0127, tree:21, shower:60, homeMonth:270 },
+  EQ: { car:244, phone:0.019, tree:60, shower:60, homeMonth:1016 }, // EPA (coche 393 g/milla, móvil, plantón 10 años, hogar EE. UU. 12.194 kWh/año); ducha media WRF 2016
 };
 const regionById = id => DATA.REGIONS.find(r=>r[0]===id);
 
@@ -673,7 +675,7 @@ es:{
   s3_tip:'💡 ¿Usas APIs de OpenAI o Anthropic, o no lo sabes? "EE. UU. Este (Virginia)" o "Media mundial" son buenas aproximaciones.',
   s4_h:'¿Qué tipo de centro de datos?', s4_p:'La eficiencia energética (PUE) y el uso de agua (WUE) varían mucho entre operadores.',
   s4_tip:'💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Centro de datos medio".',
-  dc_hyper_m:'PUE 1,12 · WUE 0,65 L/kWh', dc_avg_m:'PUE 1,54 · WUE 1,9 L/kWh',
+  dc_hyper_m:'PUE 1,13 · WUE 0,27 L/kWh', dc_avg_m:'PUE 1,54 · WUE 1,9 L/kWh',
   dc_hyper:'Cloud hyperscale', dc_avg:'Centro de datos medio / propio', dc_avg_d:'Colocation o sala propia típica.',
   life_l:'Vida útil del hardware',
   life_d:'Años en los que se reparte la huella de fabricación. Las grandes nubes amortizan sus servidores en 5–6 años.',
@@ -686,13 +688,13 @@ es:{
   bk_w_note:'≈ = el país no está en el estudio del WRI; se usa la media mundial.',
   k_req:'// por petición (SCI)', k_year:'// al año (×{n})',
   eq_h:'// esto equivale a…',
-  eq_car:'km en un coche de gasolina', eq_phone:'cargas completas de smartphone',
-  eq_tree:'árboles trabajando un año para absorberlo', eq_shower:'duchas de 10 minutos',
-  eq_home:'de electricidad de un hogar medio', months:'{n} meses', days2:'{n} días',
+  eq_car:'km en un coche de gasolina medio', eq_phone:'cargas completas de smartphone',
+  eq_tree:'árboles jóvenes creciendo 10 años para absorberlo', eq_shower:'duchas medias (unos 8 minutos)',
+  eq_home:'de electricidad de un hogar medio de EE. UU.', months:'{n} meses', days2:'{n} días',
   ch_h:'Retos de optimización', ch_p:'Marca los que podrías aplicar y mira cómo cambia tu huella.',
   ch_total:'Ahorro total: −{p}% CO₂e',
   ch_region:'Mover a la región más limpia', ch_region_d:'Red de Noruega ({g} g/kWh). Ojo: con tanta hidráulica, el agua de generación sube.',
-  ch_hyper:'Migrar a cloud hyperscale eficiente', ch_hyper_d:'PUE 1,54 → 1,12 y WUE 1,9 → 0,65 L/kWh.',
+  ch_hyper:'Migrar a cloud hyperscale eficiente', ch_hyper_d:'PUE 1,54 → 1,13 y WUE 1,9 → 0,27 L/kWh.',
   ch_auto:'Auto-scaling y right-sizing', ch_auto_d:'Apagar y dimensionar instancias según la demanda real (−25 % energía).',
   ch_quant:'Precisión mixta / cuantización', ch_quant_d:'FP16-INT8 donde no penalice la calidad del modelo (−30 % energía).',
   ch_sched:'Carbon-aware scheduling', ch_sched_d:'Programar la carga en las horas más limpias de la red (−15 % intensidad).',
@@ -703,6 +705,9 @@ es:{
   bd4:'Alerta climática', bd4_m:'Huella alta. Los retos pueden recortarla mucho.',
   bd5:'Impacto crítico', bd5_m:'Escala industrial. Región limpia y eficiencia deberían ser prioridad.',
   bd_next:'↓ A {kg} kg CO₂e de "{name}" — usa los retos', bd_top:'★ Nivel más bajo de huella',
+  bd_note:'Escala orientativa de Wattprint, no un límite legal.',
+  pue_ref:'PUE {pue} · referencia legal en Alemania: ≤ 1,5 desde 2027 y ≤ 1,3 desde 2030 (centros existentes), ≤ 1,2 (nuevos).',
+  pue_over:'Este PUE superaría el límite alemán de 2027.', pue_ok27:'Cumpliría el límite alemán de 2027, no el de 2030.', pue_ok30:'Cumpliría también el límite alemán de 2030.',
   b_pdf:'Descargar informe (PDF)', b_csv:'Datos en CSV', b_card:'Tarjeta para compartir',
   b_link:'Copiar enlace', b_reset:'Nueva estimación', b_sci:'Ver el cálculo completo',
   copied:'¡Enlace copiado!', na:'No disponible', t_link:'🔗 Enlace listo para compartir',
@@ -718,13 +723,14 @@ es:{
   f_by:'hecho por', f_code:'código en GitHub', f_method:'metodología y fuentes',
   m_h:'Metodología y fuentes',
   m_body:`<p><strong>Marco:</strong> especificación <strong>Software Carbon Intensity (SCI)</strong> de la Green Software Foundation, publicada como norma ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) por R</code>. E es la energía, I la intensidad de carbono de la red, M la huella de fabricación del hardware y R la unidad funcional (una ejecución o una petición).</p>
-<p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según el fabricante (NVIDIA). La utilización media por tipo de carga (0,40–0,85) es una hipótesis de trabajo: si has medido el consumo, usa la opción «Tengo kWh medidos», que sustituye la estimación por tu dato. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); flotas hyperscale 1,08–1,12 (Google informa 1,10). Usamos 1,12 para cloud hyperscale.</p>
+<p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según el fabricante (NVIDIA). La utilización media por tipo de carga (0,40–0,85) es una hipótesis de trabajo: si has medido el consumo, usa la opción «Tengo kWh medidos», que sustituye la estimación por tu dato. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); en las grandes nubes, Google informa 1,09 (2025) y Microsoft 1,17 (año fiscal 2025): usamos su media, 1,13. <strong>Referencia legal:</strong> la ley de eficiencia energética de Alemania (EnEfG) exige a los centros de datos existentes un PUE ≤ 1,5 desde julio de 2027 y ≤ 1,3 desde julio de 2030, y ≤ 1,2 a los nuevos desde julio de 2026. En la UE, la Comisión adoptó en septiembre de 2026 una etiqueta obligatoria de la A a la G para centros de 500 kW o más, basada en PUE y WUE; los mínimos obligatorios están previstos para 2027.</p>
 <p><strong>Carbono (I):</strong> intensidad media de la red de cada país en su ciclo de vida, de <strong>Ember</strong> (Yearly Electricity Data, licencia CC BY 4.0), tal como la republica Our World in Data. Virginia y Oregón usan los datos de Ember por estado de EE. UU. y se marcan como aproximadas, porque una región cloud no coincide exactamente con el estado. Los datos se actualizan solos cada mes. Se usa la intensidad de la red física (método location-based), como pide SCI: no se descuentan compras de renovables ni compensaciones.</p>`,
-  m_body2:`<p><strong>Agua de refrigeración:</strong> <code class="t-water">litros = kWh de servidores × WUE</code>. Media del sector ≈ <strong>1,9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0,80 y Microsoft 0,49 L/kWh (informes de sostenibilidad 2024) → usamos 0,65.</p>
+  m_body2:`<p><strong>Agua de refrigeración:</strong> <code class="t-water">litros = kWh de servidores × WUE</code>. Media del sector ≈ <strong>1,9 L/kWh</strong> (EESI, 2025). Grandes nubes: Microsoft informa 0,27 L/kWh (año fiscal 2025) y AWS 0,12 L/kWh (2025); usamos 0,27 para no quedarnos cortos.</p>
 <p><strong>Agua de generación eléctrica:</strong> <code class="t-water">litros = kWh totales × factor de agua de la red</code>. Factores de consumo de agua de la red de cada país de <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; mix de generación de 2016, incluye la evaporación de los embalses hidroeléctricos). Es el mismo marco que usan Li et al. en <em>Making AI Less "Thirsty"</em> (agua de alcance 1 y 2). Por eso los países con mucha hidráulica, como Noruega, tienen poco carbono pero más agua.</p>
 <p><strong>Fabricación (M):</strong> ≈ <strong>300 kg CO₂e por acelerador</strong> (chip, placa y parte proporcional del servidor), repartidos en la vida útil elegida (4–6 años). Orden de magnitud a partir de Luccioni et al. (2022) y del Semiconductor Climate Consortium (2025: 20–25 kg solo el chip avanzado). Las grandes nubes amortizan sus servidores en 5–6 años (informes anuales 2025 de Amazon y Meta).</p>
-<p><strong>Retos:</strong> región limpia (red de Noruega) · hyperscale (PUE 1,54→1,12, WUE 1,9→0,65) · auto-scaling −25 % energía · precisión mixta/cuantización −30 % energía · carbon-aware scheduling −15 % intensidad. Son reducciones de referencia para comparar, no garantías.</p>
-<p><strong>Equivalencias:</strong> coche de gasolina ≈170 g CO₂/km · carga de smartphone ≈0,0127 kWh (EPA) · árbol ≈21 kg CO₂/año · ducha de 10 min ≈60 L · hogar medio ≈270 kWh/mes.</p>
+<p><strong>Retos:</strong> región limpia (red de Noruega) · hyperscale (PUE 1,54→1,13, WUE 1,9→0,27) · auto-scaling −25 % energía · precisión mixta/cuantización −30 % energía · carbon-aware scheduling −15 % intensidad. Son reducciones de referencia para comparar, no garantías.</p>
+<p><strong>Equivalencias:</strong> de la calculadora de equivalencias de la <strong>EPA</strong> de EE. UU.: coche de gasolina medio 393 g CO₂e/milla (≈244 g/km) · carga de smartphone 0,019 kWh · un plantón de árbol urbano absorbe ≈60 kg CO₂ en 10 años · hogar medio de EE. UU. 12.194 kWh/año. Ducha media ≈60 L en unos 8 minutos (Water Research Foundation, 2016).</p>
+<p><strong>Medallas:</strong> «Huella pluma», «Código verde», etc. son una escala orientativa de Wattprint (tramos de 1, 20, 200 y 2.000 kg CO₂e por ejecución), no un límite legal. No existe ninguna norma que fije cuánto puede emitir o gastar una carga de IA.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">Son estimaciones de orden de magnitud, no una medición certificada. Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.</p>`,
   m_upd:'Datos de carbono actualizados el {d}.',
   m_tbl_r:'Región', m_tbl_c:'gCO₂e/kWh (Ember, año)', m_tbl_w:'L/kWh agua de generación (WRI)', approx:'≈',
@@ -735,14 +741,14 @@ es:{
   rp_res:'Resultados', rp_bk:'Desglose', rp_unit:'Por petición y al año', rp_ch:'Optimización',
   rp_ch_none:'No se ha marcado ningún reto de optimización.', rp_ch_on:'Retos aplicados: {list}. Resultado optimizado:',
   rp_meth:'Método y fuentes', rp_lim:'Limitaciones',
-  rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP y una utilización media salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador.',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0, vía Our World in Data), método location-based, datos de {year}. PUE: Uptime Institute 2025. WUE: EESI 2024; Google y Microsoft 2024. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP y una utilización media salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador. No existe un límite legal para la huella de una carga de IA; las referencias legales disponibles se aplican al centro de datos (PUE).',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0, vía Our World in Data), método location-based, datos de {year}. PUE: Uptime Institute 2025; Google y Microsoft 2025. WUE: EESI 2025; Microsoft y AWS 2025. Equivalencias: EPA; Water Research Foundation. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
   in_wl:'Tipo de carga', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, utilización {u}', in_mode_meas:'Medida: {k} kWh de servidores',
   in_units:'Aceleradores / instancias', in_hours:'Horas', in_region:'Región', in_dc:'Centro de datos', in_life:'Vida útil del hardware',
   in_reqs:'Peticiones', in_reps:'Repeticiones al año', years:'{n} años',
   col_item:'Concepto', col_val:'Valor', col_unit:'Unidad', col_base:'Actual', col_opt:'Con retos',
   csv_name:'wattprint-informe.csv', card_head:'// la huella de mi IA', card_cta:'Calcula la tuya →', card_opt:'🏆 Optimizada: −{p}% CO₂e con {n} retos',
-  card_eq:'= {phone} cargas de smartphone · {tree} árboles-año · {shower} duchas',
+  card_eq:'= {phone} cargas de smartphone · {tree} árboles en 10 años · {shower} duchas',
 },
 en:{
   _title:'Wattprint — How much carbon, energy and water does your AI use?',
@@ -781,7 +787,7 @@ en:{
   s3_tip:'💡 Using OpenAI or Anthropic APIs, or not sure? "US East (Virginia)" or "World average" are good approximations.',
   s4_h:'What kind of data centre?', s4_p:'Energy efficiency (PUE) and water use (WUE) vary a lot between operators.',
   s4_tip:'💡 Rule of thumb: AWS, Google Cloud or Azure → "Hyperscale cloud". Your own servers or a local provider → "Average data centre".',
-  dc_hyper_m:'PUE 1.12 · WUE 0.65 L/kWh', dc_avg_m:'PUE 1.54 · WUE 1.9 L/kWh',
+  dc_hyper_m:'PUE 1.13 · WUE 0.27 L/kWh', dc_avg_m:'PUE 1.54 · WUE 1.9 L/kWh',
   dc_hyper:'Hyperscale cloud', dc_avg:'Average / on-prem data centre', dc_avg_d:'Typical colocation or in-house server room.',
   life_l:'Hardware lifetime',
   life_d:'Years over which the manufacturing footprint is spread. Large clouds depreciate servers over 5–6 years.',
@@ -794,13 +800,13 @@ en:{
   bk_w_note:'≈ = the country is not in the WRI study; the world average is used.',
   k_req:'// per request (SCI)', k_year:'// per year (×{n})',
   eq_h:'// that is the same as…',
-  eq_car:'km in a petrol car', eq_phone:'full smartphone charges',
-  eq_tree:'trees working for a year to absorb it', eq_shower:'10-minute showers',
-  eq_home:'of electricity for an average home', months:'{n} months', days2:'{n} days',
+  eq_car:'km in an average petrol car', eq_phone:'full smartphone charges',
+  eq_tree:'tree seedlings growing for 10 years to absorb it', eq_shower:'average showers (about 8 minutes)',
+  eq_home:'of electricity for an average US home', months:'{n} months', days2:'{n} days',
   ch_h:'Optimisation challenges', ch_p:'Tick the ones you could apply and see how your footprint changes.',
   ch_total:'Total saving: −{p}% CO₂e',
   ch_region:'Move to the cleanest region', ch_region_d:'Norway\'s grid ({g} g/kWh). Note: with so much hydropower, generation water goes up.',
-  ch_hyper:'Move to an efficient hyperscale cloud', ch_hyper_d:'PUE 1.54 → 1.12 and WUE 1.9 → 0.65 L/kWh.',
+  ch_hyper:'Move to an efficient hyperscale cloud', ch_hyper_d:'PUE 1.54 → 1.13 and WUE 1.9 → 0.27 L/kWh.',
   ch_auto:'Auto-scaling and right-sizing', ch_auto_d:'Turn off and size instances to real demand (−25% energy).',
   ch_quant:'Mixed precision / quantisation', ch_quant_d:'FP16-INT8 where it doesn\'t hurt model quality (−30% energy).',
   ch_sched:'Carbon-aware scheduling', ch_sched_d:'Run the workload in the grid\'s cleanest hours (−15% intensity).',
@@ -811,6 +817,9 @@ en:{
   bd4:'Climate alert', bd4_m:'High footprint. The challenges can cut it a lot.',
   bd5:'Critical impact', bd5_m:'Industrial scale. A clean region and efficiency should be a priority.',
   bd_next:'↓ {kg} kg CO₂e away from "{name}" — use the challenges', bd_top:'★ Lowest footprint level',
+  bd_note:'Wattprint\'s own indicative scale, not a legal limit.',
+  pue_ref:'PUE {pue} · legal reference in Germany: ≤ 1.5 from 2027 and ≤ 1.3 from 2030 (existing sites), ≤ 1.2 (new sites).',
+  pue_over:'This PUE would exceed Germany\'s 2027 limit.', pue_ok27:'It would meet Germany\'s 2027 limit, not the 2030 one.', pue_ok30:'It would also meet Germany\'s 2030 limit.',
   b_pdf:'Download report (PDF)', b_csv:'Data as CSV', b_card:'Share card',
   b_link:'Copy link', b_reset:'New estimate', b_sci:'See the full calculation',
   copied:'Link copied!', na:'Not available', t_link:'🔗 Link ready to share',
@@ -826,13 +835,14 @@ en:{
   f_by:'made by', f_code:'code on GitHub', f_method:'methodology and sources',
   m_h:'Methodology and sources',
   m_body:`<p><strong>Framework:</strong> the Green Software Foundation's <strong>Software Carbon Intensity (SCI)</strong> specification, published as ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) per R</code>. E is energy, I the grid carbon intensity, M the hardware manufacturing footprint and R the functional unit (one run or one request).</p>
-<p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation ÷ 1000 × PUE</code>. TDP from the manufacturer (NVIDIA). Average utilisation by workload (0.40–0.85) is a working assumption: if you have measured consumption, use "I have measured kWh", which replaces the estimate with your figure. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); hyperscale fleets 1.08–1.12 (Google reports 1.10). We use 1.12 for hyperscale cloud.</p>
+<p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation ÷ 1000 × PUE</code>. TDP from the manufacturer (NVIDIA). Average utilisation by workload (0.40–0.85) is a working assumption: if you have measured consumption, use "I have measured kWh", which replaces the estimate with your figure. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); among the large clouds, Google reports 1.09 (2025) and Microsoft 1.17 (fiscal 2025): we use their average, 1.13. <strong>Legal reference:</strong> Germany's Energy Efficiency Act (EnEfG) requires existing data centres to reach PUE ≤ 1.5 from July 2027 and ≤ 1.3 from July 2030, and new ones ≤ 1.2 from July 2026. In the EU, the Commission adopted in September 2026 a mandatory A-to-G label for data centres of 500 kW or more, based on PUE and WUE; binding minimum standards are expected in 2027.</p>
 <p><strong>Carbon (I):</strong> average lifecycle grid intensity by country from <strong>Ember</strong> (Yearly Electricity Data, CC BY 4.0 licence), as republished by Our World in Data. Virginia and Oregon use Ember's US state data and are marked as approximate, because a cloud region does not exactly match the state. The data updates itself every month. We use the physical grid intensity (location-based), as SCI requires: renewable purchases and offsets are not deducted.</p>`,
-  m_body2:`<p><strong>Cooling water:</strong> <code class="t-water">litres = server kWh × WUE</code>. Industry average ≈ <strong>1.9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0.80 and Microsoft 0.49 L/kWh (2024 sustainability reports) → we use 0.65.</p>
+  m_body2:`<p><strong>Cooling water:</strong> <code class="t-water">litres = server kWh × WUE</code>. Industry average ≈ <strong>1.9 L/kWh</strong> (EESI, 2025). Large clouds: Microsoft reports 0.27 L/kWh (fiscal 2025) and AWS 0.12 L/kWh (2025); we use 0.27 to stay on the safe side.</p>
 <p><strong>Electricity generation water:</strong> <code class="t-water">litres = total kWh × grid water factor</code>. Grid water consumption factors by country from <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; 2016 generation mix, includes hydropower reservoir evaporation). It is the same framework used by Li et al. in <em>Making AI Less "Thirsty"</em> (scope 1 and 2 water). That is why hydro-heavy countries such as Norway have low carbon but more water.</p>
 <p><strong>Manufacturing (M):</strong> ≈ <strong>300 kg CO₂e per accelerator</strong> (chip, board and a share of the server), spread over the chosen lifetime (4–6 years). Order of magnitude from Luccioni et al. (2022) and the Semiconductor Climate Consortium (2025: 20–25 kg for the advanced chip alone). Large clouds depreciate servers over 5–6 years (Amazon and Meta 2025 annual reports).</p>
-<p><strong>Challenges:</strong> clean region (Norway's grid) · hyperscale (PUE 1.54→1.12, WUE 1.9→0.65) · auto-scaling −25% energy · mixed precision/quantisation −30% energy · carbon-aware scheduling −15% intensity. These are reference reductions for comparison, not guarantees.</p>
-<p><strong>Equivalences:</strong> petrol car ≈170 g CO₂/km · smartphone charge ≈0.0127 kWh (EPA) · tree ≈21 kg CO₂/year · 10-minute shower ≈60 L · average home ≈270 kWh/month.</p>
+<p><strong>Challenges:</strong> clean region (Norway's grid) · hyperscale (PUE 1.54→1.13, WUE 1.9→0.27) · auto-scaling −25% energy · mixed precision/quantisation −30% energy · carbon-aware scheduling −15% intensity. These are reference reductions for comparison, not guarantees.</p>
+<p><strong>Equivalences:</strong> from the US <strong>EPA</strong> Greenhouse Gas Equivalencies Calculator: average petrol car 393 g CO₂e/mile (≈244 g/km) · smartphone charge 0.019 kWh · one urban tree seedling absorbs ≈60 kg CO₂ over 10 years · average US home 12,194 kWh/year. Average shower ≈60 L in about 8 minutes (Water Research Foundation, 2016).</p>
+<p><strong>Badges:</strong> "Featherweight", "Green code" and so on are Wattprint's own indicative scale (bands of 1, 20, 200 and 2,000 kg CO₂e per run), not a legal limit. No regulation sets how much an AI workload may emit or consume.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">These are order-of-magnitude estimates, not certified measurements. Independent project, not affiliated with the Green Software Foundation, Ember, WRI or any provider mentioned.</p>`,
   m_upd:'Carbon data updated on {d}.',
   m_tbl_r:'Region', m_tbl_c:'gCO₂e/kWh (Ember, year)', m_tbl_w:'L/kWh generation water (WRI)', approx:'≈',
@@ -843,14 +853,14 @@ en:{
   rp_res:'Results', rp_bk:'Breakdown', rp_unit:'Per request and per year', rp_ch:'Optimisation',
   rp_ch_none:'No optimisation challenge was selected.', rp_ch_on:'Challenges applied: {list}. Optimised result:',
   rp_meth:'Method and sources', rp_lim:'Limitations',
-  rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP and an average utilisation unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation.',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0, via Our World in Data), location-based, {year} data. PUE: Uptime Institute 2025. WUE: EESI 2024; Google and Microsoft 2024. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP and an average utilisation unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation. There is no legal limit for the footprint of an AI workload; the available legal references apply to the data centre (PUE).',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0, via Our World in Data), location-based, {year} data. PUE: Uptime Institute 2025; Google y Microsoft 2025. WUE: EESI 2025; Microsoft and AWS 2025. Equivalences: EPA; Water Research Foundation. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
   in_wl:'Workload', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, utilisation {u}', in_mode_meas:'Measured: {k} kWh at the servers',
   in_units:'Accelerators / instances', in_hours:'Hours', in_region:'Region', in_dc:'Data centre', in_life:'Hardware lifetime',
   in_reqs:'Requests', in_reps:'Runs per year', years:'{n} years',
   col_item:'Item', col_val:'Value', col_unit:'Unit', col_base:'Current', col_opt:'With challenges',
   csv_name:'wattprint-report.csv', card_head:'// my AI footprint', card_cta:'Calculate yours →', card_opt:'🏆 Optimised: −{p}% CO₂e with {n} challenges',
-  card_eq:'= {phone} smartphone charges · {tree} tree-years · {shower} showers',
+  card_eq:'= {phone} smartphone charges · {tree} trees over 10 years · {shower} showers',
 }};
 const GPU_NAMES = { h100:'NVIDIA H100', a100:'NVIDIA A100', v100:'NVIDIA V100', t4:'NVIDIA T4', cpu:null, avg:null };
 
@@ -1056,7 +1066,8 @@ function renderBreakdown(r){
     barHTML(t('bk_c'),r.co2,'kg CO₂e',[{l:t('bk_c1'),v:r.operational,c:'var(--carbon)'},{l:t('bk_c2'),v:r.embodied,c:'var(--carbon-2)'}])+
     barHTML(t('bk_e'),r.kwh,'kWh',[{l:t('bk_e1'),v:r.kwhIT,c:'var(--energy)'},{l:t('bk_e2'),v:r.overhead,c:'var(--energy-2)'}])+
     barHTML(t('bk_w'),r.water,'L',[{l:t('bk_w1'),v:r.waterOn,c:'var(--water)'},{l:t('bk_w2')+(reg[7]?' ≈':''),v:r.waterOff,c:'var(--water-2)'}])+
-    (reg[7]?`<p class="note">${t('bk_w_note')}</p>`:'');
+    (reg[7]?`<p class="note">${t('bk_w_note')}</p>`:'')+
+    `<p class="note" style="border-top:1px solid var(--line);padding-top:10px">${tf('pue_ref',{pue:dec(r.pue)})} <span style="color:${r.pue>1.5?'var(--alert)':r.pue>1.3?'var(--energy)':'var(--carbon)'}">${t(r.pue>1.5?'pue_over':r.pue>1.3?'pue_ok27':'pue_ok30')}</span></p>`;
 }
 function renderKpis(r){
   let h='';
@@ -1229,6 +1240,7 @@ $('btnPdf').addEventListener('click',()=>{
     <p><b>${t('bk_c')}</b></p>${rbar([{l:t('bk_c1'),v:base.operational,c:'#16a34a'},{l:t('bk_c2'),v:base.embodied,c:'#86efac'}])}
     <p style="margin-top:6pt"><b>${t('bk_e')}</b></p>${rbar([{l:t('bk_e1'),v:base.kwhIT,c:'#ca8a04'},{l:t('bk_e2'),v:base.overhead,c:'#fde68a'}])}
     <p style="margin-top:6pt"><b>${t('bk_w')}</b></p>${rbar([{l:t('bk_w1'),v:base.waterOn,c:'#0284c7'},{l:t('bk_w2'),v:base.waterOff,c:'#7dd3fc'}])}
+    <p class="small" style="margin-top:6pt">${tf('pue_ref',{pue:dec(base.pue)})} ${t(base.pue>1.5?'pue_over':base.pue>1.3?'pue_ok27':'pue_ok30')}</p>
     <table style="margin-top:8pt"><tr><th>${t('col_item')}</th><th class="n">${t('col_base')}</th>${has?`<th class="n">${t('col_opt')}</th>`:''}<th>${t('col_unit')}</th></tr>
       ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${fmt(row[1])}</td>${has?`<td class="n">${fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
     ${unit}
