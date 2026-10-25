@@ -21,8 +21,9 @@ jobs:
       - run: node scripts/update-data.mjs
       - name: Guardar cambios
         run: |
-          if git diff --quiet; then echo "Sin cambios"; exit 0; fi
+          git add -A
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
           git config user.name "wattprint-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Datos de carbono actualizados desde Ember ($(date -u +%Y-%m-%d))"
+          git commit -m "Datos de carbono actualizados desde Ember ($(date -u +%Y-%m-%d))"
           git push

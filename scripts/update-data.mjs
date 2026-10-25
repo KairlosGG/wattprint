@@ -4,7 +4,8 @@
 // - Estados de EE. UU. (Virginia, Oregón): Ember US Electricity Data (CSV público).
 // Si una fuente falla o un valor no es plausible, se conserva el valor anterior.
 // Uso: node scripts/update-data.mjs
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+const REPORT = { checked_at: new Date().toISOString(), sources: {} };
 
 const FILE = new URL('../index.html', import.meta.url);
 const OWID = 'https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv';
@@ -56,6 +57,7 @@ async function fromOWID(){
   const rows=parseCSV(await get(OWID)); const h=rows[0];
   const ic=h.indexOf('country'), iy=h.indexOf('year'), iv=h.indexOf('carbon_intensity_elec');
   if(ic<0||iy<0||iv<0) throw new Error('OWID: columnas no encontradas');
+  REPORT.sources.owid={ url:OWID, rows:rows.length-1 };
   const out={};
   for(const r of rows.slice(1)){
     const v=parseFloat(r[iv]), y=+r[iy];
@@ -67,6 +69,8 @@ async function fromOWID(){
 
 async function fromEmberUS(){
   const rows=parseCSV(await get(EMBER_US)); const h=rows[0].map(x=>x.toLowerCase());
+  REPORT.sources.ember_us={ url:EMBER_US, rows:rows.length-1, header:rows[0],
+    variables:[...new Set(rows.slice(1,20000).map(r=>r[h.indexOf('variable')]))].slice(0,40) };
   const find=re=>h.findIndex(x=>re.test(x));
   const is=find(/^state$/)>=0?find(/^state$/):find(/state(?!.*code)/), iy=find(/^year$/),
         ivar=find(/^variable$/), iu=find(/^unit$/), iv=find(/^value$/);
@@ -89,8 +93,8 @@ const prev={};
 for(const m of html.slice(a,b).matchAll(/\['(\w+)',\s*'[^']*',\s*'[^']*',\s*([\d.]+),\s*'(\d{4})'/g)) prev[m[1]]={value:+m[2], year:+m[3]};
 
 let owid={}, us={};
-try{ owid=await fromOWID(); }catch(e){ console.warn('⚠️', e.message); }
-try{ us=await fromEmberUS(); }catch(e){ console.warn('⚠️', e.message); }
+try{ owid=await fromOWID(); }catch(e){ console.warn('⚠️', e.message); REPORT.sources.owid={...REPORT.sources.owid, error:e.message}; }
+try{ us=await fromEmberUS(); REPORT.sources.ember_us.states_found=Object.keys(us).length; }catch(e){ console.warn('⚠️', e.message); REPORT.sources.ember_us={...REPORT.sources.ember_us, error:e.message}; }
 
 const changes=[];
 const regions=SPEC.map(([id,es,en,src,ap,w,wap])=>{
@@ -108,5 +112,9 @@ const lines=regions.map(r=>`    [${q(r.id).padEnd(9)} ${q(r.es).padEnd(28)} ${q(
 const today=new Date().toISOString().slice(0,10);
 let out = html.slice(0,a+START.length)+'\n'+lines.join('\n')+'\n  '+html.slice(b);
 if(changes.length) out = out.replace(/UPDATED: '\d{4}-\d{2}-\d{2}'/, `UPDATED: '${today}'`);
+REPORT.changes=changes;
+REPORT.values=Object.fromEntries(regions.map(r=>[r.id,{gco2e_kwh:r.val,year:r.year}]));
+await mkdir(new URL('../data/', import.meta.url),{recursive:true});
+await writeFile(new URL('../data/last-update.json', import.meta.url), JSON.stringify(REPORT,null,2)+'\n');
 if(out!==html){ await writeFile(FILE,out); console.log('Actualizado:\n'+changes.join('\n')); }
 else console.log('Sin cambios.');

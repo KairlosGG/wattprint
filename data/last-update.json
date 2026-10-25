@@ -1,0 +1,83 @@
+{
+  "checked_at": "2026-10-25T09:10:05.090Z",
+  "sources": {
+    "owid": {
+      "url": "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv",
+      "rows": 23377
+    },
+    "ember_us": {
+      "error": "fetch failed"
+    }
+  },
+  "changes": [],
+  "values": {
+    "world": {
+      "gco2e_kwh": 458,
+      "year": 2025
+    },
+    "no": {
+      "gco2e_kwh": 28,
+      "year": 2025
+    },
+    "se": {
+      "gco2e_kwh": 35,
+      "year": 2025
+    },
+    "fr": {
+      "gco2e_kwh": 41,
+      "year": 2025
+    },
+    "usw": {
+      "gco2e_kwh": 130,
+      "year": 2023
+    },
+    "es": {
+      "gco2e_kwh": 154,
+      "year": 2025
+    },
+    "eu": {
+      "gco2e_kwh": 210,
+      "year": 2025
+    },
+    "uk": {
+      "gco2e_kwh": 217,
+      "year": 2025
+    },
+    "ie": {
+      "gco2e_kwh": 257,
+      "year": 2025
+    },
+    "de": {
+      "gco2e_kwh": 330,
+      "year": 2025
+    },
+    "use": {
+      "gco2e_kwh": 360,
+      "year": 2023
+    },
+    "us": {
+      "gco2e_kwh": 384,
+      "year": 2025
+    },
+    "jp": {
+      "gco2e_kwh": 477,
+      "year": 2025
+    },
+    "sg": {
+      "gco2e_kwh": 497,
+      "year": 2025
+    },
+    "cn": {
+      "gco2e_kwh": 525,
+      "year": 2025
+    },
+    "pl": {
+      "gco2e_kwh": 589,
+      "year": 2025
+    },
+    "in": {
+      "gco2e_kwh": 670,
+      "year": 2025
+    }
+  }
+}
