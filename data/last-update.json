@@ -1,12 +1,36 @@
 {
-  "checked_at": "2026-10-25T09:10:05.090Z",
+  "checked_at": "2026-10-25T09:10:18.012Z",
   "sources": {
     "owid": {
       "url": "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv",
       "rows": 23377
     },
     "ember_us": {
-      "error": "fetch failed"
+      "url": "https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/generation/outputs/release_us_subnational_generation_yearly.csv",
+      "rows": 17377,
+      "header": [
+        "Area",
+        "ISO 3 code",
+        "State",
+        "State code",
+        "Year",
+        "Electricity source",
+        "Is aggregated source",
+        "Generation (TWh)",
+        "Generation YoY change (TWh)",
+        "Generation YoY change (%)",
+        "Share of generation (%)",
+        "Share of generation YoY change (% points)",
+        "Emissions (MtCO2e)",
+        "Emissions YoY change (MtCO2e)",
+        "Emissions YoY change (%)",
+        "Share of emissions (%)",
+        "Emissions intensity (gCO2e/kWh)"
+      ],
+      "variables": [
+        null
+      ],
+      "error": "Ember US: columnas no encontradas: Area|ISO 3 code|State|State code|Year|Electricity source|Is aggregated source|Generation (TWh)|Generation YoY change (TWh)|Generation YoY change (%)|Share of generation (%)|Share of generation YoY change (% points)|Emissions (MtCO2e)|Emissions YoY change (MtCO2e)|Emissions YoY change (%)|Share of emissions (%)|Emissions intensity (gCO2e/kWh)"
     }
   },
   "changes": [],
