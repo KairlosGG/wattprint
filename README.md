@@ -9,7 +9,7 @@
 ## Qué hace
 
 1. Eliges el tipo de carga, la GPU, cuántas unidades y cuántas horas, la región y el tipo de centro de datos. Si ya has medido el consumo (CodeCarbon, nvidia-smi, DCGM), puedes meter los kWh medidos en vez de estimarlos.
-2. Te da los kg de CO₂e, los kWh y los litros de agua, con un desglose visual de dónde sale cada cifra:
+2. Por defecto estima de forma prudente (GPU al 100 % de su TDP más el resto del servidor) y puedes ajustar la utilización. Te da los kg de CO₂e, los kWh y los litros de agua, con un desglose visual de dónde sale cada cifra:
    - carbono de la electricidad y de la fabricación del hardware;
    - energía de los servidores y consumo extra del centro de datos (PUE);
    - agua de refrigeración y agua usada para generar la electricidad.
@@ -23,13 +23,13 @@ Marco: especificación **Software Carbon Intensity (SCI)** de la Green Software 
 
 | Magnitud | Fórmula | Fuente de los datos |
 |---|---|---|
-| Energía (E) | `kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE`, o kWh medidos × PUE | TDP del fabricante (NVIDIA). PUE: media del sector 1,54 (Uptime Institute, 2025); grandes nubes 1,13 (Google 1,09 y Microsoft 1,17, 2025) |
+| Energía (E) | `kWh = TDP × unidades × horas × utilización × servidor ÷ 1000 × PUE`, o kWh medidos × PUE | Método de [Green Algorithms](https://arxiv.org/abs/2007.07610) (Lannelongue et al., 2021): utilización por defecto 100 % del TDP, ajustable ([Patel et al., ASPLOS 2024](https://homes.cs.washington.edu/~patelp1/papers/llmpower-asplos24.pdf): en entrenamiento la GPU llega a su TDP; en inferencia la media es menor). Resto del servidor × 1,41, medido en un nodo de 8 H100 ([Latif et al., IEEE Access 2025](https://eta-publications.lbl.gov/sites/default/files/2026-07/single-node_power_demand_during_ai_training.pdf)). TDP de NVIDIA. PUE: media del sector 1,54 (Uptime Institute, 2025); grandes nubes 1,13 (Google 1,09 y Microsoft 1,17, 2025) |
 | Carbono (I) | `kg CO₂e = kWh × intensidad de la red ÷ 1000` | Intensidad de ciclo de vida por país de [Ember](https://ember-energy.org/data/yearly-electricity-data/) (CC BY 4.0), vía [Our World in Data](https://github.com/owid/energy-data); estados de EE. UU. de [Ember US Electricity Data](https://ember-energy.org/data/us-electricity-data/). Método location-based |
 | Fabricación (M) | ≈460 kg CO₂e por acelerador ÷ vida útil (4–6 años) | 150 kg de la GPU + parte de un servidor de 2.500 kg con 8 GPU ([Luccioni et al., JMLR 2023](https://jmlr.org/papers/v24/23-0069.html)); coherente con [Schneider et al., 2025](https://arxiv.org/abs/2502.01671) (TPU de Google) |
 | Agua de refrigeración | `litros = kWh de servidores × WUE` | Media del sector ≈1,9 L/kWh (EESI, 2025); grandes nubes 0,27 L/kWh (Microsoft, año fiscal 2025; AWS informa 0,12) |
 | Agua de generación eléctrica | `litros = kWh totales × factor de agua de la red` | [WRI, Reig et al. (2020)](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity), factores de consumo por país; mismo marco que [Li et al., *Making AI Less "Thirsty"*](https://arxiv.org/abs/2304.03271) |
 
-Los porcentajes de los retos de auto-scaling, cuantización y carbon-aware scheduling son hipótesis ilustrativas para comparar escenarios, no valores medidos. Los consumos de la instancia CPU y de «No lo sé» son supuestos; las GPU usan el TDP de NVIDIA (versiones SXM).
+Retos: carbon-aware scheduling según [Dodge et al., FAccT 2022](https://arxiv.org/abs/2206.05229) (−14,5 % de intensidad en cargas de hasta 24 h; −11,4 % en cargas más largas pausando y reanudando). Para otras optimizaciones (auto-scaling, cuantización) no hay un porcentaje general fiable, así que el usuario introduce su ahorro. Todos los supuestos de cada cálculo se muestran en los resultados y en el informe.
 
 Equivalencias de la calculadora de la EPA de EE. UU. y ducha media de la Water Research Foundation (2016).
 

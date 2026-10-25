@@ -304,19 +304,19 @@ section{ padding:64px 0; }
         <button class="chip" data-preset="3" data-i="pr3">🌐 API un año en producción</button>
       </div>
       <div class="grid-2" style="margin-top:24px" role="group" data-ia="aria-label:s1_h">
-        <button class="pick card" style="padding:20px" data-workload="train" data-util="0.85" aria-pressed="true">
+        <button class="pick card" style="padding:20px" data-workload="train" aria-pressed="true">
           <b data-i="wl_train">Entrenamiento de modelo</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_train_d">GPUs a alta utilización durante horas o semanas.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="ft" data-util="0.70" aria-pressed="false">
+        <button class="pick card" style="padding:20px" data-workload="ft" aria-pressed="false">
           <b data-i="wl_ft">Fine-tuning</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_ft_d">Ajuste de un modelo existente, cargas más cortas.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="inf" data-util="0.40" aria-pressed="false">
+        <button class="pick card" style="padding:20px" data-workload="inf" aria-pressed="false">
           <b data-i="wl_inf">Inferencia / API en producción</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_inf_d">Servir el modelo. Puedes calcular la huella por petición.</span>
         </button>
-        <button class="pick card" style="padding:20px" data-workload="exp" data-util="0.55" aria-pressed="false">
+        <button class="pick card" style="padding:20px" data-workload="exp" aria-pressed="false">
           <b data-i="wl_exp">Experimentación / notebooks</b>
           <span class="muted" style="font-size:14px;display:block;margin-top:4px" data-i="wl_exp_d">Sesiones intermitentes en GPU compartida.</span>
         </button>
@@ -332,10 +332,13 @@ section{ padding:64px 0; }
       </div>
 
       <div id="estBox">
-        <p class="note" data-i="s2_tip">💡 ¿No conoces el hardware? Elige "No lo sé": usamos una GPU media y el resultado sigue siendo útil.</p>
+        <p class="note" data-i="s2_tip">💡 ¿No sabes qué GPU usas? Elige "No lo sé": usamos la A100 SXM, la GPU más documentada en los estudios de huella de la IA.</p>
         <div class="grid-3" style="margin-top:18px" role="group" data-ia="aria-label:hw">
           <button class="pick card" style="padding:16px" data-gpu="h100" data-w="700" aria-pressed="false">
             <b style="font-size:14px">NVIDIA H100 SXM</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 700 W</span>
+          </button>
+          <button class="pick card" style="padding:16px" data-gpu="h100p" data-w="350" aria-pressed="false">
+            <b style="font-size:14px">NVIDIA H100 PCIe</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 350 W</span>
           </button>
           <button class="pick card" style="padding:16px" data-gpu="a100" data-w="400" aria-pressed="true">
             <b style="font-size:14px">NVIDIA A100 SXM</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 400 W</span>
@@ -346,22 +349,40 @@ section{ padding:64px 0; }
           <button class="pick card" style="padding:16px" data-gpu="t4" data-w="70" aria-pressed="false">
             <b style="font-size:14px">NVIDIA T4</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">TDP 70 W</span>
           </button>
-          <button class="pick card" style="padding:16px" data-gpu="cpu" data-w="150" aria-pressed="false">
-            <b style="font-size:14px" data-i="gpu_cpu">Instancia CPU</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px">~150 W (supuesto)</span>
+          <button class="pick card" style="padding:16px" data-gpu="avg" data-w="400" aria-pressed="false">
+            <b style="font-size:14px" data-i="gpu_avg">No lo sé</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px" data-i="gpu_avg_d">usamos la A100 SXM (400 W)</span>
           </button>
-          <button class="pick card" style="padding:16px" data-gpu="avg" data-w="300" aria-pressed="false">
-            <b style="font-size:14px" data-i="gpu_avg">No lo sé</b><span class="mono muted" style="font-size:12px;display:block;margin-top:4px" data-i="gpu_avg_d">~300 W (supuesto)</span>
-          </button>
+        </div>
+        <div class="card row">
+          <div style="flex:1;min-width:240px">
+            <b data-i="util_l">Utilización media de la GPU</b>
+            <p class="muted" data-i="util_d">Por defecto, 100 % del TDP: es el método de Green Algorithms cuando no hay medición, y en entrenamiento las GPU llegan a su TDP. En inferencia suele ser bastante menor: si conoces tu dato, ajústalo.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;min-width:220px;flex:1">
+            <input id="util" type="range" min="10" max="100" step="5" value="100" data-ia="aria-label:util_l" style="flex:1" />
+            <span id="utilVal" class="mono" style="font-weight:700;min-width:48px;text-align:right">100 %</span>
+          </div>
         </div>
       </div>
 
       <div id="measBox" class="hidden">
         <div class="card row">
           <div>
-            <b data-i="meas_l">Energía medida de los servidores (kWh)</b>
-            <p class="muted" data-i="meas_d">Consumo de GPU/CPU medido con CodeCarbon, nvidia-smi, DCGM o el panel de tu proveedor. Encima aplicamos el PUE del centro de datos.</p>
+            <b data-i="meas_l">Energía medida (kWh)</b>
+            <p class="muted" data-i="meas_d">Con CodeCarbon, el panel de tu proveedor o un medidor del servidor. Si solo mediste la GPU (nvidia-smi, DCGM), activa «Sumar el resto del servidor». Encima aplicamos el PUE del centro de datos.</p>
           </div>
           <input id="measKwh" class="field num" type="number" min="0" step="any" inputmode="decimal" placeholder="kWh" />
+        </div>
+      </div>
+
+      <div class="card row">
+        <div style="flex:1;min-width:240px">
+          <b data-i="host_l">Sumar el resto del servidor (CPU, memoria, red)</b>
+          <p class="muted" data-i="host_d">El TDP solo cubre la GPU. En una medición de un nodo de 8 H100 entrenando, el servidor completo consumió 1,41 veces el TDP de sus GPU (Latif et al., 2025). Desactívalo si tus kWh medidos ya incluyen todo el servidor.</p>
+        </div>
+        <div class="seg" role="group" data-ia="aria-label:host_l">
+          <button data-host="1" aria-pressed="true" data-i="yes">Sí</button>
+          <button data-host="0" aria-pressed="false" data-i="no">No</button>
         </div>
       </div>
 
@@ -614,6 +635,7 @@ const DATA = {
   CLEAN_ID: 'no',        // región usada por el reto "región más limpia"
   PUE_HYPER: 1.13, WUE_HYPER: 0.27,  // Google 1,09 y Microsoft 1,17 (2025); WUE Microsoft FY25
   PUE_LEGAL_DE: [[1.5,'2027'],[1.3,'2030']], PUE_LEGAL_DE_NEW: 1.2,
+  HOST_FACTOR: 1.41,     // nodo 8×H100: 7,92 kW medidos / (8 × 700 W) (Latif et al., IEEE Access 2025)
   EMBODIED_KG: 460,      // kg CO2e por acelerador: 150 GPU + 2.500 servidor / 8 GPU (Luccioni et al., 2023)
   EQ: { car:244, phone:0.019, tree:60, shower:60, homeMonth:1016 }, // EPA (coche 393 g/milla, móvil, plantón 10 años, hogar EE. UU. 12.194 kWh/año); ducha media WRF 2016
 };
@@ -622,9 +644,8 @@ const regionById = id => DATA.REGIONS.find(r=>r[0]===id);
 const CHALLENGES = [
   { id:'region', fx:{type:'clean'} },
   { id:'hyper',  fx:{type:'hyper'} },
-  { id:'auto',   fx:{type:'energy', mult:0.75} },
-  { id:'quant',  fx:{type:'energy', mult:0.70} },
-  { id:'sched',  fx:{type:'intensity', mult:0.85} },
+  { id:'sched',  fx:{type:'sched'} },   // Dodge et al. 2022, según la duración
+  { id:'own',    fx:{type:'own'} },     // ahorro de energía que introduce el usuario
 ];
 const BADGES = [
   { max:1,        ico:'🪶', key:'bd1', color:'var(--carbon)' },
@@ -658,11 +679,20 @@ es:{
   wl_ft:'Fine-tuning', wl_ft_d:'Ajuste de un modelo existente, cargas más cortas.',
   wl_inf:'Inferencia / API en producción', wl_inf_d:'Servir el modelo. Puedes calcular la huella por petición.',
   wl_exp:'Experimentación / notebooks', wl_exp_d:'Sesiones intermitentes en GPU compartida.',
+  util_l:'Utilización media de la GPU',
+  util_d:'Por defecto, 100 % del TDP: es el método de Green Algorithms cuando no hay medición, y en entrenamiento las GPU llegan a su TDP. En inferencia suele ser bastante menor: si conoces tu dato, ajústalo.',
+  host_l:'Sumar el resto del servidor (CPU, memoria, red)',
+  host_d:'El TDP solo cubre la GPU. En una medición de un nodo de 8 H100 entrenando, el servidor completo consumió 1,41 veces el TDP de sus GPU (Latif et al., 2025). Desactívalo si tus kWh medidos ya incluyen todo el servidor.',
+  yes:'Sí', no:'No', gpu_avg_name:'No lo sé (A100 SXM por defecto)',
+  ch_own:'Otra optimización (auto-scaling, cuantización…)', ch_own_d:'No hay un porcentaje general fiable: el ahorro depende de tu sistema. Escribe el ahorro de energía que esperas o has medido.', ch_own_u:'% menos energía',
+  in_host:'Resto del servidor', in_host_y:'Incluido (× {f}, Latif et al. 2025)', in_host_n:'No incluido',
+  as_h:'Supuestos de este cálculo',
+  as_est:'{gpu} a {w} W × {u} % de utilización', as_meas:'{k} kWh medidos', as_host:'servidor × {f}', as_nohost:'sin resto del servidor', as_dc:'PUE {pue}, WUE {wue} L/kWh', as_grid:'red {g} gCO₂e/kWh (Ember {y}), agua de generación {w} L/kWh (WRI)', as_emb:'fabricación {kg} kg por acelerador en {y} años',
   s2_h:'¿Cuánta energía consume?', mode_est:'Estimar con el hardware', mode_meas:'Tengo kWh medidos', hw:'Hardware',
-  s2_tip:'💡 ¿No conoces el hardware? Elige "No lo sé": usamos una GPU media y el resultado sigue siendo útil.',
-  gpu_cpu:'Instancia CPU', gpu_avg:'No lo sé', gpu_avg_d:'~300 W (supuesto)',
-  meas_l:'Energía medida de los servidores (kWh)',
-  meas_d:'Consumo de GPU/CPU medido con CodeCarbon, nvidia-smi, DCGM o el panel de tu proveedor. Encima aplicamos el PUE del centro de datos.',
+  s2_tip:'💡 ¿No sabes qué GPU usas? Elige "No lo sé": usamos la A100 SXM, la GPU más documentada en los estudios de huella de la IA.',
+  gpu_cpu:'Instancia CPU', gpu_avg:'No lo sé', gpu_avg_d:'usamos la A100 SXM (400 W)',
+  meas_l:'Energía medida (kWh)',
+  meas_d:'Con CodeCarbon, el panel de tu proveedor o un medidor del servidor. Si solo mediste la GPU (nvidia-smi, DCGM), activa «Sumar el resto del servidor». Encima aplicamos el PUE del centro de datos.',
   units_l:'Aceleradores o instancias en paralelo', units_d:'Se usa también para la huella de fabricación del hardware.',
   units_minus:'Menos unidades', units_plus:'Más unidades',
   hours_l:'Horas de ejecución', tick_w:'1 semana', tick_m:'1 mes', days:'{n} días',
@@ -697,7 +727,7 @@ es:{
   ch_hyper:'Migrar a cloud hyperscale eficiente', ch_hyper_d:'PUE 1,54 → 1,13 y WUE 1,9 → 0,27 L/kWh.',
   ch_auto:'Auto-scaling y right-sizing', ch_auto_d:'Apagar y dimensionar instancias según la demanda real (−25 % energía).',
   ch_quant:'Precisión mixta / cuantización', ch_quant_d:'FP16-INT8 donde no penalice la calidad del modelo (−30 % energía).',
-  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Programar la carga en las horas más limpias de la red (−15 % intensidad).',
+  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Ejecutar en las horas más limpias de la red: −{p} % de intensidad según la duración (Dodge et al., 2022). En cargas de más de 24 h supone pausar y reanudar, hasta duplicar la duración.',
   t_up:'{ico} ¡Subes a "{name}"! Has ahorrado un {p}% de CO₂e', t_ok:'🏆 ¡Reto superado! Has ahorrado un {p}% de CO₂e',
   bd1:'Huella pluma', bd1_m:'Menos de 1 kg CO₂e: impacto muy bajo.',
   bd2:'Código verde', bd2_m:'Menos de 20 kg CO₂e: huella baja. Los retos pueden bajarla aún más.',
@@ -723,12 +753,12 @@ es:{
   f_by:'hecho por', f_code:'código en GitHub', f_method:'metodología y fuentes',
   m_h:'Metodología y fuentes',
   m_body:`<p><strong>Marco:</strong> especificación <strong>Software Carbon Intensity (SCI)</strong> de la Green Software Foundation, publicada como norma ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) por R</code>. E es la energía, I la intensidad de carbono de la red, M la huella de fabricación del hardware y R la unidad funcional (una ejecución o una petición).</p>
-<p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según el fabricante (NVIDIA, versiones SXM; la H100 PCIe es de 350 W). La instancia CPU (150 W) y «No lo sé» (300 W) son supuestos. La utilización media por tipo de carga (0,40–0,85) es una hipótesis de trabajo: si has medido el consumo, usa la opción «Tengo kWh medidos», que sustituye la estimación por tu dato. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); en las grandes nubes, Google informa 1,09 (2025) y Microsoft 1,17 (año fiscal 2025): usamos su media, 1,13. <strong>Referencia legal:</strong> la ley de eficiencia energética de Alemania (EnEfG) exige a los centros de datos existentes un PUE ≤ 1,5 desde julio de 2027 y ≤ 1,3 desde julio de 2030, y ≤ 1,2 a los nuevos desde julio de 2026. En la UE, la Comisión adoptó en septiembre de 2026 una etiqueta obligatoria de la A a la G para centros de 500 kW o más, basada en PUE y WUE; la propuesta de mínimos obligatorios se espera para 2027.</p>
+<p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización × servidor ÷ 1000 × PUE</code>. Es el método de <strong>Green Algorithms</strong> (Lannelongue et al., <em>Advanced Science</em>, 2021). TDP según NVIDIA; «No lo sé» usa la A100 SXM. <strong>Utilización:</strong> por defecto el 100 % del TDP, como hace Green Algorithms cuando no hay medición; las mediciones de Microsoft Azure muestran que en entrenamiento la potencia de las GPU llega o supera su TDP, y que en inferencia la media es bastante menor (Patel et al., ASPLOS 2024), así que en inferencia conviene ajustarla o medir. <strong>Resto del servidor:</strong> el TDP solo cubre la GPU; multiplicamos por 1,41, la relación medida entre el consumo de un nodo de 8 H100 entrenando (mediana 7,92 kW) y el TDP de sus GPU (Latif et al., <em>IEEE Access</em>, 2025). Es una sola medición y en otras GPU puede variar. Si has medido los kWh, la opción «Tengo kWh medidos» sustituye toda la estimación. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); en las grandes nubes, Google informa 1,09 (2025) y Microsoft 1,17 (año fiscal 2025): usamos su media, 1,13. <strong>Referencia legal:</strong> la ley de eficiencia energética de Alemania (EnEfG) exige a los centros de datos existentes un PUE ≤ 1,5 desde julio de 2027 y ≤ 1,3 desde julio de 2030, y ≤ 1,2 a los nuevos desde julio de 2026. En la UE, la Comisión adoptó en septiembre de 2026 una etiqueta obligatoria de la A a la G para centros de 500 kW o más, basada en PUE y WUE; la propuesta de mínimos obligatorios se espera para 2027.</p>
 <p><strong>Carbono (I):</strong> intensidad media de la red de cada país en su ciclo de vida, de <strong>Ember</strong> (Yearly Electricity Data, licencia CC BY 4.0), tal como la republica Our World in Data. Virginia y Oregón usan los datos de Ember por estado de EE. UU. y se marcan como aproximadas, porque una región cloud no coincide exactamente con el estado. Los datos se actualizan solos cada mes. Se usa la intensidad de la red física (método location-based), como pide SCI: no se descuentan compras de renovables ni compensaciones.</p>`,
   m_body2:`<p><strong>Agua de refrigeración:</strong> <code class="t-water">litros = kWh de servidores × WUE</code>. Media del sector ≈ <strong>1,9 L/kWh</strong> (EESI, 2025). Grandes nubes: Microsoft informa 0,27 L/kWh (año fiscal 2025) y AWS 0,12 L/kWh (2025); usamos 0,27 para no quedarnos cortos.</p>
 <p><strong>Agua de generación eléctrica:</strong> <code class="t-water">litros = kWh totales × factor de agua de la red</code>. Factores de consumo de agua de la red de cada país de <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; mix de generación de 2016, incluye la evaporación de los embalses hidroeléctricos). Es el mismo marco que usan Li et al. en <em>Making AI Less "Thirsty"</em> (agua de alcance 1 y 2). Por eso los países con mucha hidráulica, como Noruega, tienen poco carbono pero más agua.</p>
 <p><strong>Fabricación (M):</strong> ≈ <strong>460 kg CO₂e por acelerador</strong>: ≈150 kg de la GPU (cota inferior que da el estudio) más la parte proporcional de un servidor de 2.500 kg (sin GPU) con 8 GPU, como los nodos usados en el estudio, según Luccioni, Viguier y Ligozat (<em>Journal of Machine Learning Research</em>, 2023), repartidos en la vida útil elegida (4–6 años; el estudio usa 6). Es coherente con el análisis de ciclo de vida de Google sobre sus TPU (Schneider et al., 2025: 386–1.101 kg CO₂e por chip en 6 años). Las grandes nubes amortizan sus servidores en 5–6 años (informes anuales 2025 de Amazon y Meta).</p>
-<p><strong>Retos:</strong> región limpia (red de Noruega) · hyperscale (PUE 1,54→1,13, WUE 1,9→0,27) · auto-scaling −25 % energía · precisión mixta/cuantización −30 % energía · carbon-aware scheduling −15 % intensidad. Los tres últimos porcentajes son <strong>hipótesis ilustrativas</strong> para comparar escenarios, no valores medidos: el ahorro real depende de cada sistema.</p>
+<p><strong>Retos:</strong> región más limpia (red de Noruega) · cloud hyperscale (PUE 1,54→1,13, WUE 1,9→0,27) · carbon-aware scheduling: −14,5 % de intensidad en cargas de hasta 24 h (retrasar el inicio) y −11,4 % en cargas más largas (pausar y reanudar, hasta duplicar la duración), medias de 16 regiones de Azure (Dodge et al., <em>FAccT</em>, 2022) · otras optimizaciones: no hay un porcentaje general fiable, así que el ahorro lo introduces tú.</p>
 <p><strong>Equivalencias:</strong> de la calculadora de equivalencias de la <strong>EPA</strong> de EE. UU.: coche de gasolina medio 393 g CO₂e/milla (≈244 g/km) · carga de smartphone 0,019 kWh · un plantón de árbol urbano absorbe ≈60 kg CO₂ en 10 años · hogar medio de EE. UU. 12.194 kWh/año. Ducha media ≈60 L en unos 8 minutos (Water Research Foundation, 2016).</p>
 <p><strong>Medallas:</strong> «Huella pluma», «Código verde», etc. son una escala orientativa de Wattprint (tramos de 1, 20, 200 y 2.000 kg CO₂e por ejecución), no un límite legal. No existe ninguna norma que fije cuánto puede emitir o gastar una carga de IA.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">Son estimaciones de orden de magnitud, no una medición certificada. Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.</p>`,
@@ -741,9 +771,9 @@ es:{
   rp_res:'Resultados', rp_bk:'Desglose', rp_unit:'Por petición y al año', rp_ch:'Optimización',
   rp_ch_none:'No se ha marcado ningún reto de optimización.', rp_ch_on:'Retos aplicados: {list}. Resultado optimizado:',
   rp_meth:'Método y fuentes', rp_lim:'Limitaciones',
-  rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP y una utilización media salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador. No existe un límite legal para la huella de una carga de IA; las referencias legales disponibles se aplican al centro de datos (PUE).',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0, vía Our World in Data), método location-based, datos de {year}. PUE: Uptime Institute 2025; Google y Microsoft 2025. WUE: EESI 2025; Microsoft y AWS 2025. Equivalencias: EPA; Water Research Foundation. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2023; Schneider et al. 2025.',
-  in_wl:'Tipo de carga', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, utilización {u}', in_mode_meas:'Medida: {k} kWh de servidores',
+  rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP, la utilización indicada y un factor de servidor de una sola medición (1,41), salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador. No existe un límite legal para la huella de una carga de IA; las referencias legales disponibles se aplican al centro de datos (PUE).',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0, vía Our World in Data), método location-based, datos de {year}. PUE: Uptime Institute 2025; Google y Microsoft 2025. WUE: EESI 2025; Microsoft y AWS 2025. Equivalencias: EPA; Water Research Foundation. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2023; Schneider et al. 2025. Energía: Lannelongue et al. 2021 (Green Algorithms); Patel et al. 2024; Latif et al. 2025. Carbon-aware: Dodge et al. 2022.',
+  in_wl:'Tipo de carga', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, utilización {u}', in_mode_meas:'Medida: {k} kWh',
   in_units:'Aceleradores / instancias', in_hours:'Horas', in_region:'Región', in_dc:'Centro de datos', in_life:'Vida útil del hardware',
   in_reqs:'Peticiones', in_reps:'Repeticiones al año', years:'{n} años',
   col_item:'Concepto', col_val:'Valor', col_unit:'Unidad', col_base:'Actual', col_opt:'Con retos',
@@ -770,11 +800,20 @@ en:{
   wl_ft:'Fine-tuning', wl_ft_d:'Adapting an existing model, shorter runs.',
   wl_inf:'Inference / API in production', wl_inf_d:'Serving the model. You can get the footprint per request.',
   wl_exp:'Experiments / notebooks', wl_exp_d:'Intermittent sessions on a shared GPU.',
+  util_l:'Average GPU utilisation',
+  util_d:'Default: 100% of TDP, the Green Algorithms method when there is no measurement; in training, GPUs reach their TDP. In inference it is usually much lower: if you know your figure, adjust it.',
+  host_l:'Add the rest of the server (CPU, memory, network)',
+  host_d:'TDP only covers the GPU. In a measurement of an 8×H100 node during training, the whole server drew 1.41 times its GPUs\' TDP (Latif et al., 2025). Turn it off if your measured kWh already cover the whole server.',
+  yes:'Yes', no:'No', gpu_avg_name:'Not sure (A100 SXM by default)',
+  ch_own:'Another optimisation (auto-scaling, quantisation…)', ch_own_d:'There is no reliable general percentage: the saving depends on your system. Enter the energy saving you expect or have measured.', ch_own_u:'% less energy',
+  in_host:'Rest of the server', in_host_y:'Included (× {f}, Latif et al. 2025)', in_host_n:'Not included',
+  as_h:'Assumptions in this calculation',
+  as_est:'{gpu} at {w} W × {u}% utilisation', as_meas:'{k} kWh measured', as_host:'server × {f}', as_nohost:'rest of server not included', as_dc:'PUE {pue}, WUE {wue} L/kWh', as_grid:'grid {g} gCO₂e/kWh (Ember {y}), generation water {w} L/kWh (WRI)', as_emb:'manufacturing {kg} kg per accelerator over {y} years',
   s2_h:'How much energy does it use?', mode_est:'Estimate from hardware', mode_meas:'I have measured kWh', hw:'Hardware',
-  s2_tip:'💡 Don\'t know the hardware? Choose "Not sure": we use an average GPU and the result is still useful.',
-  gpu_cpu:'CPU instance', gpu_avg:'Not sure', gpu_avg_d:'~300 W (assumption)',
-  meas_l:'Measured server energy (kWh)',
-  meas_d:'GPU/CPU consumption measured with CodeCarbon, nvidia-smi, DCGM or your provider\'s dashboard. We apply the data centre PUE on top.',
+  s2_tip:'💡 Not sure which GPU you use? Choose "Not sure": we use the A100 SXM, the most documented GPU in AI footprint studies.',
+  gpu_cpu:'CPU instance', gpu_avg:'Not sure', gpu_avg_d:'we use the A100 SXM (400 W)',
+  meas_l:'Measured energy (kWh)',
+  meas_d:'From CodeCarbon, your provider\'s dashboard or a server meter. If you only measured the GPU (nvidia-smi, DCGM), turn on "Add the rest of the server". We apply the data centre PUE on top.',
   units_l:'Accelerators or instances in parallel', units_d:'Also used for the hardware manufacturing footprint.',
   units_minus:'Fewer units', units_plus:'More units',
   hours_l:'Run time (hours)', tick_w:'1 week', tick_m:'1 month', days:'{n} days',
@@ -809,7 +848,7 @@ en:{
   ch_hyper:'Move to an efficient hyperscale cloud', ch_hyper_d:'PUE 1.54 → 1.13 and WUE 1.9 → 0.27 L/kWh.',
   ch_auto:'Auto-scaling and right-sizing', ch_auto_d:'Turn off and size instances to real demand (−25% energy).',
   ch_quant:'Mixed precision / quantisation', ch_quant_d:'FP16-INT8 where it doesn\'t hurt model quality (−30% energy).',
-  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Run the workload in the grid\'s cleanest hours (−15% intensity).',
+  ch_sched:'Carbon-aware scheduling', ch_sched_d:'Run in the grid\'s cleanest hours: −{p}% intensity depending on duration (Dodge et al., 2022). For workloads over 24 h this means pausing and resuming, up to doubling the duration.',
   t_up:'{ico} Up to "{name}"! You saved {p}% CO₂e', t_ok:'🏆 Challenge done! You saved {p}% CO₂e',
   bd1:'Featherweight', bd1_m:'Under 1 kg CO₂e: very low impact.',
   bd2:'Green code', bd2_m:'Under 20 kg CO₂e: low footprint. The challenges can lower it further.',
@@ -835,12 +874,12 @@ en:{
   f_by:'made by', f_code:'code on GitHub', f_method:'methodology and sources',
   m_h:'Methodology and sources',
   m_body:`<p><strong>Framework:</strong> the Green Software Foundation's <strong>Software Carbon Intensity (SCI)</strong> specification, published as ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) per R</code>. E is energy, I the grid carbon intensity, M the hardware manufacturing footprint and R the functional unit (one run or one request).</p>
-<p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation ÷ 1000 × PUE</code>. TDP from the manufacturer (NVIDIA, SXM versions; the H100 PCIe is 350 W). The CPU instance (150 W) and "Not sure" (300 W) are assumptions. Average utilisation by workload (0.40–0.85) is a working assumption: if you have measured consumption, use "I have measured kWh", which replaces the estimate with your figure. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); among the large clouds, Google reports 1.09 (2025) and Microsoft 1.17 (fiscal 2025): we use their average, 1.13. <strong>Legal reference:</strong> Germany's Energy Efficiency Act (EnEfG) requires existing data centres to reach PUE ≤ 1.5 from July 2027 and ≤ 1.3 from July 2030, and new ones ≤ 1.2 from July 2026. In the EU, the Commission adopted in September 2026 a mandatory A-to-G label for data centres of 500 kW or more, based on PUE and WUE; a proposal for binding minimum standards is expected in 2027.</p>
+<p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation × server ÷ 1000 × PUE</code>. This is the <strong>Green Algorithms</strong> method (Lannelongue et al., <em>Advanced Science</em>, 2021). TDP from NVIDIA; "Not sure" uses the A100 SXM. <strong>Utilisation:</strong> 100% of TDP by default, as Green Algorithms does when there is no measurement; Microsoft Azure measurements show GPU power in training reaches or exceeds TDP, while the inference average is much lower (Patel et al., ASPLOS 2024), so for inference you should adjust it or measure. <strong>Rest of the server:</strong> TDP only covers the GPU; we multiply by 1.41, the measured ratio between an 8×H100 node during training (median 7.92 kW) and its GPUs' TDP (Latif et al., <em>IEEE Access</em>, 2025). It is a single measurement and may differ for other GPUs. If you have measured kWh, "I have measured kWh" replaces the whole estimate. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); among the large clouds, Google reports 1.09 (2025) and Microsoft 1.17 (fiscal 2025): we use their average, 1.13. <strong>Legal reference:</strong> Germany's Energy Efficiency Act (EnEfG) requires existing data centres to reach PUE ≤ 1.5 from July 2027 and ≤ 1.3 from July 2030, and new ones ≤ 1.2 from July 2026. In the EU, the Commission adopted in September 2026 a mandatory A-to-G label for data centres of 500 kW or more, based on PUE and WUE; a proposal for binding minimum standards is expected in 2027.</p>
 <p><strong>Carbon (I):</strong> average lifecycle grid intensity by country from <strong>Ember</strong> (Yearly Electricity Data, CC BY 4.0 licence), as republished by Our World in Data. Virginia and Oregon use Ember's US state data and are marked as approximate, because a cloud region does not exactly match the state. The data updates itself every month. We use the physical grid intensity (location-based), as SCI requires: renewable purchases and offsets are not deducted.</p>`,
   m_body2:`<p><strong>Cooling water:</strong> <code class="t-water">litres = server kWh × WUE</code>. Industry average ≈ <strong>1.9 L/kWh</strong> (EESI, 2025). Large clouds: Microsoft reports 0.27 L/kWh (fiscal 2025) and AWS 0.12 L/kWh (2025); we use 0.27 to stay on the safe side.</p>
 <p><strong>Electricity generation water:</strong> <code class="t-water">litres = total kWh × grid water factor</code>. Grid water consumption factors by country from <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; 2016 generation mix, includes hydropower reservoir evaporation). It is the same framework used by Li et al. in <em>Making AI Less "Thirsty"</em> (scope 1 and 2 water). That is why hydro-heavy countries such as Norway have low carbon but more water.</p>
 <p><strong>Manufacturing (M):</strong> ≈ <strong>460 kg CO₂e per accelerator</strong>: ≈150 kg for the GPU (the study's lower-bound estimate) plus its share of a 2,500 kg server (excluding GPUs) with 8 GPUs, like the nodes used in the study, from Luccioni, Viguier and Ligozat (<em>Journal of Machine Learning Research</em>, 2023), spread over the chosen lifetime (4–6 years; the study uses 6). This is consistent with Google's life-cycle analysis of its TPUs (Schneider et al., 2025: 386–1,101 kg CO₂e per chip over 6 years). Large clouds depreciate servers over 5–6 years (Amazon and Meta 2025 annual reports).</p>
-<p><strong>Challenges:</strong> clean region (Norway's grid) · hyperscale (PUE 1.54→1.13, WUE 1.9→0.27) · auto-scaling −25% energy · mixed precision/quantisation −30% energy · carbon-aware scheduling −15% intensity. The last three percentages are <strong>illustrative assumptions</strong> for comparing scenarios, not measured values: real savings depend on each system.</p>
+<p><strong>Challenges:</strong> cleanest region (Norway's grid) · hyperscale cloud (PUE 1.54→1.13, WUE 1.9→0.27) · carbon-aware scheduling: −14.5% intensity for workloads up to 24 h (delayed start) and −11.4% for longer ones (pause and resume, up to doubling the duration), averages over 16 Azure regions (Dodge et al., <em>FAccT</em>, 2022) · other optimisations: there is no reliable general percentage, so you enter the saving yourself.</p>
 <p><strong>Equivalences:</strong> from the US <strong>EPA</strong> Greenhouse Gas Equivalencies Calculator: average petrol car 393 g CO₂e/mile (≈244 g/km) · smartphone charge 0.019 kWh · one urban tree seedling absorbs ≈60 kg CO₂ over 10 years · average US home 12,194 kWh/year. Average shower ≈60 L in about 8 minutes (Water Research Foundation, 2016).</p>
 <p><strong>Badges:</strong> "Featherweight", "Green code" and so on are Wattprint's own indicative scale (bands of 1, 20, 200 and 2,000 kg CO₂e per run), not a legal limit. No regulation sets how much an AI workload may emit or consume.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">These are order-of-magnitude estimates, not certified measurements. Independent project, not affiliated with the Green Software Foundation, Ember, WRI or any provider mentioned.</p>`,
@@ -853,16 +892,16 @@ en:{
   rp_res:'Results', rp_bk:'Breakdown', rp_unit:'Per request and per year', rp_ch:'Optimisation',
   rp_ch_none:'No optimisation challenge was selected.', rp_ch_on:'Challenges applied: {list}. Optimised result:',
   rp_meth:'Method and sources', rp_lim:'Limitations',
-  rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP and an average utilisation unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation. There is no legal limit for the footprint of an AI workload; the available legal references apply to the data centre (PUE).',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0, via Our World in Data), location-based, {year} data. PUE: Uptime Institute 2025; Google y Microsoft 2025. WUE: EESI 2025; Microsoft and AWS 2025. Equivalences: EPA; Water Research Foundation. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2023; Schneider et al. 2025.',
-  in_wl:'Workload', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, utilisation {u}', in_mode_meas:'Measured: {k} kWh at the servers',
+  rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP, the stated utilisation and a server factor from a single measurement (1.41), unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation. There is no legal limit for the footprint of an AI workload; the available legal references apply to the data centre (PUE).',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0, via Our World in Data), location-based, {year} data. PUE: Uptime Institute 2025; Google and Microsoft 2025. WUE: EESI 2025; Microsoft and AWS 2025. Equivalences: EPA; Water Research Foundation. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2023; Schneider et al. 2025. Energy: Lannelongue et al. 2021 (Green Algorithms); Patel et al. 2024; Latif et al. 2025. Carbon-aware: Dodge et al. 2022.',
+  in_wl:'Workload', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, utilisation {u}', in_mode_meas:'Measured: {k} kWh',
   in_units:'Accelerators / instances', in_hours:'Hours', in_region:'Region', in_dc:'Data centre', in_life:'Hardware lifetime',
   in_reqs:'Requests', in_reps:'Runs per year', years:'{n} years',
   col_item:'Item', col_val:'Value', col_unit:'Unit', col_base:'Current', col_opt:'With challenges',
   csv_name:'wattprint-report.csv', card_head:'// my AI footprint', card_cta:'Calculate yours →', card_opt:'🏆 Optimised: −{p}% CO₂e with {n} challenges',
   card_eq:'= {phone} smartphone charges · {tree} trees over 10 years · {shower} showers',
 }};
-const GPU_NAMES = { h100:'NVIDIA H100 SXM', a100:'NVIDIA A100 SXM', v100:'NVIDIA V100 SXM2', t4:'NVIDIA T4', cpu:null, avg:null };
+const GPU_NAMES = { h100:'NVIDIA H100 SXM', h100p:'NVIDIA H100 PCIe', a100:'NVIDIA A100 SXM', v100:'NVIDIA V100 SXM2', t4:'NVIDIA T4', avg:null };
 
 let LANG = 'es';
 const t  = k => (I18N[LANG][k] ?? I18N.es[k] ?? k);
@@ -879,7 +918,7 @@ const fmt = n => {
 };
 const dec = v => Number(v).toLocaleString(loc(),{maximumFractionDigits:2});
 const regionName = r => LANG==='en' ? r[2] : r[1];
-const gpuName = id => GPU_NAMES[id] || t(id==='cpu'?'gpu_cpu':'gpu_avg');
+const gpuName = id => GPU_NAMES[id] || t('gpu_avg_name');
 const wlName  = id => t('wl_'+id);
 const dcName  = id => t('dc_'+id);
 
@@ -887,11 +926,11 @@ const dcName  = id => t('dc_'+id);
    3 · ESTADO
 ============================================================ */
 const state = {
-  workload:'train', util:0.85,
+  workload:'train', util:1, host:true, ownPct:0,
   mode:'est', measKwh:0,
   gpu:'a100', watts:400, units:1, hours:24,
   region:'world',
-  dc:'hyper', pue:1.12, wue:0.65,
+  dc:'hyper', pue:1.13, wue:0.27,
   life:6, reqs:0, reps:1,
   step:1, active:new Set(),
 };
@@ -907,13 +946,14 @@ function compute(opts={}){
     for(const ch of CHALLENGES){
       if(!state.active.has(ch.id)) continue;
       const f=ch.fx;
-      if(f.type==='energy')    energyMult*=f.mult;
-      if(f.type==='intensity') intensityMult*=f.mult;
+      if(f.type==='own')   energyMult*=1-Math.min(90,Math.max(0,state.ownPct))/100;
+      if(f.type==='sched') intensityMult*=1-schedSaving();
       if(f.type==='clean'){ const c=regionById(DATA.CLEAN_ID); if(c[3]<intensity){ intensity=c[3]; ewif=c[6]; } }
       if(f.type==='hyper'){ pue=Math.min(pue,DATA.PUE_HYPER); wue=Math.min(wue,DATA.WUE_HYPER); }
     }
   }
-  const kwhIT0 = state.mode==='meas' ? state.measKwh : state.watts*state.units*state.hours*state.util/1000;
+  const host = state.host ? DATA.HOST_FACTOR : 1;
+  const kwhIT0 = (state.mode==='meas' ? state.measKwh : state.watts*state.units*state.hours*state.util/1000) * host;
   const kwhIT = kwhIT0*energyMult;
   const kwh = kwhIT*pue;
   const I = intensity*intensityMult;
@@ -923,6 +963,11 @@ function compute(opts={}){
   return { kwhIT, kwh, overhead:kwh-kwhIT, I, operational, embodied, co2:operational+embodied,
            waterOn, waterOff, water:waterOn+waterOff, pue, wue, ewif };
 }
+
+/* Carbon-aware scheduling (Dodge et al., FAccT 2022, medias de 16 regiones de Azure):
+   trabajos de hasta 24 h → retrasar el inicio hasta 24 h: −14,5 % (ajuste fino de BERT);
+   trabajos más largos → pausar y reanudar aceptando el doble de duración: −11,4 % (modelo de 6.000 M de parámetros). */
+function schedSaving(){ return state.hours<=24 ? 0.145 : 0.114; }
 
 /* ============================================================
    5 · INTERFAZ: idioma
@@ -978,13 +1023,19 @@ function bindPicks(sel,onPick){
     });
   });
 }
-bindPicks('[data-workload]', b=>{ state.workload=b.dataset.workload; state.util=+b.dataset.util;
+bindPicks('[data-workload]', b=>{ state.workload=b.dataset.workload;
   $('reqRow').classList.toggle('hidden',state.workload!=='inf'); });
 bindPicks('[data-gpu]',  b=>{ state.gpu=b.dataset.gpu; state.watts=+b.dataset.w; });
 bindPicks('[data-dc]',   b=>{ state.dc=b.dataset.dc; state.pue=+b.dataset.pue; state.wue=+b.dataset.wue; });
 bindPicks('[data-mode]', b=>{ state.mode=b.dataset.mode;
+  if(!b._fromCfg){ const want = state.mode==='meas' ? '0' : '1'; const hb=document.querySelector(`[data-host="${want}"]`); if(hb && hb.getAttribute('aria-pressed')!=='true') hb.click(); }
   $('estBox').classList.toggle('hidden',state.mode!=='est'); $('measBox').classList.toggle('hidden',state.mode!=='meas'); });
 bindPicks('[data-life]', b=>{ state.life=+b.dataset.life; });
+bindPicks('[data-host]', b=>{ state.host=b.dataset.host==='1'; });
+const utilIn=$('util');
+function renderUtil(){ $('utilVal').textContent=Math.round(state.util*100)+' %'; utilIn.value=Math.round(state.util*100);
+  utilIn.style.setProperty('--fill',((state.util*100-10)/90*100)+'%'); }
+utilIn.addEventListener('input',()=>{ state.util=(+utilIn.value)/100; renderUtil(); updateLive(); });
 
 const numIn=(id,key,min)=>$(id).addEventListener('input',e=>{
   const v=parseFloat(String(e.target.value).replace(',','.')); state[key]=isFinite(v)&&v>=min?v:(key==='reps'?1:0); updateLive(); });
@@ -1067,7 +1118,18 @@ function renderBreakdown(r){
     barHTML(t('bk_e'),r.kwh,'kWh',[{l:t('bk_e1'),v:r.kwhIT,c:'var(--energy)'},{l:t('bk_e2'),v:r.overhead,c:'var(--energy-2)'}])+
     barHTML(t('bk_w'),r.water,'L',[{l:t('bk_w1'),v:r.waterOn,c:'var(--water)'},{l:t('bk_w2')+(reg[7]?' ≈':''),v:r.waterOff,c:'var(--water-2)'}])+
     (reg[7]?`<p class="note">${t('bk_w_note')}</p>`:'')+
-    `<p class="note" style="border-top:1px solid var(--line);padding-top:10px">${tf('pue_ref',{pue:dec(r.pue)})} <span style="color:${r.pue>1.5?'var(--alert)':r.pue>1.3?'var(--energy)':'var(--carbon)'}">${t(r.pue>1.5?'pue_over':r.pue>1.3?'pue_ok27':'pue_ok30')}</span></p>`;
+    `<p class="note" style="border-top:1px solid var(--line);padding-top:10px"><b style="color:var(--ink)">${t('as_h')}:</b> ${assumptionsText()}</p>`+
+    `<p class="note">${tf('pue_ref',{pue:dec(r.pue)})} <span style="color:${r.pue>1.5?'var(--alert)':r.pue>1.3?'var(--energy)':'var(--carbon)'}">${t(r.pue>1.5?'pue_over':r.pue>1.3?'pue_ok27':'pue_ok30')}</span></p>`;
+}
+function assumptionsText(){
+  const reg=regionById(state.region), parts=[];
+  if(state.mode==='meas') parts.push(tf('as_meas',{k:fmt(state.measKwh)}));
+  else parts.push(tf('as_est',{gpu:gpuName(state.gpu),w:state.watts,u:Math.round(state.util*100)}));
+  parts.push(state.host?tf('as_host',{f:dec(DATA.HOST_FACTOR)}):t('as_nohost'));
+  parts.push(tf('as_dc',{pue:dec(state.pue),wue:dec(state.wue)}));
+  parts.push(tf('as_grid',{g:reg[3],y:reg[4],w:dec(reg[6])}));
+  parts.push(tf('as_emb',{kg:DATA.EMBODIED_KG,y:state.life}));
+  return parts.join(' · ');
 }
 function renderKpis(r){
   let h='';
@@ -1102,11 +1164,16 @@ function renderChallenges(){
   $('challenges').innerHTML=CHALLENGES.map(ch=>`
     <label class="challenge ${state.active.has(ch.id)?'on':''}" data-ch="${ch.id}">
       <input type="checkbox" ${state.active.has(ch.id)?'checked':''} aria-label="${t('ch_'+ch.id)}">
-      <div><b>${t('ch_'+ch.id)}</b><span>${tf('ch_'+ch.id+'_d',{g:regionById(DATA.CLEAN_ID)[3]})}</span></div>
+      <div><b>${t('ch_'+ch.id)}</b><span>${tf('ch_'+ch.id+'_d',{g:regionById(DATA.CLEAN_ID)[3],p:dec(schedSaving()*100)})}</span>${ch.id==='own'?`<span style="display:flex;align-items:center;gap:8px;margin-top:8px"><input id="ownPct" class="field num" style="width:90px;padding:6px 10px" type="number" min="0" max="90" step="1" value="${state.ownPct||''}" placeholder="%"> <span>${t('ch_own_u')}</span></span>`:''}</div>
       <span class="save" data-save></span>
     </label>`).join('');
+  const op=$('ownPct');
+  if(op){ op.addEventListener('click',e=>e.stopPropagation());
+    op.addEventListener('input',()=>{ const v=parseFloat(op.value); state.ownPct=isFinite(v)?Math.min(90,Math.max(0,v)):0;
+      if(state.ownPct>0 && !state.active.has('own')){ state.active.add('own'); const el=op.closest('.challenge'); el.classList.add('on'); el.querySelector('input[type=checkbox]').checked=true; }
+      refreshOptimized(false); }); }
   document.querySelectorAll('.challenge').forEach(el=>{
-    el.querySelector('input').addEventListener('change',e=>{
+    el.querySelector('input[type=checkbox]').addEventListener('change',e=>{
       const id=el.dataset.ch;
       e.target.checked ? state.active.add(id) : state.active.delete(id);
       el.classList.toggle('on',e.target.checked);
@@ -1197,7 +1264,8 @@ function inputRows(){
   const reg=regionById(state.region);
   const rows=[
     [t('in_wl'), wlName(state.workload)],
-    [t('in_mode'), state.mode==='meas' ? tf('in_mode_meas',{k:fmt(state.measKwh)}) : tf('in_mode_est',{gpu:gpuName(state.gpu),u:dec(state.util)})],
+    [t('in_mode'), state.mode==='meas' ? tf('in_mode_meas',{k:fmt(state.measKwh)}) : tf('in_mode_est',{gpu:gpuName(state.gpu),u:Math.round(state.util*100)+' %'})],
+    [t('in_host'), state.host ? tf('in_host_y',{f:dec(DATA.HOST_FACTOR)}) : t('in_host_n')],
     [t('in_units'), String(state.units)],
     [t('in_hours'), String(state.hours)],
     [t('in_region'), `${regionName(reg)} (${reg[3]} gCO₂e/kWh · Ember ${reg[4]}; ${reg[7]?'≈ ':''}${dec(reg[6])} L/kWh · WRI)`],
@@ -1240,6 +1308,7 @@ $('btnPdf').addEventListener('click',()=>{
     <p><b>${t('bk_c')}</b></p>${rbar([{l:t('bk_c1'),v:base.operational,c:'#16a34a'},{l:t('bk_c2'),v:base.embodied,c:'#86efac'}])}
     <p style="margin-top:6pt"><b>${t('bk_e')}</b></p>${rbar([{l:t('bk_e1'),v:base.kwhIT,c:'#ca8a04'},{l:t('bk_e2'),v:base.overhead,c:'#fde68a'}])}
     <p style="margin-top:6pt"><b>${t('bk_w')}</b></p>${rbar([{l:t('bk_w1'),v:base.waterOn,c:'#0284c7'},{l:t('bk_w2'),v:base.waterOff,c:'#7dd3fc'}])}
+    <p class="small" style="margin-top:6pt"><b>${t('as_h')}:</b> ${assumptionsText()}</p>
     <p class="small" style="margin-top:6pt">${tf('pue_ref',{pue:dec(base.pue)})} ${t(base.pue>1.5?'pue_over':base.pue>1.3?'pue_ok27':'pue_ok30')}</p>
     <table style="margin-top:8pt"><tr><th>${t('col_item')}</th><th class="n">${t('col_base')}</th>${has?`<th class="n">${t('col_opt')}</th>`:''}<th>${t('col_unit')}</th></tr>
       ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${fmt(row[1])}</td>${has?`<td class="n">${fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
@@ -1349,7 +1418,9 @@ $('nlForm').addEventListener('submit', e=>{
 ============================================================ */
 function shareParams(){
   const p=new URLSearchParams({ w:state.workload, d:state.dc, u:state.units, h:state.hours, r:state.region, l:state.life });
-  if(state.mode==='meas') { p.set('m','meas'); p.set('k',state.measKwh); } else p.set('g',state.gpu);
+  if(state.mode==='meas') { p.set('m','meas'); p.set('k',state.measKwh); } else { p.set('g',state.gpu); if(state.util<1) p.set('ut',Math.round(state.util*100)); }
+  p.set('sv', state.host?'1':'0');
+  if(state.ownPct>0) p.set('oe',state.ownPct);
   if(state.reqs>0) p.set('q',state.reqs);
   if(state.reps>1) p.set('y',state.reps);
   if(state.active.size) p.set('c',[...state.active].join('.'));
@@ -1374,6 +1445,9 @@ function applyConfig(cfg){
   else if(cfg.g) clickPick('data-gpu',cfg.g);
   if(cfg.d) clickPick('data-dc',cfg.d);
   if(cfg.l) clickPick('data-life',cfg.l);
+  state.util=Math.min(1,Math.max(0.1,(+cfg.ut||100)/100)); renderUtil();
+  clickPick('data-host', cfg.sv==='0'||cfg.sv==='1' ? cfg.sv : (cfg.m==='meas'?'0':'1'));
+  state.ownPct=Math.min(90,Math.max(0,+cfg.oe||0));
   state.units=Math.max(1,+cfg.u||1); $('unitsVal').textContent=state.units;
   const h=Math.min(720,Math.max(1,+cfg.h||24));
   state.hours=h; hoursInput.value=Math.round(100*Math.log(h)/Math.log(720)); renderHours();
@@ -1394,11 +1468,13 @@ document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click'
 function restoreFromURL(){
   const p=new URLSearchParams(location.search);
   if(!p.has('h')) return false;
-  const legacy={w:['train','ft','inf','exp'],g:['h100','a100','v100','t4','cpu','avg'],d:['hyper','avg']};
+  const legacy={w:['train','ft','inf','exp'],g:['h100','a100','v100','t4','avg','avg'],d:['hyper','avg']};
   const val=(k)=>{ const v=p.get(k); return /^\d+$/.test(v||'') && legacy[k] ? legacy[k][+v] : v; };
   let r=p.get('r'); if(/^\d+$/.test(r||'')) r=['world','no','se','fr','usw','es','eu','uk','ie','use','de','sg','jp','cn','in','pl'][+r]; // enlaces de la v1
-  applyConfig({ w:val('w'), g:val('g'), d:val('d'), m:p.get('m'), k:p.get('k'), l:p.get('l'),
-    u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c:(p.get('c')||'').split('.').filter(Boolean) });
+  let g=val('g'); if(g==='cpu') g='avg';
+  const c=(p.get('c')||'').split('.').filter(x=>x && !['auto','quant'].includes(x));
+  applyConfig({ w:val('w'), g, d:val('d'), m:p.get('m'), k:p.get('k'), l:p.get('l'), ut:p.get('ut'), sv:p.get('sv'), oe:p.get('oe'),
+    u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c });
   return true;
 }
 $('btnLink').addEventListener('click',async e=>{
@@ -1413,7 +1489,7 @@ $('btnLink').addEventListener('click',async e=>{
   const p=new URLSearchParams(location.search);
   let l=p.get('lang'); if(!l){ try{ l=localStorage.getItem('nc_lang'); }catch(_){} }
   LANG = l==='en'?'en':'es';
-  applyLang(); goStep(1);
+  renderUtil(); applyLang(); goStep(1);
   if(restoreFromURL()) toast(t('t_url'));
 })();
 </script>
