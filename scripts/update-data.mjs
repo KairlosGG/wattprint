@@ -68,21 +68,33 @@ async function fromOWID(){
 }
 
 async function fromEmberUS(){
-  const rows=parseCSV(await get(EMBER_US)); const h=rows[0].map(x=>x.toLowerCase());
-  REPORT.sources.ember_us={ url:EMBER_US, rows:rows.length-1, header:rows[0],
-    variables:[...new Set(rows.slice(1,20000).map(r=>r[h.indexOf('variable')]))].slice(0,40) };
-  const find=re=>h.findIndex(x=>re.test(x));
-  const is=find(/^state$/)>=0?find(/^state$/):find(/state(?!.*code)/), iy=find(/^year$/),
-        ivar=find(/^variable$/), iu=find(/^unit$/), iv=find(/^value$/);
-  if([is,iy,ivar,iv].some(i=>i<0)) throw new Error('Ember US: columnas no encontradas: '+rows[0].join('|'));
-  const out={};
+  // Formato ancho: una fila por estado, año y fuente; columna "Emissions intensity (gCO2e/kWh)".
+  const rows=parseCSV(await get(EMBER_US)); const H=rows[0], h=H.map(x=>x.toLowerCase().trim());
+  const col=name=>h.indexOf(name);
+  const is=col('state'), iy=col('year'), isrc=col('electricity source'), iagg=col('is aggregated source'),
+        iint=h.findIndex(x=>x.startsWith('emissions intensity')), igen=h.findIndex(x=>x.startsWith('generation (twh)')),
+        iem=h.findIndex(x=>x.startsWith('emissions (mtco2e)'));
+  REPORT.sources.ember_us={ url:EMBER_US, rows:rows.length-1, header:H };
+  if([is,iy,isrc].some(i=>i<0) || (iint<0 && (igen<0||iem<0))) throw new Error('Ember US: columnas no encontradas: '+H.join('|'));
+  const srcs=new Set(), total={}, sums={};
   for(const r of rows.slice(1)){
-    if(!/co2 intensity|emissions intensity|carbon intensity/i.test(r[ivar]||'')) continue;
-    if(iu>=0 && !/gco2/i.test(r[iu]||'')) continue;
-    const v=parseFloat(r[iv]), y=+r[iy];
-    if(!plausible(v)) continue;
-    if(!out[r[is]] || y>out[r[is]].year) out[r[is]]={value:v, year:y};
+    const st=r[is], y=+r[iy], src=(r[isrc]||'').trim(); if(!st||!y) continue; srcs.add(src);
+    const k=st+'|'+y;
+    if(/^total/i.test(src) && iint>=0){ const v=parseFloat(r[iint]); if(plausible(v)) total[k]=v; }
+    const agg = iagg>=0 ? /true|yes|1/i.test(r[iagg]||'') : false;
+    if(!agg && igen>=0 && iem>=0){ const g=parseFloat(r[igen]), e=parseFloat(r[iem]);
+      if(Number.isFinite(g)&&Number.isFinite(e)){ sums[k]??={g:0,e:0}; sums[k].g+=g; sums[k].e+=e; } }
   }
+  REPORT.sources.ember_us.sources_seen=[...srcs].slice(0,30);
+  const out={};
+  const keys=new Set([...Object.keys(total),...Object.keys(sums)]);
+  for(const k of keys){
+    const [st,y]=k.split('|'); let v=total[k], how='total';
+    if(!plausible(v) && sums[k]?.g>0){ v=sums[k].e/sums[k].g*1000; how='emisiones/generación'; }
+    if(!plausible(v)) continue;
+    if(!out[st] || +y>out[st].year) out[st]={value:v, year:+y, how};
+  }
+  REPORT.sources.ember_us.method={ Virginia:out.Virginia?.how, Oregon:out.Oregon?.how };
   return out;
 }
 
