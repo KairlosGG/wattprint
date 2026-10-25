@@ -24,12 +24,18 @@ Marco: especificación **Software Carbon Intensity (SCI)** de la Green Software 
 | Magnitud | Fórmula | Fuente de los datos |
 |---|---|---|
 | Energía (E) | `kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE`, o kWh medidos × PUE | TDP del fabricante (NVIDIA). PUE: media del sector 1,54 (Uptime Institute, 2025); hyperscale 1,12 |
-| Carbono (I) | `kg CO₂e = kWh × intensidad de la red ÷ 1000` | Intensidad por país de [Ember](https://ember-energy.org/) (CC BY 4.0), método location-based |
+| Carbono (I) | `kg CO₂e = kWh × intensidad de la red ÷ 1000` | Intensidad de ciclo de vida por país de [Ember](https://ember-energy.org/data/yearly-electricity-data/) (CC BY 4.0), vía [Our World in Data](https://github.com/owid/energy-data); estados de EE. UU. de [Ember US Electricity Data](https://ember-energy.org/data/us-electricity-data/). Método location-based |
 | Fabricación (M) | ≈300 kg CO₂e por acelerador ÷ vida útil (4–6 años) | Luccioni et al. (2022); Semiconductor Climate Consortium (2025) |
 | Agua de refrigeración | `litros = kWh de servidores × WUE` | Media del sector ≈1,9 L/kWh (EESI, 2024); hyperscale 0,65 L/kWh (Google y Microsoft, 2024) |
 | Agua de generación eléctrica | `litros = kWh totales × factor de agua de la red` | [WRI, Reig et al. (2020)](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity), factores de consumo por país; mismo marco que [Li et al., *Making AI Less "Thirsty"*](https://arxiv.org/abs/2304.03271) |
 
 Son **estimaciones de orden de magnitud, no una medición certificada**. La metodología completa y la tabla de factores por región están dentro de la herramienta, en «Metodología».
+
+## Datos siempre al día
+
+La intensidad de carbono se actualiza sola. Una GitHub Action ([`update-data.yml`](.github/workflows/update-data.yml)) ejecuta [`scripts/update-data.mjs`](scripts/update-data.mjs) el día 2 de cada mes: descarga los últimos datos de Ember, comprueba que los valores son plausibles, actualiza `index.html` y guarda el cambio con la fecha. Si una fuente falla, se conservan los valores anteriores. También se puede lanzar a mano desde la pestaña *Actions*.
+
+Los factores de agua de la electricidad (WRI, 2020) y los valores de PUE y WUE no tienen una publicación periódica en formato abierto; se revisan a mano cuando sale una edición nueva.
 
 ## Cómo usarla en local
 

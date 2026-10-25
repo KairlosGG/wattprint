@@ -39,6 +39,13 @@
   color-scheme:dark;
 }
 *{ box-sizing:border-box; margin:0; }
+/* Barras de desplazamiento finas y discretas */
+*{ scrollbar-width:thin; scrollbar-color:#2C3F37 transparent; }
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:#2C3F37; border-radius:99px; border:3px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-thumb:hover{ background:#3F5A4F; border:3px solid transparent; background-clip:padding-box; }
+::-webkit-scrollbar-corner{ background:transparent; }
 html{ scroll-behavior:smooth; }
 body{ background:var(--base); color:var(--ink); font-family:var(--f-body);
       line-height:1.55; -webkit-font-smoothing:antialiased; }
@@ -163,7 +170,10 @@ input[type=range]::-moz-range-thumb{ width:22px; height:22px; border-radius:50%;
   align-items:center; justify-content:center;
   background:rgba(11,18,16,.82); backdrop-filter:blur(4px); }
 .modal-backdrop.open{ display:flex; animation:fadeUp .2s ease both; }
-.modal{ max-width:620px; width:100%; max-height:84vh; overflow-y:auto; padding:28px; }
+.modal{ max-width:640px; width:100%; max-height:84vh; display:flex; flex-direction:column; overflow:hidden; padding:0; }
+.modal-head{ display:flex; justify-content:space-between; align-items:flex-start; padding:24px 28px 12px; border-bottom:1px solid var(--line); }
+.modal-body p+p{ margin-top:10px; }
+.modal-body{ overflow-y:auto; padding:16px 28px 28px; overscroll-behavior:contain; }
 .modal h3{ font-family:var(--f-display); font-size:20px; }
 .modal .src{ font-size:13.5px; color:var(--muted); line-height:1.65; }
 .modal .src strong{ color:var(--ink); }
@@ -390,7 +400,7 @@ section{ padding:64px 0; }
     <!-- PASO 3 · región -->
     <div class="step" data-step="3">
       <h2 class="h2" data-i="s3_h">¿Dónde está el centro de datos?</h2>
-      <p class="muted" style="margin-top:8px" data-i="s3_p">La red eléctrica de cada país cambia el carbono hasta 20 veces, y también el agua que se gasta al generar la electricidad.</p>
+      <p class="muted" style="margin-top:8px" data-i="s3_p">La red eléctrica de cada país puede multiplicar el carbono por más de 20, y también el agua que se gasta al generar la electricidad.</p>
       <p class="note" data-i="s3_tip">💡 ¿Usas APIs de OpenAI o Anthropic, o no lo sabes? "EE. UU. Este (Virginia)" o "Media mundial" son buenas aproximaciones.</p>
       <select id="region" class="field" style="margin-top:24px" data-ia="aria-label:s3_h"></select>
     </div>
@@ -528,13 +538,14 @@ section{ padding:64px 0; }
 <!-- ============================================================ MODAL METODOLOGÍA -->
 <div id="methodModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="methodTitle">
   <div class="modal card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div class="modal-head">
       <h3 id="methodTitle" data-i="m_h">Metodología y fuentes</h3>
       <button id="closeMethod" class="muted" style="font-size:24px;line-height:1" data-ia="aria-label:close">×</button>
     </div>
-    <div class="src" style="margin-top:16px;display:grid;gap:12px">
+    <div class="modal-body src" style="display:grid;gap:12px">
       <div data-i="m_body"></div>
       <div id="srcTable"></div>
+      <p id="srcUpdated" class="mono" style="font-size:12px"></p>
       <div data-i="m_body2"></div>
     </div>
   </div>
@@ -557,29 +568,34 @@ const CONFIG = {
    1 · DATOS
    REGIONS: [id, nombre ES, nombre EN, gCO2e/kWh, año Ember,
              intensidad aproximada?, L/kWh agua de generación, agua aproximada?]
+   Carbono: Ember (vía Our World in Data); se actualiza solo cada mes con
+   scripts/update-data.mjs (GitHub Actions).
    Agua de generación: WRI (Reig et al., 2020), consumo medio de la red por
    país (EE. UU. por subred eGRID), gal/kWh × 3,785. Si el país no está en
    el estudio se usa la media mundial (marcado como aproximado).
 ============================================================ */
 const DATA = {
-  REGIONS: [
-    ['world', 'Media mundial',            'World average',          473, '2024', false, 4.81, false],
-    ['no',    'Noruega',                  'Norway',                  30, '2023', false, 6.66, false],
-    ['se',    'Suecia',                   'Sweden',                  41, '2023', false, 6.02, false],
-    ['fr',    'Francia',                  'France',                  56, '2023', false, 3.67, false],
-    ['usw',   'EE. UU. Oeste (Oregón)',   'US West (Oregon)',       130, '2023', true,  9.50, false],
-    ['es',    'España',                   'Spain',                  174, '2023', false, 6.21, false],
-    ['eu',    'Media UE',                 'EU average',             213, '2024', false, 4.81, true ],
-    ['uk',    'Reino Unido',              'United Kingdom',         238, '2023', false, 2.35, false],
-    ['ie',    'Irlanda',                  'Ireland',                290, '2023', true,  1.48, false],
-    ['use',   'EE. UU. Este (Virginia)',  'US East (Virginia)',     360, '2023', true,  2.38, false],
-    ['de',    'Alemania',                 'Germany',                371, '2023', false, 1.93, false],
-    ['sg',    'Singapur',                 'Singapore',              417, '2023', false, 4.81, true ],
-    ['jp',    'Japón',                    'Japan',                  460, '2023', true,  2.31, false],
-    ['cn',    'China',                    'China',                  560, '2024', false, 6.02, false],
-    ['in',    'India',                    'India',                  632, '2022', false, 3.44, false],
-    ['pl',    'Polonia',                  'Poland',                 662, '2023', false, 2.50, false],
+  REGIONS: [ /*REGIONS:START*/
+    ['world',  'Media mundial',             'World average',              458, '2025', false, 4.81, false],
+    ['no',     'Noruega',                   'Norway',                      28, '2025', false, 6.66, false],
+    ['se',     'Suecia',                    'Sweden',                      35, '2025', false, 6.02, false],
+    ['fr',     'Francia',                   'France',                      41, '2025', false, 3.67, false],
+    ['usw',    'EE. UU. Oeste (Oregón)',    'US West (Oregon)',           130, '2023', true , 9.50, false],
+    ['es',     'España',                    'Spain',                      154, '2025', false, 6.21, false],
+    ['eu',     'Media UE',                  'EU average',                 210, '2025', false, 4.81, true ],
+    ['uk',     'Reino Unido',               'United Kingdom',             217, '2025', false, 2.35, false],
+    ['ie',     'Irlanda',                   'Ireland',                    257, '2025', false, 1.48, false],
+    ['de',     'Alemania',                  'Germany',                    330, '2025', false, 1.93, false],
+    ['use',    'EE. UU. Este (Virginia)',   'US East (Virginia)',         360, '2023', true , 2.38, false],
+    ['us',     'EE. UU. (media)',           'United States (average)',    384, '2025', false, 3.14, false],
+    ['jp',     'Japón',                     'Japan',                      477, '2025', false, 2.31, false],
+    ['sg',     'Singapur',                  'Singapore',                  497, '2025', false, 4.81, true ],
+    ['cn',     'China',                     'China',                      525, '2025', false, 6.02, false],
+    ['pl',     'Polonia',                   'Poland',                     589, '2025', false, 2.50, false],
+    ['in',     'India',                     'India',                      670, '2025', false, 3.44, false],
+  /*REGIONS:END*/
   ],
+  UPDATED: '2026-10-25', // fecha de la última actualización de datos de carbono (scripts/update-data.mjs)
   CLEAN_ID: 'no',        // región usada por el reto "región más limpia"
   PUE_HYPER: 1.12, WUE_HYPER: 0.65,
   EMBODIED_KG: 300,      // kg CO2e por acelerador (ver metodología)
@@ -639,7 +655,7 @@ es:{
   reps_l:'¿Cuántas veces al año se repite?',
   reps_d:'Para la vista anual. Un servicio que funciona todo el mes, 12 veces; un entrenamiento único, 1.',
   s3_h:'¿Dónde está el centro de datos?',
-  s3_p:'La red eléctrica de cada país cambia el carbono hasta 20 veces, y también el agua que se gasta al generar la electricidad.',
+  s3_p:'La red eléctrica de cada país puede multiplicar el carbono por más de 20, y también el agua que se gasta al generar la electricidad.',
   s3_tip:'💡 ¿Usas APIs de OpenAI o Anthropic, o no lo sabes? "EE. UU. Este (Virginia)" o "Media mundial" son buenas aproximaciones.',
   s4_h:'¿Qué tipo de centro de datos?', s4_p:'La eficiencia energética (PUE) y el uso de agua (WUE) varían mucho entre operadores.',
   s4_tip:'💡 Regla simple: AWS, Google Cloud o Azure → "Cloud hyperscale". Servidores propios o proveedor local → "Centro de datos medio".',
@@ -661,7 +677,7 @@ es:{
   eq_home:'de electricidad de un hogar medio', months:'{n} meses', days2:'{n} días',
   ch_h:'Retos de optimización', ch_p:'Marca los que podrías aplicar y mira cómo cambia tu huella.',
   ch_total:'Ahorro total: −{p}% CO₂e',
-  ch_region:'Mover a la región más limpia', ch_region_d:'Red de Noruega (30 g/kWh). Ojo: con tanta hidráulica, el agua de generación sube.',
+  ch_region:'Mover a la región más limpia', ch_region_d:'Red de Noruega ({g} g/kWh). Ojo: con tanta hidráulica, el agua de generación sube.',
   ch_hyper:'Migrar a cloud hyperscale eficiente', ch_hyper_d:'PUE 1,54 → 1,12 y WUE 1,9 → 0,65 L/kWh.',
   ch_auto:'Auto-scaling y right-sizing', ch_auto_d:'Apagar y dimensionar instancias según la demanda real (−25 % energía).',
   ch_quant:'Precisión mixta / cuantización', ch_quant_d:'FP16-INT8 donde no penalice la calidad del modelo (−30 % energía).',
@@ -689,13 +705,14 @@ es:{
   m_h:'Metodología y fuentes',
   m_body:`<p><strong>Marco:</strong> especificación <strong>Software Carbon Intensity (SCI)</strong> de la Green Software Foundation, publicada como norma ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) por R</code>. E es la energía, I la intensidad de carbono de la red, M la huella de fabricación del hardware y R la unidad funcional (una ejecución o una petición).</p>
 <p><strong>Energía (E):</strong> <code class="t-energy">kWh = TDP × unidades × horas × utilización ÷ 1000 × PUE</code>. TDP según el fabricante (NVIDIA). La utilización media por tipo de carga (0,40–0,85) es una hipótesis de trabajo: si has medido el consumo, usa la opción «Tengo kWh medidos», que sustituye la estimación por tu dato. PUE: media del sector <strong>1,54</strong> (Uptime Institute, Global Data Center Survey 2025); flotas hyperscale 1,08–1,12 (Google informa 1,10). Usamos 1,12 para cloud hyperscale.</p>
-<p><strong>Carbono (I):</strong> intensidad media de la red de cada país, de <strong>Ember</strong> (licencia CC BY 4.0; año de datos en la tabla). Las regiones cloud subnacionales (Virginia, Oregón) y algunas otras se marcan como aproximadas. Se usa la intensidad de la red física (método location-based), como pide SCI: no se descuentan compras de renovables ni compensaciones.</p>`,
+<p><strong>Carbono (I):</strong> intensidad media de la red de cada país en su ciclo de vida, de <strong>Ember</strong> (Yearly Electricity Data, licencia CC BY 4.0), tal como la republica Our World in Data. Virginia y Oregón usan los datos de Ember por estado de EE. UU. y se marcan como aproximadas, porque una región cloud no coincide exactamente con el estado. Los datos se actualizan solos cada mes. Se usa la intensidad de la red física (método location-based), como pide SCI: no se descuentan compras de renovables ni compensaciones.</p>`,
   m_body2:`<p><strong>Agua de refrigeración:</strong> <code class="t-water">litros = kWh de servidores × WUE</code>. Media del sector ≈ <strong>1,9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0,80 y Microsoft 0,49 L/kWh (informes de sostenibilidad 2024) → usamos 0,65.</p>
 <p><strong>Agua de generación eléctrica:</strong> <code class="t-water">litros = kWh totales × factor de agua de la red</code>. Factores de consumo de agua de la red de cada país de <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; mix de generación de 2016, incluye la evaporación de los embalses hidroeléctricos). Es el mismo marco que usan Li et al. en <em>Making AI Less "Thirsty"</em> (agua de alcance 1 y 2). Por eso los países con mucha hidráulica, como Noruega, tienen poco carbono pero más agua.</p>
 <p><strong>Fabricación (M):</strong> ≈ <strong>300 kg CO₂e por acelerador</strong> (chip, placa y parte proporcional del servidor), repartidos en la vida útil elegida (4–6 años). Orden de magnitud a partir de Luccioni et al. (2022) y del Semiconductor Climate Consortium (2025: 20–25 kg solo el chip avanzado). Las grandes nubes amortizan sus servidores en 5–6 años (informes anuales 2025 de Amazon y Meta).</p>
 <p><strong>Retos:</strong> región limpia (red de Noruega) · hyperscale (PUE 1,54→1,12, WUE 1,9→0,65) · auto-scaling −25 % energía · precisión mixta/cuantización −30 % energía · carbon-aware scheduling −15 % intensidad. Son reducciones de referencia para comparar, no garantías.</p>
 <p><strong>Equivalencias:</strong> coche de gasolina ≈170 g CO₂/km · carga de smartphone ≈0,0127 kWh (EPA) · árbol ≈21 kg CO₂/año · ducha de 10 min ≈60 L · hogar medio ≈270 kWh/mes.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">Son estimaciones de orden de magnitud, no una medición certificada. Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.</p>`,
+  m_upd:'Datos de carbono actualizados el {d}.',
   m_tbl_r:'Región', m_tbl_c:'gCO₂e/kWh (Ember, año)', m_tbl_w:'L/kWh agua de generación (WRI)', approx:'≈',
   sci_r_run:'1 ejecución', sci_r_req:'{n} peticiones', sci_per_run:'kg CO₂e / ejecución', sci_per_req:'g CO₂e / petición',
   sci_E:'E (energía)', sci_I:'I (intensidad de la red)', sci_M:'M (fabricación amortizada)', sci_R:'R (unidad funcional)',
@@ -705,7 +722,7 @@ es:{
   rp_ch_none:'No se ha marcado ningún reto de optimización.', rp_ch_on:'Retos aplicados: {list}. Resultado optimizado:',
   rp_meth:'Método y fuentes', rp_lim:'Limitaciones',
   rp_lim_t:'Estimación de orden de magnitud, no una medición certificada. La energía se estima con el TDP y una utilización media salvo que se introduzcan kWh medidos. Los factores de agua de generación son medias nacionales (mix de 2016). La huella de fabricación es una aproximación por acelerador.',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0), método location-based. PUE: Uptime Institute 2025. WUE: EESI 2024; Google y Microsoft 2024. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) por R. Carbono de la red: Ember (CC BY 4.0, vía Our World in Data), método location-based, datos de {year}. PUE: Uptime Institute 2025. WUE: EESI 2024; Google y Microsoft 2024. Agua de generación: WRI, Reig et al. 2020. Fabricación: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
   in_wl:'Tipo de carga', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, utilización {u}', in_mode_meas:'Medida: {k} kWh de servidores',
   in_units:'Aceleradores / instancias', in_hours:'Horas', in_region:'Región', in_dc:'Centro de datos', in_life:'Vida útil del hardware',
   in_reqs:'Peticiones', in_reps:'Repeticiones al año', years:'{n} años',
@@ -746,7 +763,7 @@ en:{
   reps_l:'How many times a year does it run?',
   reps_d:'For the annual view. A service running all month: 12. A one-off training run: 1.',
   s3_h:'Where is the data centre?',
-  s3_p:'Each country\'s grid can change the carbon by up to 20×, and also the water used to generate the electricity.',
+  s3_p:'Each country\'s grid can change the carbon by more than 20×, and also the water used to generate the electricity.',
   s3_tip:'💡 Using OpenAI or Anthropic APIs, or not sure? "US East (Virginia)" or "World average" are good approximations.',
   s4_h:'What kind of data centre?', s4_p:'Energy efficiency (PUE) and water use (WUE) vary a lot between operators.',
   s4_tip:'💡 Rule of thumb: AWS, Google Cloud or Azure → "Hyperscale cloud". Your own servers or a local provider → "Average data centre".',
@@ -768,7 +785,7 @@ en:{
   eq_home:'of electricity for an average home', months:'{n} months', days2:'{n} days',
   ch_h:'Optimisation challenges', ch_p:'Tick the ones you could apply and see how your footprint changes.',
   ch_total:'Total saving: −{p}% CO₂e',
-  ch_region:'Move to the cleanest region', ch_region_d:'Norway\'s grid (30 g/kWh). Note: with so much hydropower, generation water goes up.',
+  ch_region:'Move to the cleanest region', ch_region_d:'Norway\'s grid ({g} g/kWh). Note: with so much hydropower, generation water goes up.',
   ch_hyper:'Move to an efficient hyperscale cloud', ch_hyper_d:'PUE 1.54 → 1.12 and WUE 1.9 → 0.65 L/kWh.',
   ch_auto:'Auto-scaling and right-sizing', ch_auto_d:'Turn off and size instances to real demand (−25% energy).',
   ch_quant:'Mixed precision / quantisation', ch_quant_d:'FP16-INT8 where it doesn\'t hurt model quality (−30% energy).',
@@ -796,13 +813,14 @@ en:{
   m_h:'Methodology and sources',
   m_body:`<p><strong>Framework:</strong> the Green Software Foundation's <strong>Software Carbon Intensity (SCI)</strong> specification, published as ISO/IEC 21031:2024: <code>SCI = ((E × I) + M) per R</code>. E is energy, I the grid carbon intensity, M the hardware manufacturing footprint and R the functional unit (one run or one request).</p>
 <p><strong>Energy (E):</strong> <code class="t-energy">kWh = TDP × units × hours × utilisation ÷ 1000 × PUE</code>. TDP from the manufacturer (NVIDIA). Average utilisation by workload (0.40–0.85) is a working assumption: if you have measured consumption, use "I have measured kWh", which replaces the estimate with your figure. PUE: industry average <strong>1.54</strong> (Uptime Institute, Global Data Center Survey 2025); hyperscale fleets 1.08–1.12 (Google reports 1.10). We use 1.12 for hyperscale cloud.</p>
-<p><strong>Carbon (I):</strong> average grid intensity by country from <strong>Ember</strong> (CC BY 4.0 licence; data year in the table). Sub-national cloud regions (Virginia, Oregon) and a few others are marked as approximate. We use the physical grid intensity (location-based), as SCI requires: renewable purchases and offsets are not deducted.</p>`,
+<p><strong>Carbon (I):</strong> average lifecycle grid intensity by country from <strong>Ember</strong> (Yearly Electricity Data, CC BY 4.0 licence), as republished by Our World in Data. Virginia and Oregon use Ember's US state data and are marked as approximate, because a cloud region does not exactly match the state. The data updates itself every month. We use the physical grid intensity (location-based), as SCI requires: renewable purchases and offsets are not deducted.</p>`,
   m_body2:`<p><strong>Cooling water:</strong> <code class="t-water">litres = server kWh × WUE</code>. Industry average ≈ <strong>1.9 L/kWh</strong> (EESI, 2024). Hyperscale: Google 0.80 and Microsoft 0.49 L/kWh (2024 sustainability reports) → we use 0.65.</p>
 <p><strong>Electricity generation water:</strong> <code class="t-water">litres = total kWh × grid water factor</code>. Grid water consumption factors by country from <strong>WRI</strong>, <em>Guidance for Calculating Water Use Embedded in Purchased Electricity</em> (Reig et al., 2020; 2016 generation mix, includes hydropower reservoir evaporation). It is the same framework used by Li et al. in <em>Making AI Less "Thirsty"</em> (scope 1 and 2 water). That is why hydro-heavy countries such as Norway have low carbon but more water.</p>
 <p><strong>Manufacturing (M):</strong> ≈ <strong>300 kg CO₂e per accelerator</strong> (chip, board and a share of the server), spread over the chosen lifetime (4–6 years). Order of magnitude from Luccioni et al. (2022) and the Semiconductor Climate Consortium (2025: 20–25 kg for the advanced chip alone). Large clouds depreciate servers over 5–6 years (Amazon and Meta 2025 annual reports).</p>
 <p><strong>Challenges:</strong> clean region (Norway's grid) · hyperscale (PUE 1.54→1.12, WUE 1.9→0.65) · auto-scaling −25% energy · mixed precision/quantisation −30% energy · carbon-aware scheduling −15% intensity. These are reference reductions for comparison, not guarantees.</p>
 <p><strong>Equivalences:</strong> petrol car ≈170 g CO₂/km · smartphone charge ≈0.0127 kWh (EPA) · tree ≈21 kg CO₂/year · 10-minute shower ≈60 L · average home ≈270 kWh/month.</p>
 <p style="border-top:1px solid var(--line);padding-top:12px">These are order-of-magnitude estimates, not certified measurements. Independent project, not affiliated with the Green Software Foundation, Ember, WRI or any provider mentioned.</p>`,
+  m_upd:'Carbon data updated on {d}.',
   m_tbl_r:'Region', m_tbl_c:'gCO₂e/kWh (Ember, year)', m_tbl_w:'L/kWh generation water (WRI)', approx:'≈',
   sci_r_run:'1 run', sci_r_req:'{n} requests', sci_per_run:'kg CO₂e / run', sci_per_req:'g CO₂e / request',
   sci_E:'E (energy)', sci_I:'I (grid intensity)', sci_M:'M (amortised manufacturing)', sci_R:'R (functional unit)',
@@ -812,7 +830,7 @@ en:{
   rp_ch_none:'No optimisation challenge was selected.', rp_ch_on:'Challenges applied: {list}. Optimised result:',
   rp_meth:'Method and sources', rp_lim:'Limitations',
   rp_lim_t:'Order-of-magnitude estimate, not a certified measurement. Energy is estimated from TDP and an average utilisation unless measured kWh are entered. Generation water factors are national averages (2016 mix). The manufacturing footprint is a per-accelerator approximation.',
-  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0), location-based. PUE: Uptime Institute 2025. WUE: EESI 2024; Google and Microsoft 2024. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
+  rp_meth_t:'Software Carbon Intensity (SCI, ISO/IEC 21031): SCI = ((E × I) + M) per R. Grid carbon: Ember (CC BY 4.0, via Our World in Data), location-based, {year} data. PUE: Uptime Institute 2025. WUE: EESI 2024; Google and Microsoft 2024. Generation water: WRI, Reig et al. 2020. Manufacturing: Luccioni et al. 2022; Semiconductor Climate Consortium 2025.',
   in_wl:'Workload', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, utilisation {u}', in_mode_meas:'Measured: {k} kWh at the servers',
   in_units:'Accelerators / instances', in_hours:'Hours', in_region:'Region', in_dc:'Data centre', in_life:'Hardware lifetime',
   in_reqs:'Requests', in_reps:'Runs per year', years:'{n} years',
@@ -977,6 +995,7 @@ regionSel.addEventListener('change',e=>{ state.region=e.target.value; updateLive
 function buildSrcTable(){
   $('srcTable').innerHTML=`<table><tr><th>${t('m_tbl_r')}</th><th>${t('m_tbl_c')}</th><th>${t('m_tbl_w')}</th></tr>`+
     DATA.REGIONS.map(r=>`<tr><td>${regionName(r)}${r[5]?' ≈':''}</td><td>${r[3]} · ${r[4]}</td><td>${r[7]?'≈ ':''}${dec(r[6])}</td></tr>`).join('')+'</table>';
+  $('srcUpdated').textContent=tf('m_upd',{d:new Date(DATA.UPDATED+'T12:00:00Z').toLocaleDateString(loc(),{year:'numeric',month:'long',day:'numeric'})});
 }
 
 /* ============================================================
@@ -1055,7 +1074,7 @@ function renderChallenges(){
   $('challenges').innerHTML=CHALLENGES.map(ch=>`
     <label class="challenge ${state.active.has(ch.id)?'on':''}" data-ch="${ch.id}">
       <input type="checkbox" ${state.active.has(ch.id)?'checked':''} aria-label="${t('ch_'+ch.id)}">
-      <div><b>${t('ch_'+ch.id)}</b><span>${t('ch_'+ch.id+'_d')}</span></div>
+      <div><b>${t('ch_'+ch.id)}</b><span>${tf('ch_'+ch.id+'_d',{g:regionById(DATA.CLEAN_ID)[3]})}</span></div>
       <span class="save" data-save></span>
     </label>`).join('');
   document.querySelectorAll('.challenge').forEach(el=>{
@@ -1195,7 +1214,7 @@ $('btnPdf').addEventListener('click',()=>{
       ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${fmt(row[1])}</td>${has?`<td class="n">${fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
     ${unit}
     <h2>${t('rp_ch')}</h2><p>${has?tf('rp_ch_on',{list:[...state.active].map(id=>t('ch_'+id)).join(', ')})+` <b>${fmt(opt.co2)} kg CO₂e · ${fmt(opt.kwh)} kWh · ${fmt(opt.water)} L</b> (−${Math.round((1-opt.co2/base.co2)*100)}% CO₂e).`:t('rp_ch_none')}</p>
-    <h2>${t('rp_meth')}</h2><p class="small">${t('rp_meth_t')}</p>
+    <h2>${t('rp_meth')}</h2><p class="small">${tf('rp_meth_t',{year:regionById(state.region)[4]})}</p>
     <h2>${t('rp_lim')}</h2><p class="small">${t('rp_lim_t')}</p>`;
   toast(t('t_pdf'));
   setTimeout(()=>window.print(),150);
@@ -1219,7 +1238,7 @@ $('btnCsv').addEventListener('click',()=>{
   if(state.reps>1){ const r=has?opt:base, n=state.reps;
     lines.push([q('CO₂e / year'),num(r.co2*n),q('kg')].join(sep), [q('Energy / year'),num(r.kwh*n),q('kWh')].join(sep), [q('Water / year'),num(r.water*n),q('L')].join(sep)); }
   lines.push('');
-  lines.push(q(t('rp_meth_t'))); lines.push(q(t('rp_lim_t'))); lines.push(q('Wattprint v2.0 · '+CONFIG.shareUrl));
+  lines.push(q(tf('rp_meth_t',{year:regionById(state.region)[4]}))); lines.push(q(t('rp_lim_t'))); lines.push(q('Wattprint v2.0 · '+CONFIG.shareUrl));
   const blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob), a=document.createElement('a');
   a.href=url; a.download=t('csv_name'); document.body.appendChild(a); a.click(); a.remove();
@@ -1346,7 +1365,7 @@ function restoreFromURL(){
   if(!p.has('h')) return false;
   const legacy={w:['train','ft','inf','exp'],g:['h100','a100','v100','t4','cpu','avg'],d:['hyper','avg']};
   const val=(k)=>{ const v=p.get(k); return /^\d+$/.test(v||'') && legacy[k] ? legacy[k][+v] : v; };
-  let r=p.get('r'); if(/^\d+$/.test(r||'')) r=DATA.REGIONS[+r]?.[0];
+  let r=p.get('r'); if(/^\d+$/.test(r||'')) r=['world','no','se','fr','usw','es','eu','uk','ie','use','de','sg','jp','cn','in','pl'][+r]; // enlaces de la v1
   applyConfig({ w:val('w'), g:val('g'), d:val('d'), m:p.get('m'), k:p.get('k'), l:p.get('l'),
     u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c:(p.get('c')||'').split('.').filter(Boolean) });
   return true;
