@@ -2,7 +2,7 @@
 
 **¿Cuánto carbono, energía y agua consume tu IA?** Wattprint lo calcula en un minuto para un entrenamiento, un ajuste fino o un servicio de inferencia, también por petición. Sin registro y sin enviar datos a ningún servidor: todo se calcula en tu navegador. En español e inglés.
 
-**Pruébala:** https://neocortech-kohl.vercel.app/tool/wattprint/ · [English version](https://neocortech-kohl.vercel.app/tool/wattprint/?lang=en)
+**Pruébala:** https://wattprint-kappa.vercel.app/ · [English version](https://wattprint-kappa.vercel.app/?lang=en)
 
 ![Resultados de Wattprint](docs/resultados.png)
 
@@ -65,7 +65,7 @@ Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/). Escribo 
 
 **How much carbon, energy and water does your AI use?** Wattprint estimates it in about a minute for a training run, a fine-tune or an inference service, per request too. No sign-up, nothing is sent to a server: everything runs in your browser.
 
-- **Try it:** https://neocortech-kohl.vercel.app/tool/wattprint/?lang=en
+- **Try it:** https://wattprint-kappa.vercel.app/?lang=en
 - **Method:** Software Carbon Intensity (SCI, ISO/IEC 21031). Energy from GPU TDP and utilisation, or your measured kWh, times PUE. Carbon from Ember grid intensity (location-based) plus amortised embodied emissions. Water = cooling (WUE) + electricity generation (WRI country factors, as in Li et al.).
 - **Outputs:** visual breakdown, per-request (SCI functional unit) and annual views, optimisation challenges, PDF report, CSV data, share card and link.
 - **Limits:** order-of-magnitude estimates, not certified measurement.
