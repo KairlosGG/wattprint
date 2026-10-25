@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-25T09:10:50.302Z",
+  "checked_at": "2026-10-25T19:03:42.802Z",
   "sources": {
     "owid": {
       "url": "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv",
@@ -51,10 +51,7 @@
       "states_found": 53
     }
   },
-  "changes": [
-    "usw: 130 (2023) → 200 (2025)",
-    "use: 360 (2023) → 357 (2025)"
-  ],
+  "changes": [],
   "values": {
     "world": {
       "gco2e_kwh": 458,
