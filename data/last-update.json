@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-25T09:10:18.012Z",
+  "checked_at": "2026-10-25T09:10:50.302Z",
   "sources": {
     "owid": {
       "url": "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv",
@@ -27,13 +27,34 @@
         "Share of emissions (%)",
         "Emissions intensity (gCO2e/kWh)"
       ],
-      "variables": [
-        null
+      "sources_seen": [
+        "Hydro",
+        "Bioenergy",
+        "Other renewables",
+        "Nuclear",
+        "Coal",
+        "Gas",
+        "Other fossil",
+        "Hydro, bioenergy and other renewables",
+        "Renewables",
+        "Clean",
+        "Fossil",
+        "Total generation",
+        "Solar",
+        "Wind and solar",
+        "Wind"
       ],
-      "error": "Ember US: columnas no encontradas: Area|ISO 3 code|State|State code|Year|Electricity source|Is aggregated source|Generation (TWh)|Generation YoY change (TWh)|Generation YoY change (%)|Share of generation (%)|Share of generation YoY change (% points)|Emissions (MtCO2e)|Emissions YoY change (MtCO2e)|Emissions YoY change (%)|Share of emissions (%)|Emissions intensity (gCO2e/kWh)"
+      "method": {
+        "Virginia": "total",
+        "Oregon": "total"
+      },
+      "states_found": 53
     }
   },
-  "changes": [],
+  "changes": [
+    "usw: 130 (2023) → 200 (2025)",
+    "use: 360 (2023) → 357 (2025)"
+  ],
   "values": {
     "world": {
       "gco2e_kwh": 458,
@@ -51,12 +72,12 @@
       "gco2e_kwh": 41,
       "year": 2025
     },
-    "usw": {
-      "gco2e_kwh": 130,
-      "year": 2023
-    },
     "es": {
       "gco2e_kwh": 154,
+      "year": 2025
+    },
+    "usw": {
+      "gco2e_kwh": 200,
       "year": 2025
     },
     "eu": {
@@ -76,8 +97,8 @@
       "year": 2025
     },
     "use": {
-      "gco2e_kwh": 360,
-      "year": 2023
+      "gco2e_kwh": 357,
+      "year": 2025
     },
     "us": {
       "gco2e_kwh": 384,
