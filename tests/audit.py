@@ -2,9 +2,10 @@
 Uso: python3 -m http.server 8799 (en la raíz) y, en otra terminal:
   OWID_CSV=owid-energy-data.csv WRI_XLSX=apendices-wri.xlsx python3 tests/audit.py
 OWID: https://github.com/owid/energy-data · WRI (apéndices 1 a 7): https://www.wri.org/data/dataset-guidance-calculating-water-use-embedded-purchased-electricity
-Requiere: pip install playwright openpyxl && playwright install chromium
+Requiere: pip install playwright openpyxl pycountry-convert && playwright install chromium
 
-A. Datos: cada región/país frente a sus fuentes (OWID/Ember, WRI apéndices 1 y 2, tabla 4).
+A. Datos: cada región/país frente a sus fuentes (OWID/Ember, WRI apéndices 1 y 2, tabla 4), regiones de
+   AWS/Google Cloud/Azure (listas oficiales, 26-10-2026) y PUE medio por región (Uptime 2025, informe 183).
 B. Fórmulas: implementación de referencia en Python frente a compute() en una rejilla exhaustiva
    (todas las regiones, GPU, centros, modos, servidor, palancas, duraciones, vida útil, %).
 C. Interfaz: lo que se ve (cifras, desglose, equivalencias, por petición/año, mapa, palancas) frente a compute().
@@ -14,6 +15,7 @@ F. Entradas extremas o inválidas.
 """
 import csv, json, math, random, itertools, sys, re, io
 import openpyxl
+import pycountry_convert as pcc
 from playwright.sync_api import sync_playwright
 
 import os
@@ -51,18 +53,51 @@ CURATED_SUB = {'use':'SRVC (SERC Virginia/Carolina)','usw':'NWPP (WECC Northwest
 WORLD_W = round(1.27 * LPG, 2)
 
 # ---------- modelo de referencia (escrito a partir de la metodología, no del código) ----------
-HOST = 1.41; EMB = 150 + 2500 / 8; PUE = {'hyper': (1.09 + 1.17) / 2, 'avg': 1.54}; WUE = {'hyper': 0.27, 'avg': 0.36}
+HOST = 1.41; EMB = 150 + 2500 / 8; PUE_HYPER = (1.09 + 1.17) / 2; WUE = {'hyper': 0.27, 'avg': 0.36}
+# Uptime Institute Global Data Center Survey 2025: regional view (UII Data Report 183), PUE medio por región
+PUE_REG = {'cn': 1.4, 'apac': 1.52, 'eu': 1.50, 'na': 1.49, 'latam': 1.65, 'mea': 1.68, 'world': 1.54}
+# Regiones de nube por país, copiadas a mano de las listas oficiales (26-10-2026)
+AWS = set('US IN JP KR SG AU CA DE IE GB FR SE BR ZA HK ID MY NZ TW TH IT ES CH IL MX BH AE CN'.split())
+AZURE = set('AU AT BE BR CA IN US CL DK HK FR DE ID IL IT JP KR MY MX NZ IE NO PL QA ZA SG ES SE CH AE GB NL'.split())
+GCP = set('US CA MX BR CL PL FI SE ES BE GB DE NL CH IT FR TW HK JP KR SG ID AU IN QA SA IL ZA'.split())
+def a2_of(rid): return {'uk': 'GB', 'use': 'US', 'usw': 'US'}.get(rid, rid.upper())
+def cloud_of(rid):
+    if rid in ('world', 'eu'): return ''
+    a = a2_of(rid); return ('A' if a in AWS else '') + ('G' if a in GCP else '') + ('M' if a in AZURE else '')
+# Región de Uptime por geografía (regla escrita en la metodología); los casos ambiguos usan la media mundial
+UP_WORLD = set('RU TR GE AM AZ KZ KG TJ TM UZ AF HK MO GL PM AG BS BB BM KY DM GD JM KN LC MS TC TT VC VG VI AW CW SX'.split())
+LATAM_CARIB = set('CU DO PR HT GP MQ'.split())
+WEST_ASIA_MEA = set('AE BH IL IQ IR JO KW LB OM PS QA SA SY YE'.split())
+def up_region(rid):
+    if rid == 'world': return 'world'
+    if rid == 'eu': return 'eu'
+    a = a2_of(rid)
+    if a in UP_WORLD: return 'world'
+    if a == 'CN': return 'cn'
+    if a in ('US', 'CA'): return 'na'
+    if a in WEST_ASIA_MEA: return 'mea'
+    if a in LATAM_CARIB: return 'latam'
+    if a in ('XK', 'CY'): return 'eu'  # Kosovo y Chipre, en Europa
+    if a == 'TL': return 'apac'
+    cont = pcc.country_alpha2_to_continent_code(a)
+    if cont == 'EU': return 'eu'
+    if cont == 'AF': return 'mea'
+    if cont in ('NA', 'SA'): return 'latam'
+    return 'apac'  # resto de Asia y Oceanía
+def pue_avg(rid): return PUE_REG[up_region(rid)]
 GPU_W = {'h100': 700, 'h100p': 350, 'a100': 400, 'v100': 300, 't4': 70, 'avg': 400}
 def sched_default(h):  # Dodge et al. 2022
     return 26.4 if h <= 1 else 14.5 if h <= 6 else 11.0
 def ref(s, R, NO):
-    I, ew, pue, wue = R['g'], R['w'], PUE[s['dc']], WUE[s['dc']]
+    where = NO if ('region' in s['levers'] and NO['g'] < R['g']) else R   # primero dónde se ejecuta
+    I, ew = where['g'], where['w']
+    pue = pue_avg(where['id']) if s['dc'] == 'avg' else PUE_HYPER
+    wue = WUE[s['dc']]
     em = im = 1.0
     for lv in s['levers']:
         if lv == 'own': em *= 1 - min(90, max(0, s['own'])) / 100
         if lv == 'sched': im *= 1 - (min(90, max(0, s['schedPct'])) if s['schedPct'] is not None else sched_default(s['hours'])) / 100
-        if lv == 'region' and NO['g'] < I: I, ew = NO['g'], NO['w']
-        if lv == 'hyper': pue, wue = min(pue, PUE['hyper']), min(wue, WUE['hyper'])
+        if lv == 'hyper': pue, wue = min(pue, PUE_HYPER), min(wue, WUE['hyper'])
     extra = HOST - 1 if s['host'] else 0
     it0 = s['meas'] * (1 + extra) if s['mode'] == 'meas' else GPU_W[s['gpu']] * s['units'] * s['hours'] * (s['util'] + extra) / 1000
     it = it0 * em; kwh = it * pue; op = kwh * I * im / 1000
@@ -83,7 +118,7 @@ with sync_playwright() as p:
 
     # ===== A. Datos =====
     print('A. Datos frente a fuentes')
-    data = pg.evaluate("()=>({all:ALL.map(r=>({id:r[0],g:r[3],y:+r[4],ap:r[5],w:r[6],wap:r[7]})), countries:DATA.COUNTRIES, wri:DATA.WRI_GAL, cloud:[...CLOUD_IDS], updated:DATA.UPDATED})")
+    data = pg.evaluate("()=>({all:ALL.map(r=>({id:r[0],g:r[3],y:+r[4],ap:r[5],w:r[6],wap:r[7]})), countries:DATA.COUNTRIES, wri:DATA.WRI_GAL, cloud:DATA.REGIONS.map(r=>r[0]), updated:DATA.UPDATED, cl:DATA.CLOUD, upr:DATA.UPTIME_REGION, pue:DATA.PUE_UPTIME})")
     regs = {r['id']: r for r in data['all']}
     nA = 0
     for a2, a3, g, y in data['countries']:
@@ -115,7 +150,15 @@ with sync_playwright() as p:
         elif rid in CURATED_SUB: exp, ap = round(wri_sub[CURATED_SUB[rid]] * LPG, 2), rid == 'usw'
         else: exp, ap = WORLD_W, rid != 'world'  # la media mundial ES el dato de la tabla 4; UE y Singapur la usan como aproximación
         if r['w'] != exp or r['wap'] != ap: fail(f'A agua {rid}: {r["w"]} ap={r["wap"]} / esperado {exp} ap={ap}')
-    print(f'  {nA} regiones comprobadas; tabla WRI de {len(wri_country)} países; fallos hasta ahora: {len(FAIL)}')
+    # regiones de nube y PUE por región
+    if data['pue'] != PUE_REG: fail(f'A PUE Uptime {data["pue"]} / informe {PUE_REG}')
+    for rid in regs:
+        nA += 1
+        if data['cl'].get(rid, '') != cloud_of(rid): fail(f'A nube {rid}: {data["cl"].get(rid)} / listas oficiales {cloud_of(rid)}')
+        if data['upr'].get(rid, 'world') != up_region(rid): fail(f'A región Uptime {rid}: {data["upr"].get(rid)} / regla {up_region(rid)}')
+    for rid in data['cl']:
+        if rid not in regs: fail(f'A nube: {rid} no es una región de la herramienta')
+    print(f'  {nA} comprobaciones de regiones; tabla WRI de {len(wri_country)} países; fallos hasta ahora: {len(FAIL)}')
 
     # ===== B. Fórmulas: rejilla exhaustiva =====
     print('B. Fórmulas (referencia Python frente a compute)')
@@ -129,18 +172,20 @@ with sync_playwright() as p:
                              units=random.choice([1, 2, 3, 8, 16, 64, 4096]), util=random.choice([0.1, 0.35, 0.5, 0.93, 1.0]),
                              meas=random.choice([0, 0.5, 50, 12345.6]), own=random.choice([0, 5, 20, 90, 150, -5]),
                              schedPct=random.choice([None, None, 0, 11, 90, 120])))
-    for rid in region_ids:  # cada región con todas las combinaciones de palancas
-        for lv in lever_sets:
-            scen.append(dict(gpu='h100', dc=random.choice(['hyper', 'avg']), mode='est', host=True, hours=72, life=6, levers=lv, region=rid,
+    for rid in region_ids:  # cada región con todas las combinaciones de palancas y los dos centros
+        for lv, dc in itertools.product(lever_sets, ['hyper', 'avg']):
+            scen.append(dict(gpu='h100', dc=dc, mode='est', host=True, hours=72, life=6, levers=lv, region=rid,
                              units=2, util=1.0, meas=0, own=20, schedPct=None))
     print(f'  {len(scen)} escenarios')
     js = """(list)=>{ const out=[]; const keep=JSON.parse(JSON.stringify({...state,active:[...state.active]}));
-      for(const s of list){ state.gpu=s.gpu; state.watts=gpuRow(s.gpu)[2]; state.dc=s.dc; state.pue=DC[s.dc].pue; state.wue=DC[s.dc].wue;
+      for(const s of list){ state.gpu=s.gpu; state.watts=gpuRow(s.gpu)[2]; state.dc=s.dc;
         state.mode=s.mode; state.host=s.host; state.hours=s.hours; state.life=s.life; state.region=s.region; state.units=s.units;
         state.util=s.util; state.measKwh=s.meas; state.ownPct=s.own; state.schedPct=s.schedPct; state.active=new Set(s.levers);
         const b=compute(), o=compute({optimized:true}); out.push([b,o]); }
       Object.assign(state,keep); state.active=new Set(keep.active); return out; }"""
-    NO = regs['no']; nB = 0
+    clean = min((r for r in regs.values() if cloud_of(r['id'])), key=lambda r: r['g'])  # red más limpia con nube grande
+    NO = clean; nB = 0
+    print(f'  red más limpia con nube grande: {clean["id"]} ({clean["g"]} g)')
     for i in range(0, len(scen), 4000):
         chunk = scen[i:i + 4000]
         res = pg.evaluate(js, chunk)
@@ -212,6 +257,34 @@ with sync_playwright() as p:
     tot = pg.evaluate("()=>compute({optimized:true}).kwh")
     s_parts = sum(float(x.replace('.', '').replace(',', '.').replace(' kWh', '')) for x in parts)
     if abs(s_parts - tot) > 0.15 * len(parts): fail(f'C energía: partes {parts} no suman {tot}')
+    # energía por región: con centro medio, mapa y ranking cambian con el PUE de Uptime; con gran nube, plano
+    en = pg.evaluate("""()=>{ state.active=new Set(); const out={}; for(const dc of ['avg','hyper']){ setDc(dc);
+        out[dc]={flat:document.getElementById('map').classList.contains('flat'), seg:!document.getElementById('segView').classList.contains('hidden'),
+          kwh:Object.fromEntries(ALL.map(r=>[r[0],regionVals[r[0]].kwh])), pue:Object.fromEntries(ALL.map(r=>[r[0],regionVals[r[0]].pue]))}; }
+      state.view='rank'; setDc('avg'); const rk=[...document.querySelectorAll('#rank .rk')].map(b=>b.dataset.r);
+      state.view='map'; return {...out, rk}; }""")
+    if en['avg']['flat'] or not en['avg']['seg']: fail('C energía con centro medio: el mapa sigue plano o sin ranking')
+    if not en['hyper']['flat'] or en['hyper']['seg']: fail('C energía con gran nube: debería ser plana y sin ranking')
+    for rid in regs:
+        if not close(en['avg']['pue'][rid], pue_avg(rid)): fail(f'C PUE {rid}: {en["avg"]["pue"][rid]} / {pue_avg(rid)}')
+        if not close(en['hyper']['pue'][rid], PUE_HYPER): fail(f'C PUE gran nube {rid}: {en["hyper"]["pue"][rid]}')
+    vals = [en['avg']['kwh'][r] for r in en['rk']]
+    if vals != sorted(vals): fail('C ranking de energía no está ordenado')
+    if set(en['rk']) != {r for r in regs if cloud_of(r) or r in ('world', 'eu')}: fail(f'C ranking: no son los países con nube y las medias')
+    # nube: atenuados en el mapa, recomendación y desplegable
+    nc = pg.evaluate("""()=>{ renderMap(); return {faded:[...document.querySelectorAll('#map .c.d.nc')].map(p=>p.dataset.r), all:[...document.querySelectorAll('#map .c.d')].map(p=>p.dataset.r),
+        grp:[...document.querySelectorAll('#region optgroup')].map(g=>[...g.querySelectorAll('option')].map(o=>o.value))}; }""")
+    for rid in set(nc['all']):
+        want = not cloud_of(rid) and rid not in ('world', 'eu')
+        if (rid in nc['faded']) != want: fail(f'C mapa: {rid} atenuado={rid in nc["faded"]}, debería {want}')
+    if set(nc['grp'][0]) != {r for r in regs if cloud_of(r)} or set(nc['grp'][1]) != {'world', 'eu'}: fail('C desplegable: grupos de nube o medias incorrectos')
+    if len(nc['grp'][0]) + len(nc['grp'][1]) + len(nc['grp'][2]) != len(regs): fail('C desplegable: faltan o sobran regiones')
+    for rid in random.sample(region_ids, 25):
+        pg.evaluate("id=>setRegion(id)", rid); pg.click('[data-metric="co2"]'); pg.wait_for_timeout(50)
+        ins = pg.evaluate("()=>document.getElementById('insight').textContent")
+        best = pg.evaluate("()=>regionName(CLOUD_ROWS.map(r=>[r,regionVals[r[0]].co2]).sort((a,b)=>a[1]-b[1])[0][0])")
+        if not cloud_of(rid) and rid not in ('world', 'eu') and 'no tiene regiones' not in ins: fail(f'C recomendación: {rid} sin nube y no lo dice')
+        if best not in ins and 'Ya estás' not in ins: fail(f'C recomendación en {rid} no nombra {best}: {ins}')
     pg.click('[data-metric="co2"]')
     print(f'  {nC} pantallas comprobadas; fallos hasta ahora: {len(FAIL)}')
 
