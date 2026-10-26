@@ -11,25 +11,27 @@ const FILE = new URL('../index.html', import.meta.url);
 const OWID = 'https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv';
 const EMBER_US = 'https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/generation/outputs/release_us_subnational_generation_yearly.csv';
 
-// id, nombre ES, nombre EN, fuente, intensidad aproximada?, L/kWh agua de generación (WRI 2020), agua aproximada?
+// id, nombre ES, nombre EN, fuente, intensidad aproximada?, L/kWh agua de generación, agua aproximada?
+// Agua: WRI (Reig et al., 2020), apéndice 2 (países) y apéndice 1 (subregiones eGRID SRVC y NWPP), gal/kWh × 3,785;
+// sin dato propio (mundo, UE, Singapur): media mundial ponderada de la tabla 4, 1,27 gal/kWh = 4,81 L/kWh.
 const SPEC = [
   ['world', 'Media mundial',           'World average',      {owid:'World'},               false, 4.81, false],
   ['no',    'Noruega',                 'Norway',             {owid:'Norway'},              false, 6.66, false],
-  ['se',    'Suecia',                  'Sweden',             {owid:'Sweden'},              false, 6.02, false],
+  ['se',    'Suecia',                  'Sweden',             {owid:'Sweden'},              false, 6.03, false],
   ['fr',    'Francia',                 'France',             {owid:'France'},              false, 3.67, false],
-  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.50, true ],
+  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.48, true ],
   ['es',    'España',                  'Spain',              {owid:'Spain'},               false, 6.21, false],
   ['eu',    'Media UE',                'EU average',         {owid:'European Union (27)'}, false, 4.81, true ],
-  ['uk',    'Reino Unido',             'United Kingdom',     {owid:'United Kingdom'},      false, 2.35, false],
+  ['uk',    'Reino Unido',             'United Kingdom',     {owid:'United Kingdom'},      false, 2.33, false],
   ['ie',    'Irlanda',                 'Ireland',            {owid:'Ireland'},             false, 1.48, false],
-  ['us',    'EE. UU. (media)',         'United States (average)', {owid:'United States'},  false, 3.14, false],
-  ['use',   'EE. UU. Este (Virginia)', 'US East (Virginia)', {us:'Virginia'},              true,  2.38, false],
-  ['de',    'Alemania',                'Germany',            {owid:'Germany'},             false, 1.93, false],
+  ['us',    'EE. UU. (media)',         'United States (average)', {owid:'United States'},  false, 3.13, false],
+  ['use',   'EE. UU. Este (Virginia)', 'US East (Virginia)', {us:'Virginia'},              true,  2.37, false],
+  ['de',    'Alemania',                'Germany',            {owid:'Germany'},             false, 1.95, false],
   ['sg',    'Singapur',                'Singapore',          {owid:'Singapore'},           false, 4.81, true ],
   ['jp',    'Japón',                   'Japan',              {owid:'Japan'},               false, 2.31, false],
-  ['cn',    'China',                   'China',              {owid:'China'},               false, 6.02, false],
+  ['cn',    'China',                   'China',              {owid:'China'},               false, 6.01, false],
   ['in',    'India',                   'India',              {owid:'India'},               false, 3.44, false],
-  ['pl',    'Polonia',                 'Poland',             {owid:'Poland'},              false, 2.50, false],
+  ['pl',    'Polonia',                 'Poland',             {owid:'Poland'},              false, 2.51, false],
 ];
 
 const START = '/*REGIONS:START*/', END = '/*REGIONS:END*/';
@@ -47,6 +49,7 @@ function parseCSV(text){
   if(cur||row.length){ row.push(cur); rows.push(row); }
   return rows;
 }
+const byIso = {}; // OWID por código ISO alfa-3, para el bloque COUNTRIES
 const plausible = v => Number.isFinite(v) && v > 0 && v < 1500;
 
 async function get(url){
@@ -55,7 +58,7 @@ async function get(url){
 
 async function fromOWID(){
   const rows=parseCSV(await get(OWID)); const h=rows[0];
-  const ic=h.indexOf('country'), iy=h.indexOf('year'), iv=h.indexOf('carbon_intensity_elec');
+  const ic=h.indexOf('country'), iy=h.indexOf('year'), iv=h.indexOf('carbon_intensity_elec'), ii=h.indexOf('iso_code');
   if(ic<0||iy<0||iv<0) throw new Error('OWID: columnas no encontradas');
   REPORT.sources.owid={ url:OWID, rows:rows.length-1 };
   const out={};
@@ -63,6 +66,7 @@ async function fromOWID(){
     const v=parseFloat(r[iv]), y=+r[iy];
     if(!plausible(v)) continue;
     if(!out[r[ic]] || y>out[r[ic]].year) out[r[ic]]={value:v, year:y};
+    const iso=r[ii]; if(iso && !iso.startsWith('OWID') && (!byIso[iso] || y>byIso[iso].year)) byIso[iso]={value:v, year:y};
   }
   return out;
 }
@@ -123,6 +127,19 @@ const q=s=>`'${s.replace(/'/g,"\\'")}',`;
 const lines=regions.map(r=>`    [${q(r.id).padEnd(9)} ${q(r.es).padEnd(28)} ${q(r.en).padEnd(28)} ${String(r.val).padStart(4)}, '${r.year}', ${String(r.ap).padEnd(5)}, ${r.w.toFixed(2)}, ${String(r.wap).padEnd(5)}],`);
 const today=new Date().toISOString().slice(0,10);
 let out = html.slice(0,a+START.length)+'\n'+lines.join('\n')+'\n  '+html.slice(b);
+
+// Resto de países (mapa): ['alfa-2','alfa-3', gCO2e/kWh, 'año']. Solo se actualizan los valores de la lista existente.
+const CS='/*COUNTRIES:START*/', CE='/*COUNTRIES:END*/', ca=out.indexOf(CS), cb=out.indexOf(CE);
+if(ca>=0 && cb>ca){
+  let n=0;
+  const block=out.slice(ca+CS.length,cb).replace(/\['(\w\w)','(\w{3})',(\d+),'(\d{4})'\]/g,(m,a2,a3,v,y)=>{
+    const g=byIso[a3]; if(!g || !plausible(g.value) || g.year<+y) return m;
+    const nv=Math.round(g.value); if(nv===+v && g.year===+y) return m;
+    n++; changes.push(`${a3}: ${v} (${y}) → ${nv} (${g.year})`); return `['${a2}','${a3}',${nv},'${g.year}']`;
+  });
+  out=out.slice(0,ca+CS.length)+block+out.slice(cb);
+  REPORT.countries_updated=n;
+}
 if(changes.length) out = out.replace(/UPDATED: '\d{4}-\d{2}-\d{2}'/, `UPDATED: '${today}'`);
 REPORT.changes=changes;
 REPORT.values=Object.fromEntries(regions.map(r=>[r.id,{gco2e_kwh:r.val,year:r.year}]));
