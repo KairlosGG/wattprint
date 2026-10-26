@@ -11,25 +11,27 @@ const FILE = new URL('../index.html', import.meta.url);
 const OWID = 'https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv';
 const EMBER_US = 'https://storage.googleapis.com/emb-prod-bkt-publicdata/public-downloads/generation/outputs/release_us_subnational_generation_yearly.csv';
 
-// id, nombre ES, nombre EN, fuente, intensidad aproximada?, L/kWh agua de generación (WRI 2020), agua aproximada?
+// id, nombre ES, nombre EN, fuente, intensidad aproximada?, L/kWh agua de generación, agua aproximada?
+// Agua: WRI (Reig et al., 2020), apéndice 2 (países) y apéndice 1 (subregiones eGRID SRVC y NWPP), gal/kWh × 3,785;
+// sin dato propio (mundo, UE, Singapur): media mundial ponderada de la tabla 4, 1,27 gal/kWh = 4,81 L/kWh.
 const SPEC = [
   ['world', 'Media mundial',           'World average',      {owid:'World'},               false, 4.81, false],
   ['no',    'Noruega',                 'Norway',             {owid:'Norway'},              false, 6.66, false],
-  ['se',    'Suecia',                  'Sweden',             {owid:'Sweden'},              false, 6.02, false],
+  ['se',    'Suecia',                  'Sweden',             {owid:'Sweden'},              false, 6.03, false],
   ['fr',    'Francia',                 'France',             {owid:'France'},              false, 3.67, false],
-  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.50, true ],
+  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.48, true ],
   ['es',    'España',                  'Spain',              {owid:'Spain'},               false, 6.21, false],
   ['eu',    'Media UE',                'EU average',         {owid:'European Union (27)'}, false, 4.81, true ],
-  ['uk',    'Reino Unido',             'United Kingdom',     {owid:'United Kingdom'},      false, 2.35, false],
+  ['uk',    'Reino Unido',             'United Kingdom',     {owid:'United Kingdom'},      false, 2.33, false],
   ['ie',    'Irlanda',                 'Ireland',            {owid:'Ireland'},             false, 1.48, false],
-  ['us',    'EE. UU. (media)',         'United States (average)', {owid:'United States'},  false, 3.14, false],
-  ['use',   'EE. UU. Este (Virginia)', 'US East (Virginia)', {us:'Virginia'},              true,  2.38, false],
-  ['de',    'Alemania',                'Germany',            {owid:'Germany'},             false, 1.93, false],
+  ['us',    'EE. UU. (media)',         'United States (average)', {owid:'United States'},  false, 3.13, false],
+  ['use',   'EE. UU. Este (Virginia)', 'US East (Virginia)', {us:'Virginia'},              true,  2.37, false],
+  ['de',    'Alemania',                'Germany',            {owid:'Germany'},             false, 1.95, false],
   ['sg',    'Singapur',                'Singapore',          {owid:'Singapore'},           false, 4.81, true ],
   ['jp',    'Japón',                   'Japan',              {owid:'Japan'},               false, 2.31, false],
-  ['cn',    'China',                   'China',              {owid:'China'},               false, 6.02, false],
+  ['cn',    'China',                   'China',              {owid:'China'},               false, 6.01, false],
   ['in',    'India',                   'India',              {owid:'India'},               false, 3.44, false],
-  ['pl',    'Polonia',                 'Poland',             {owid:'Poland'},              false, 2.50, false],
+  ['pl',    'Polonia',                 'Poland',             {owid:'Poland'},              false, 2.51, false],
 ];
 
 const START = '/*REGIONS:START*/', END = '/*REGIONS:END*/';
