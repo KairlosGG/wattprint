@@ -14,7 +14,7 @@
    - energía de los servidores y consumo extra del centro de datos (PUE);
    - agua de refrigeración y agua usada para generar la electricidad.
 3. Si es un servicio de inferencia, calcula la huella **por petición** (la unidad funcional R de SCI). Si se repite, da la **vista anual**.
-4. Compara la misma tarea en todas las regiones (CO₂e y agua) para responder a «¿es mucho o poco?», explica paso a paso de dónde sale cada cifra y propone formas de reducirla (región más limpia, gran nube, horas de red más limpia, optimización propia), incluidos los efectos contrarios: pasar a una red con mucha hidráulica baja el carbono pero sube el agua.
+4. Todo cabe en una pantalla: a la izquierda la tarea, en el centro las tres cifras y un **mapa** con la misma tarea en cada red eléctrica (CO₂e, agua o energía, con detalle al pasar el cursor y clic para elegir la región), y a la derecha las formas de reducirla (región más limpia, gran nube, horas de red más limpia, optimización propia) con su efecto en las tres cifras, incluidos los efectos contrarios: pasar a una red con mucha hidráulica baja el carbono pero sube el agua. La energía no cambia de país a país; su pestaña compara tipos de centro de datos y de dónde salen los kWh. Un paso a paso explica de dónde sale cada cifra.
 5. Exporta un **informe en PDF** (con las hipótesis y las fuentes, pensado para pasárselo a dirección o al área de sostenibilidad), los **datos en CSV**, una tarjeta para redes y un enlace con el resultado.
 
 ## Cómo calcula
@@ -29,7 +29,7 @@ Marco: basada en la especificación **Software Carbon Intensity (SCI)** de la Gr
 | Agua de refrigeración | `litros = kWh de servidores × WUE` | Centro medio 0,36 L/kWh: media de los centros de EE. UU. en 2023 ([Shehabi et al., LBNL 2024](https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report_1.pdf)); grandes nubes 0,27 L/kWh ([Microsoft, año fiscal 2025](https://datacenters.microsoft.com/sustainability/efficiency/); AWS informa 0,12 de agua extraída y Google no publica WUE) |
 | Agua de generación eléctrica | `litros = kWh totales × factor de agua de la red` | [WRI, Reig et al. (2020)](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity), factores de consumo por país (atribuyen a la electricidad toda la evaporación de los embalses); mismo marco que [Li et al., *Making AI Less "Thirsty"*](https://arxiv.org/abs/2304.03271) |
 
-Retos: carbon-aware scheduling con la referencia de [Dodge et al., FAccT 2022](https://arxiv.org/abs/2206.05229) (medias de 16 regiones de Azure con intensidad marginal de 2020: −26,4 % hasta 1 h y −14,5 % hasta 6 h retrasando el inicio; −11 % en cargas más largas pausando y reanudando), que el usuario puede sustituir por su propio dato. Para otras optimizaciones (auto-scaling, cuantización) no hay un porcentaje general fiable, así que el usuario introduce su ahorro. Todos los supuestos de cada cálculo se muestran en los resultados y en el informe.
+Opciones para reducirla: carbon-aware scheduling con la referencia de [Dodge et al., FAccT 2022](https://arxiv.org/abs/2206.05229) (medias de 16 regiones de Azure con intensidad marginal de 2020: −26,4 % hasta 1 h y −14,5 % hasta 6 h retrasando el inicio; −11 % en cargas más largas pausando y reanudando), que el usuario puede sustituir por su propio dato. Para otras optimizaciones (auto-scaling, cuantización) no hay un porcentaje general fiable, así que el usuario introduce su ahorro. Todos los supuestos de cada cálculo se muestran en los resultados y en el informe.
 
 Equivalencias: coche de gasolina en la UE en uso real, 166 g CO₂/km ([JRC, 2025](https://publications.jrc.ec.europa.eu/repository/handle/JRC142808)); carga de móvil, 0,019 kWh (EPA); agua que usa en casa una persona en España, 128 L al día ([INE, 2022](https://www.ine.es/dyngs/Prensa/ESSA2022.htm)). Para entrenamientos, genera un texto de partida para la documentación técnica que la Ley de IA exige a los proveedores de modelos de propósito general (anexo XI, consumo energético conocido o estimado).
 
@@ -73,7 +73,7 @@ Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/). Escribo 
 
 - **Try it:** https://wattprint-kappa.vercel.app/?lang=en
 - **Method:** based on Software Carbon Intensity (SCI, ISO/IEC 21031), using annual average rather than marginal grid intensity. Energy from GPU TDP and utilisation plus a fixed share for the rest of the server, or your measured kWh, times PUE. Carbon from Ember grid intensity (location-based) plus amortised embodied emissions. Water = cooling (WUE, LBNL 2024 / Microsoft 2025) + electricity generation (WRI country factors, as in Li et al.).
-- **Outputs:** visual breakdown, per-request (SCI functional unit) and annual views, optimisation challenges, PDF report, CSV data, share card and link.
+- **Outputs:** single-screen dashboard with a choropleth map of the same task on every grid, visual breakdowns, per-request (SCI functional unit) and annual views, reduction options with their effect on CO₂e, energy and water, PDF report, CSV data, share card and link.
 - **Limits:** order-of-magnitude estimates, not certified measurement.
 - **Run locally:** a single HTML file; serve the folder with any static server.
 - **License:** MIT for the code; Ember data under CC BY 4.0; fonts under SIL OFL 1.1.
