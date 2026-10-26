@@ -17,7 +17,7 @@ const SPEC = [
   ['no',    'Noruega',                 'Norway',             {owid:'Norway'},              false, 6.66, false],
   ['se',    'Suecia',                  'Sweden',             {owid:'Sweden'},              false, 6.02, false],
   ['fr',    'Francia',                 'France',             {owid:'France'},              false, 3.67, false],
-  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.50, false],
+  ['usw',   'EE. UU. Oeste (Oregón)',  'US West (Oregon)',   {us:'Oregon'},                true,  9.50, true ],
   ['es',    'España',                  'Spain',              {owid:'Spain'},               false, 6.21, false],
   ['eu',    'Media UE',                'EU average',         {owid:'European Union (27)'}, false, 4.81, true ],
   ['uk',    'Reino Unido',             'United Kingdom',     {owid:'United Kingdom'},      false, 2.35, false],
