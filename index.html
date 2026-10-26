@@ -676,7 +676,7 @@ const DATA = {
   /*COUNTRIES:END*/ ],
   UPDATED: '2026-10-25', // fecha de la última actualización de datos de carbono (scripts/update-data.mjs)
   CLEAN_ID: 'no',        // región usada por el reto "región más limpia"
-  PUE_HYPER: 1.13, WUE_HYPER: 0.27,  // Google 1,09 y Microsoft 1,17 (2025); WUE Microsoft FY25 (Google no publica WUE)
+  PUE_HYPER: 1.13, WUE_HYPER: 0.27,  // Google 1,09 y Microsoft 1,17 (2025); WUE Microsoft FY25
   PUE_AVG: 1.54, WUE_AVG: 0.36,      // Uptime 2025; WUE media de los centros de EE. UU. en 2023, consumo in situ por kWh de IT (Shehabi et al., LBNL 2024)
   PUE_LEGAL_DE: [[1.5,'2027'],[1.3,'2030']], PUE_LEGAL_DE_NEW: 1.2, // EnEfG § 11 vigente (centros ≥ 300 kW); reforma en tramitación: 1,6 y 1,4
   HOST_FACTOR: 1.41,     // nodo 8×H100: 7,92 kW medidos / (8 × 700 W) (Latif et al., IEEE Access 2025); el 0,41 se suma como consumo fijo
@@ -727,7 +727,7 @@ es:{
   tip_meas:'Si mediste el consumo con CodeCarbon, el panel de tu proveedor o un medidor, escríbelo aquí y sustituye a la estimación. Encima se aplica el PUE del centro de datos.',
   tip_util:'Por defecto, el 100 % de la potencia máxima: es la cota superior prudente que usa Green Algorithms cuando no hay medición. Entrenando, la GPU se acerca a ese máximo; sirviendo un modelo, suele estar bastante por debajo.',
   tip_host:'La potencia máxima solo cubre la GPU. Un servidor de 8 H100 entrenando consumió 1,41 veces la potencia de sus GPU (Latif et al., 2025): sumamos ese 0,41 como consumo fijo del procesador, la memoria y los ventiladores.',
-  tip_life:'Años entre los que se reparte el CO₂ de fabricar el hardware. Las grandes nubes amortizan sus servidores en 5 o 6 años.',
+  tip_life:'Años entre los que se reparte el CO₂ de fabricar el hardware. Amazon amortiza sus servidores en 5 a 6 años y Meta en 5,5 (Form 10-K 2025).',
   tip_reps:'Para ver la huella anual. Un servicio que funciona todo el mes se repite 12 veces; un entrenamiento único, 1.',
   tip_co2:'Lo que emite la electricidad que consume la tarea, según la red del país, más la parte que le toca de fabricar el hardware.',
   tip_kwh:'La electricidad de los servidores más la que gasta el edificio en refrigeración y pérdidas (PUE).',
@@ -758,7 +758,7 @@ es:{
   lv_region:'Moverla a la red más limpia', lv_region_d:'Noruega, {g} g de CO₂e por kWh. Ojo: sube el agua.',
   lv_region_t:'Con el método del WRI, toda la evaporación de los embalses hidroeléctricos se atribuye a la electricidad. Por eso Noruega sale con poco CO₂ y más agua.',
   lv_hyper:'Usar una gran nube', lv_hyper_d:'El edificio gasta menos: PUE 1,54 → 1,13.',
-  lv_hyper_t:'PUE de Google (1,09) y Microsoft (1,17) en 2025; WUE de Microsoft en el año fiscal 2025. AWS publica 0,12 L/kWh de agua extraída y Google no publica su WUE.',
+  lv_hyper_t:'PUE de Google (1,09) y Microsoft (1,17) en 2025; WUE de Microsoft en el año fiscal 2025. AWS publica 0,12 L/kWh de agua extraída (2025).',
   lv_sched:'Ejecutarla cuando la red está más limpia', lv_sched_d:'{S}. Referencia: −{p} % de CO₂.',
   lv_sched_t:'Referencia de Dodge et al. (2022): media de 16 regiones de Azure con intensidad marginal de 2020. En tu red puede ser muy distinto; si tienes tu dato, escríbelo.',
   sched_fs:'retrasar el inicio hasta 24 h', sched_pr:'pausar y reanudar (hasta el doble de duración)', sched_u:'% menos CO₂',
@@ -837,7 +837,7 @@ en:{
   tip_meas:'If you measured consumption with CodeCarbon, your provider\'s dashboard or a meter, enter it here and it replaces the estimate. The data centre PUE is applied on top.',
   tip_util:'Default: 100% of maximum power, the prudent upper bound Green Algorithms uses when there is no measurement. In training GPUs get close to it; when serving a model they are usually well below.',
   tip_host:'Maximum power only covers the GPU. An 8×H100 server in training drew 1.41 times its GPUs\' power (Latif et al., 2025): we add that 0.41 as a fixed load for CPU, memory and fans.',
-  tip_life:'Years over which the CO₂ of making the hardware is spread. Large clouds depreciate their servers over 5 or 6 years.',
+  tip_life:'Years over which the CO₂ of making the hardware is spread. Amazon depreciates its servers over 5 to 6 years and Meta over 5.5 (Form 10-K 2025).',
   tip_reps:'For the yearly view. A service running all month repeats 12 times; a one-off training run, once.',
   tip_co2:'What the electricity the task uses emits, depending on the country\'s grid, plus its share of making the hardware.',
   tip_kwh:'The servers\' electricity plus what the building uses for cooling and losses (PUE).',
@@ -868,7 +868,7 @@ en:{
   lv_region:'Move it to the cleanest grid', lv_region_d:'Norway, {g} g CO₂e per kWh. Note: water goes up.',
   lv_region_t:'Under the WRI method all hydropower reservoir evaporation is allocated to electricity. That is why Norway comes out with low CO₂ and more water.',
   lv_hyper:'Use a large cloud', lv_hyper_d:'The building uses less: PUE 1.54 → 1.13.',
-  lv_hyper_t:'PUE from Google (1.09) and Microsoft (1.17) in 2025; WUE from Microsoft for fiscal 2025. AWS reports 0.12 L/kWh of water withdrawn and Google does not publish its WUE.',
+  lv_hyper_t:'PUE from Google (1.09) and Microsoft (1.17) in 2025; WUE from Microsoft for fiscal 2025. AWS reports 0.12 L/kWh of water withdrawn (2025).',
   lv_sched:'Run it when the grid is cleanest', lv_sched_d:'{S}. Reference: −{p}% CO₂.',
   lv_sched_t:'Reference from Dodge et al. (2022): average of 16 Azure regions using 2020 marginal intensity. Your grid may be very different; if you have your own figure, enter it.',
   sched_fs:'delay the start by up to 24 h', sched_pr:'pause and resume (up to twice as long)', sched_u:'% less CO₂',
@@ -946,6 +946,9 @@ const SRC = {
   eurating:'https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_26_1667/IP_26_1667_EN.pdf',
   aiact:'https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-11',
   emaps:'https://app.electricitymaps.com/',
+  aws:'https://sustainability.aboutamazon.com/products-services/aws-cloud',
+  amzn10k:'https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/amzn-20251231.htm',
+  meta10k:'https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm',
   repo:'https://github.com/KairlosGG/wattprint',
   author:'https://neocortech-kohl.vercel.app/',
 };
@@ -991,7 +994,7 @@ es:[
   <h3>Agua</h3>
   <p class="lead">Se gasta agua en dos sitios: en el centro de datos, para refrigerar, y en la central eléctrica, para producir la electricidad.</p>
   <ul class="blist">
-   <li><b>Refrigeración: kWh de los servidores × WUE</b>Centro medio: 0,36 L/kWh, la media de los centros de EE. UU. en 2023 (${A('lbnl','Shehabi et al., 2024')}). Gran nube: 0,27 L/kWh, el dato de ${A('ms','Microsoft')} en el año fiscal 2025. AWS publica 0,12 (agua extraída) y Google no publica su WUE.</li>
+   <li><b>Refrigeración: kWh de los servidores × WUE</b>Centro medio: 0,36 L/kWh, la media de los centros de EE. UU. en 2023 (${A('lbnl','Shehabi et al., 2024')}). Gran nube: 0,27 L/kWh, el dato de ${A('ms','Microsoft')} en el año fiscal 2025. AWS publica 0,12 (agua extraída; ${A('aws','Amazon Sustainability')}).</li>
    <li><b>Central eléctrica: kWh totales × factor de consumo de agua de la red</b>Fuente: ${A('wri','Reig, Luo, Christensen y Sinistore (2020)')}, WRI, con sus apéndices de datos (${A('wridata','dataset del WRI')}). Apéndice 2: factores de {NWRI} países. Apéndice 1: subregiones eGRID de EE. UU.; Virginia usa SRVC y Oregón usa NWPP, marcado como aproximado porque la subregión es mayor que el estado. Mix de generación de 2016. Los factores vienen en galones por kWh y se convierten con 3,785 L/gal, el factor que recomienda el estudio. Es el mismo marco que usan ${A('li','Li et al.')} en <i>Making AI Less "Thirsty"</i>.</li>
    <li><b>Países sin factor propio</b>Se usa la media mundial ponderada por generación del estudio: 1,27 gal/kWh, es decir 4,81 L/kWh (tabla 4 del informe). Lo mismo para la media mundial, la media UE y Singapur. Todos se marcan con ≈ y, en el mapa de agua, aparecen rayados en lugar de coloreados.</li>
    <li><b>Por qué Noruega gasta más agua</b>El WRI atribuye a la electricidad toda la evaporación de los embalses hidroeléctricos, un criterio que el propio estudio llama conservador. Por eso las redes con mucha hidráulica salen con poco CO₂ y más agua.</li>
@@ -1002,7 +1005,7 @@ es:[
   <ul class="blist">
    <li><b>De dónde sale el 460</b>150 kg de la GPU más su parte de un servidor de 2.500 kg con 8 GPU, según ${A('luccioni','Luccioni, Viguier y Ligozat (JMLR, 2023)')}.</li>
    <li><b>Es coherente con otras fuentes</b>NVIDIA publica 1.312 kg para la placa HGX H100 de 8 GPU, 164 kg por GPU (${A('nvidia','PCF de NVIDIA')}). Google calcula 386–1.101 kg por chip TPU en 6 años (${A('schneider','Schneider et al., 2025')}): el 460 está en la zona baja.</li>
-   <li><b>Vida útil</b>4, 5 o 6 años. Las grandes nubes amortizan sus servidores en 5–6 años (informes anuales de Amazon y Meta, 2025).</li>
+   <li><b>Vida útil</b>4, 5 o 6 años. Las grandes nubes amortizan sus servidores en 5 a 6 años: Amazon, de 5 a 6 años (${A('amzn10k','Form 10-K 2025')}); Meta, 5,5 años para la mayoría de sus servidores (${A('meta10k','Form 10-K 2025')}).</li>
    <li><b>Límite</b>Es una aproximación: se aplica el mismo valor a todas las GPU.</li>
   </ul>`},
  { id:'levers', nav:'Cómo reducirla', html:`
@@ -1097,7 +1100,7 @@ en:[
   <h3>Water</h3>
   <p class="lead">Water is used in two places: at the data centre, for cooling, and at the power plant, to produce the electricity.</p>
   <ul class="blist">
-   <li><b>Cooling: server kWh × WUE</b>Average centre: 0.36 L/kWh, the average of US data centres in 2023 (${A('lbnl','Shehabi et al., 2024')}). Large cloud: 0.27 L/kWh, ${A('ms','Microsoft')}'s figure for fiscal 2025. AWS reports 0.12 (water withdrawn) and Google does not publish its WUE.</li>
+   <li><b>Cooling: server kWh × WUE</b>Average centre: 0.36 L/kWh, the average of US data centres in 2023 (${A('lbnl','Shehabi et al., 2024')}). Large cloud: 0.27 L/kWh, ${A('ms','Microsoft')}'s figure for fiscal 2025. AWS reports 0.12 (water withdrawn; ${A('aws','Amazon Sustainability')}).</li>
    <li><b>Power plant: total kWh × grid water consumption factor</b>Source: ${A('wri','Reig, Luo, Christensen and Sinistore (2020)')}, WRI, with its data appendices (${A('wridata','WRI dataset')}). Appendix 2: factors for {NWRI} countries. Appendix 1: US eGRID subregions; Virginia uses SRVC and Oregon uses NWPP, marked as approximate because the subregion is larger than the state. 2016 generation mix. Factors are given in gallons per kWh and converted with 3.785 L/gal, the factor the study recommends. It is the same framework ${A('li','Li et al.')} use in <i>Making AI Less "Thirsty"</i>.</li>
    <li><b>Countries without their own factor</b>The study's generation-weighted world average is used: 1.27 gal/kWh, i.e. 4.81 L/kWh (table 4 of the report). The same applies to the world average, the EU average and Singapore. All are marked ≈ and, on the water map, are hatched instead of coloured.</li>
    <li><b>Why Norway uses more water</b>WRI allocates all hydropower reservoir evaporation to electricity, an approach the study itself calls conservative. That is why hydro-heavy grids come out with low CO₂ and more water.</li>
@@ -1108,7 +1111,7 @@ en:[
   <ul class="blist">
    <li><b>Where 460 comes from</b>150 kg for the GPU plus its share of a 2,500 kg server with 8 GPUs, from ${A('luccioni','Luccioni, Viguier and Ligozat (JMLR, 2023)')}.</li>
    <li><b>Consistent with other sources</b>NVIDIA reports 1,312 kg for the 8-GPU HGX H100 board, 164 kg per GPU (${A('nvidia','NVIDIA PCF')}). Google calculates 386–1,101 kg per TPU chip over 6 years (${A('schneider','Schneider et al., 2025')}): 460 is at the low end.</li>
-   <li><b>Lifetime</b>4, 5 or 6 years. Large clouds depreciate their servers over 5–6 years (Amazon and Meta annual reports, 2025).</li>
+   <li><b>Lifetime</b>4, 5 or 6 years. Large clouds depreciate their servers over 5 to 6 years: Amazon, 5 to 6 years (${A('amzn10k','Form 10-K 2025')}); Meta, 5.5 years for most of its servers (${A('meta10k','Form 10-K 2025')}).</li>
    <li><b>Limitation</b>It is an approximation: the same value is applied to every GPU.</li>
   </ul>`},
  { id:'levers', nav:'Reducing it', html:`
@@ -1167,8 +1170,8 @@ en:[
 
 /* Referencias completas (orden alfabético). Cada cifra de la herramienta remite a una de ellas. */
 const REFS = [
-  ['Amazon Web Services. <i>AWS Sustainability</i> (WUE de 2025: 0,12 L/kWh de agua extraída).', 'https://aws.amazon.com/sustainability/'],
-  ['Amazon.com, Inc.; Meta Platforms, Inc. Informes anuales (Form 10-K) presentados en 2025: vida útil de servidores (5–6 años; 5,5 años).', ''],
+  ['Amazon. <i>AWS Cloud – Amazon Sustainability</i> (WUE global de los centros de datos en 2025: 0,12 L de agua extraída por kWh de IT).', 'https://sustainability.aboutamazon.com/products-services/aws-cloud'],
+  ['Amazon.com, Inc. (2026). <i>Form 10-K, ejercicio 2025</i>, nota de inmovilizado: servidores y equipos de red, vida útil de cinco a seis años.', 'https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/amzn-20251231.htm'],
   ['Dodge, J., et al. (2022). Measuring the Carbon Intensity of AI in Cloud Instances. <i>ACM FAccT 2022</i>. arXiv:2206.05229.', 'https://arxiv.org/abs/2206.05229'],
   ['Ember. <i>Yearly Electricity Data</i> (CC BY 4.0). Intensidad de carbono de la electricidad por país, ciclo de vida.', 'https://ember-energy.org/data/yearly-electricity-data/'],
   ['Ember. <i>US Electricity Data</i>. Intensidad por estado (Virginia, Oregón).', 'https://ember-energy.org/data/us-electricity-data/'],
@@ -1182,6 +1185,7 @@ const REFS = [
   ['Latif, I., Newkirk, A. C., Carbone, M. R., Munir, A., Lin, Y., Koomey, J., Yu, X., Dong, Z. (2025). Single-Node Power Demand During AI Training: Measurements on an 8-GPU NVIDIA H100 System. <i>IEEE Access</i>, 13, 61740–61747. doi:10.1109/ACCESS.2025.3554728.', 'https://eta-publications.lbl.gov/sites/default/files/2026-07/single-node_power_demand_during_ai_training.pdf'],
   ['Li, P., Yang, J., Islam, M. A., Ren, S. (2023). Making AI Less "Thirsty": Uncovering and Addressing the Secret Water Footprint of AI Models. arXiv:2304.03271.', 'https://arxiv.org/abs/2304.03271'],
   ['Luccioni, A. S., Viguier, S., Ligozat, A.-L. (2023). Estimating the Carbon Footprint of BLOOM, a 176B Parameter Language Model. <i>Journal of Machine Learning Research</i>, 24(253).', 'https://jmlr.org/papers/v24/23-0069.html'],
+  ['Meta Platforms, Inc. (2026). <i>Form 10-K, ejercicio 2025</i>: vida útil de la mayoría de servidores y activos de red ampliada a 5,5 años desde el 1 de enero de 2025.', 'https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm'],
   ['Microsoft. <i>Datacenter efficiency</i> (PUE 1,17 y WUE 0,27 L/kWh, año fiscal 2025).', 'https://datacenters.microsoft.com/sustainability/efficiency/'],
   ['Natural Earth (dominio público), 1:110m, vía <i>world-atlas</i>. Mapa del mundo, proyección Equal Earth.', 'https://github.com/topojson/world-atlas'],
   ['NVIDIA. <i>Product Carbon Footprint (PCF) Summary: NVIDIA HGX H100</i>.', 'https://images.nvidia.com/aem-dam/Solutions/documents/HGX-H100-PCF-Summary.pdf'],
@@ -1196,7 +1200,7 @@ const REFS = [
   ['Uptime Institute (2025). <i>Uptime Institute Global Data Center Survey 2025</i> (PUE medio: 1,54).', 'https://intelligence.uptimeinstitute.com/resource/uptime-institute-global-data-center-survey-2025'],
   ['World Resources Institute (2020). <i>Dataset: Guidance for Calculating Water Use Embedded in Purchased Electricity</i>, apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países).', 'https://www.wri.org/data/dataset-guidance-calculating-water-use-embedded-purchased-electricity'],
 ];
-const REFS_EN_NOTES = [['(WUE de 2025: 0,12 L/kWh de agua extraída)','(2025 WUE: 0.12 L/kWh of water withdrawn)'],['Informes anuales (Form 10-K) presentados en 2025: vida útil de servidores (5–6 años; 5,5 años)','Annual reports (Form 10-K) filed in 2025: server useful life (5–6 years; 5.5 years)'],['Intensidad de carbono de la electricidad por país, ciclo de vida','Life-cycle carbon intensity of electricity by country'],['Intensidad por estado (Virginia, Oregón)','Intensity by state (Virginia, Oregon)'],['Comunicado IP/26/1667, 21 de septiembre de 2026: sistema de calificación de centros de datos','Press release IP/26/1667, 21 September 2026: data centre rating scheme'],['(PUE medio de la flota en 2025: 1,09)','(fleet average PUE in 2025: 1.09)'],['Año 2022','Year 2022'],['Mapa del mundo, proyección Equal Earth','World map, Equal Earth projection'],['(dominio público)','(public domain)'],['vía','via'],['columna','column'],['(PUE 1,17 y WUE 0,27 L/kWh, año fiscal 2025)','(PUE 1.17 and WUE 0.27 L/kWh, fiscal year 2025)'],['Reglamento (UE) 2024/1689 (Ley de IA), anexo XI, sección 1, punto 2.e','Regulation (EU) 2024/1689 (AI Act), Annex XI, section 1, point 2(e)'],['Tabla 4 (media mundial ponderada: 1,27 gal/kWh)','Table 4 (generation-weighted world average: 1.27 gal/kWh)'],['apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países)','appendices 1 to 7 (appendix 1: eGRID subregions; appendix 2: countries)'],['(carga de móvil: 0,019 kWh)','(phone charge: 0.019 kWh)'],['(PUE medio: 1,54)','(average PUE: 1.54)']];
+const REFS_EN_NOTES = [['(WUE global de los centros de datos en 2025: 0,12 L de agua extraída por kWh de IT)','(global data centre WUE in 2025: 0.12 L of water withdrawn per kWh of IT load)'],['<i>Form 10-K, ejercicio 2025</i>, nota de inmovilizado: servidores y equipos de red, vida útil de cinco a seis años','<i>Form 10-K, fiscal year 2025</i>, property and equipment note: servers and networking equipment, useful life of five to six years'],['<i>Form 10-K, ejercicio 2025</i>: vida útil de la mayoría de servidores y activos de red ampliada a 5,5 años desde el 1 de enero de 2025','<i>Form 10-K, fiscal year 2025</i>: useful life of most servers and network assets extended to 5.5 years from 1 January 2025'],['Intensidad de carbono de la electricidad por país, ciclo de vida','Life-cycle carbon intensity of electricity by country'],['Intensidad por estado (Virginia, Oregón)','Intensity by state (Virginia, Oregon)'],['Comunicado IP/26/1667, 21 de septiembre de 2026: sistema de calificación de centros de datos','Press release IP/26/1667, 21 September 2026: data centre rating scheme'],['(PUE medio de la flota en 2025: 1,09)','(fleet average PUE in 2025: 1.09)'],['Año 2022','Year 2022'],['Mapa del mundo, proyección Equal Earth','World map, Equal Earth projection'],['(dominio público)','(public domain)'],['vía','via'],['columna','column'],['(PUE 1,17 y WUE 0,27 L/kWh, año fiscal 2025)','(PUE 1.17 and WUE 0.27 L/kWh, fiscal year 2025)'],['Reglamento (UE) 2024/1689 (Ley de IA), anexo XI, sección 1, punto 2.e','Regulation (EU) 2024/1689 (AI Act), Annex XI, section 1, point 2(e)'],['Tabla 4 (media mundial ponderada: 1,27 gal/kWh)','Table 4 (generation-weighted world average: 1.27 gal/kWh)'],['apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países)','appendices 1 to 7 (appendix 1: eGRID subregions; appendix 2: countries)'],['(carga de móvil: 0,019 kWh)','(phone charge: 0.019 kWh)'],['(PUE medio: 1,54)','(average PUE: 1.54)']];
 function refList(lang){
   return '<ul class="refs">'+REFS.map(([txt,url])=>{
     let x=txt; if(lang==='en') REFS_EN_NOTES.forEach(([a,b])=>{ x=x.split(a).join(b); });
