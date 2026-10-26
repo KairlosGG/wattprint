@@ -77,3 +77,16 @@ Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/). Escribo 
 - **Limits:** order-of-magnitude estimates, not certified measurement.
 - **Run locally:** a single HTML file; serve the folder with any static server.
 - **License:** MIT for the code; Ember data under CC BY 4.0; fonts under SIL OFL 1.1.
+
+## Auditoría automática
+
+`tests/audit.py` comprueba la herramienta de punta a punta:
+
+- **Datos:** el carbono de cada una de las 216 regiones frente a OWID/Ember, y el agua frente a los apéndices 1 y 2 y la tabla 4 del WRI.
+- **Fórmulas:** 17.280 escenarios (todas las regiones, GPU, centros de datos, modos, resto del servidor, duraciones, vidas útiles y combinaciones de opciones) frente a una implementación independiente en Python escrita a partir de la metodología.
+- **Interfaz:** cifras, equivalencias, desglose, efecto de cada opción, mapa, por petición y por año.
+- **Enlace compartible:** ida y vuelta del estado.
+- **CSV.**
+- **Entradas inválidas.**
+
+Uso: sirve la carpeta con un servidor estático en el puerto 8799 y ejecuta `OWID_CSV=… WRI_XLSX=… python3 tests/audit.py`. Los apéndices del WRI se descargan desde su página de datos.

@@ -680,7 +680,7 @@ const DATA = {
   PUE_AVG: 1.54, WUE_AVG: 0.36,      // Uptime 2025; WUE media de los centros de EE. UU. en 2023, consumo in situ por kWh de IT (Shehabi et al., LBNL 2024)
   PUE_LEGAL_DE: [[1.5,'2027'],[1.3,'2030']], PUE_LEGAL_DE_NEW: 1.2, // EnEfG § 11 vigente (centros ≥ 300 kW); reforma en tramitación: 1,6 y 1,4
   HOST_FACTOR: 1.41,     // nodo 8×H100: 7,92 kW medidos / (8 × 700 W) (Latif et al., IEEE Access 2025); el 0,41 se suma como consumo fijo
-  EMBODIED_KG: 460,      // kg CO2e por acelerador: 150 GPU + 2.500 servidor / 8 GPU (Luccioni et al., 2023); NVIDIA PCF HGX H100: 164 kg por GPU
+  EMBODIED_KG: 462.5,    // kg CO2e por acelerador: 150 GPU (cota inferior) + 2.500 servidor sin GPU / 8 GPU = 462,5 (Luccioni et al., 2023); NVIDIA PCF HGX H100: 164 kg por GPU
   // Carbon-aware (Dodge et al., FAccT 2022): reducción media en 16 regiones de Azure, intensidad marginal de WattTime 2020.
   // [hasta h horas de duración, % de reducción, estrategia]: inicio flexible (+24 h) o pausar y reanudar (+100 % de duración)
   SCHED: [[1,26.4,'fs'],[6,14.5,'fs'],[Infinity,11.0,'pr']],
@@ -718,7 +718,7 @@ es:{
   t_dc:'Centro de datos', dc_hyper_s:'Gran nube', dc_avg_s:'Medio o propio',
   dc_hyper:'Gran nube (AWS, Google Cloud, Azure)', dc_avg:'Centro de datos medio o propio',
   t_region:'Dónde se ejecuta',
-  t_adv:'Ajustes avanzados', t_meas:'Tengo los kWh medidos', t_util:'Uso medio de la GPU',
+  t_adv:'Ajustes avanzados', t_meas:'Tengo los kWh medidos', need_meas:'Escribe los kWh medidos en «Ajustes avanzados».', t_util:'Uso medio de la GPU',
   t_host:'Sumar el resto del servidor', t_life:'Vida útil del hardware', yrs:'años', years:'{n} años', t_reps:'Veces al año que se repite',
   tip_hw:'La potencia máxima (TDP) de cada GPU sale de su ficha técnica de NVIDIA. Si no sabes cuál es, usamos la A100 SXM, la más estudiada.',
   tip_reqs:'Opcional. Con este dato calculamos la huella de cada 1.000 peticiones.',
@@ -828,7 +828,7 @@ en:{
   t_dc:'Data centre', dc_hyper_s:'Large cloud', dc_avg_s:'Average or own',
   dc_hyper:'Large cloud (AWS, Google Cloud, Azure)', dc_avg:'Average or own data centre',
   t_region:'Where it runs',
-  t_adv:'Advanced settings', t_meas:'I have measured kWh', t_util:'Average GPU use',
+  t_adv:'Advanced settings', t_meas:'I have measured kWh', need_meas:'Enter the measured kWh under "Advanced settings".', t_util:'Average GPU use',
   t_host:'Add the rest of the server', t_life:'Hardware lifetime', yrs:'years', years:'{n} years', t_reps:'Times a year it repeats',
   tip_hw:'Each GPU\'s maximum power (TDP) comes from its NVIDIA datasheet. If you are not sure, we use the A100 SXM, the most studied one.',
   tip_reqs:'Optional. With this we calculate the footprint of every 1,000 requests.',
@@ -1001,10 +1001,10 @@ es:[
   </ul>`},
  { id:'emb', nav:'Fabricación', html:`
   <h3>Fabricación del hardware</h3>
-  <p class="lead">≈ 460 kg de CO₂e por GPU, repartidos en su vida útil. A tu tarea le toca la parte de las horas que la usa.</p>
+  <p class="lead">462,5 kg de CO₂e por GPU, repartidos en su vida útil. A tu tarea le toca la parte de las horas que la usa.</p>
   <ul class="blist">
-   <li><b>De dónde sale el 460</b>150 kg de la GPU más su parte de un servidor de 2.500 kg con 8 GPU, según ${A('luccioni','Luccioni, Viguier y Ligozat (JMLR, 2023)')}.</li>
-   <li><b>Es coherente con otras fuentes</b>NVIDIA publica 1.312 kg para la placa HGX H100 de 8 GPU, 164 kg por GPU (${A('nvidia','PCF de NVIDIA')}). Google calcula 386–1.101 kg por chip TPU en 6 años (${A('schneider','Schneider et al., 2025')}): el 460 está en la zona baja.</li>
+   <li><b>De dónde sale: 150 + 2.500 ÷ 8 = 462,5</b>150 kg de la GPU (la cota inferior que da el estudio) más su parte de un servidor de 2.500 kg sin GPU, con 8 GPU por nodo, según ${A('luccioni','Luccioni, Viguier y Ligozat (JMLR, 2023)')}.</li>
+   <li><b>Es coherente con otras fuentes</b>NVIDIA publica 1.312 kg para la placa HGX H100 de 8 GPU, 164 kg por GPU (${A('nvidia','PCF de NVIDIA')}). Google calcula entre 386 y 1.101 kg de emisiones de fabricación por chip TPU (${A('schneider','Schneider et al., 2025')}, tabla 1): 462,5 está en la zona baja.</li>
    <li><b>Vida útil</b>4, 5 o 6 años. Las grandes nubes amortizan sus servidores en 5 a 6 años: Amazon, de 5 a 6 años (${A('amzn10k','Form 10-K 2025')}); Meta, 5,5 años para la mayoría de sus servidores (${A('meta10k','Form 10-K 2025')}).</li>
    <li><b>Límite</b>Es una aproximación: se aplica el mismo valor a todas las GPU.</li>
   </ul>`},
@@ -1107,10 +1107,10 @@ en:[
   </ul>`},
  { id:'emb', nav:'Manufacturing', html:`
   <h3>Hardware manufacturing</h3>
-  <p class="lead">≈ 460 kg CO₂e per GPU, spread over its lifetime. Your task gets the share of the hours it uses.</p>
+  <p class="lead">462.5 kg CO₂e per GPU, spread over its lifetime. Your task gets the share of the hours it uses.</p>
   <ul class="blist">
-   <li><b>Where 460 comes from</b>150 kg for the GPU plus its share of a 2,500 kg server with 8 GPUs, from ${A('luccioni','Luccioni, Viguier and Ligozat (JMLR, 2023)')}.</li>
-   <li><b>Consistent with other sources</b>NVIDIA reports 1,312 kg for the 8-GPU HGX H100 board, 164 kg per GPU (${A('nvidia','NVIDIA PCF')}). Google calculates 386–1,101 kg per TPU chip over 6 years (${A('schneider','Schneider et al., 2025')}): 460 is at the low end.</li>
+   <li><b>Where it comes from: 150 + 2,500 ÷ 8 = 462.5</b>150 kg for the GPU (the study's lower bound) plus its share of a 2,500 kg server excluding GPUs, with 8 GPUs per node, from ${A('luccioni','Luccioni, Viguier and Ligozat (JMLR, 2023)')}.</li>
+   <li><b>Consistent with other sources</b>NVIDIA reports 1,312 kg for the 8-GPU HGX H100 board, 164 kg per GPU (${A('nvidia','NVIDIA PCF')}). Google calculates between 386 and 1,101 kg of manufacturing emissions per TPU chip (${A('schneider','Schneider et al., 2025')}, table 1): 462.5 is at the low end.</li>
    <li><b>Lifetime</b>4, 5 or 6 years. Large clouds depreciate their servers over 5 to 6 years: Amazon, 5 to 6 years (${A('amzn10k','Form 10-K 2025')}); Meta, 5.5 years for most of its servers (${A('meta10k','Form 10-K 2025')}).</li>
    <li><b>Limitation</b>It is an approximation: the same value is applied to every GPU.</li>
   </ul>`},
@@ -1285,7 +1285,7 @@ function compute(o={}){
 /* Carbon-aware scheduling (Dodge et al., FAccT 2022): medias anuales en 16 regiones de Azure,
    intensidad marginal de WattTime de 2020. Mejor estrategia medida para cada duración. */
 function schedDefault(){ return DATA.SCHED.find(s=>state.hours<=s[0]); }
-function schedSaving(){ return (state.schedPct!=null ? state.schedPct : schedDefault()[1])/100; }
+function schedSaving(){ return (state.schedPct!=null ? Math.min(90,Math.max(0,state.schedPct)) : schedDefault()[1])/100; }
 const without = id => new Set([...state.active].filter(x=>x!==id));
 const withLever = id => new Set([...state.active, id]);
 /* La región que se ve en los resultados (si «red más limpia» está activa y es más limpia) */
@@ -1472,6 +1472,9 @@ function renderKpis(B,R){
   $('lCO2').innerHTML=`<span>${t('bk_c1')} ${pc(R.operational,R.co2)}</span><span>${t('bk_c2')} ${pc(R.embodied,R.co2)}</span>`;
   $('lKWH').innerHTML=`<span>${t('bk_e1')} ${pc(R.kwhIT,R.kwh)}</span><span>${t('bk_e2s')} ${pc(R.overhead,R.kwh)}</span>`;
   $('lH2O').innerHTML=`<span>${t('bk_w1s')} ${pc(R.waterOn,R.water)}</span><span>${t('bk_w2')} ${pc(R.waterOff,R.water)}</span>`;
+  // Sin energía (kWh medidos todavía vacíos): no hay desglose que mostrar; se pide el dato
+  if(!(R.kwh>0)){ ['lKWH','lH2O'].forEach(id=>$(id).innerHTML=''); if(!(R.co2>0)) $('lCO2').innerHTML='';
+    if(state.mode==='meas') ['wCO2','wKWH','wH2O'].forEach(id=>$(id).textContent=t('need_meas')); }
   const E=DATA.EQ;
   $('eCO2').innerHTML=`<span data-tipk="eq_car_t">${tf('eq_car',{n:`<b>${fmt(R.co2*1000/E.car)}</b>`})}</span>`+extraLine(R.co2,gOrKg);
   $('eKWH').innerHTML=`<span data-tipk="eq_phone_t">${tf('eq_phone',{n:`<b>${fmt(R.kwh/E.phone)}</b>`})}</span>`+extraLine(R.kwh,whOrKwh);
