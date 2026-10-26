@@ -47,6 +47,7 @@ function parseCSV(text){
   if(cur||row.length){ row.push(cur); rows.push(row); }
   return rows;
 }
+const byIso = {}; // OWID por código ISO alfa-3, para el bloque COUNTRIES
 const plausible = v => Number.isFinite(v) && v > 0 && v < 1500;
 
 async function get(url){
@@ -55,7 +56,7 @@ async function get(url){
 
 async function fromOWID(){
   const rows=parseCSV(await get(OWID)); const h=rows[0];
-  const ic=h.indexOf('country'), iy=h.indexOf('year'), iv=h.indexOf('carbon_intensity_elec');
+  const ic=h.indexOf('country'), iy=h.indexOf('year'), iv=h.indexOf('carbon_intensity_elec'), ii=h.indexOf('iso_code');
   if(ic<0||iy<0||iv<0) throw new Error('OWID: columnas no encontradas');
   REPORT.sources.owid={ url:OWID, rows:rows.length-1 };
   const out={};
@@ -63,6 +64,7 @@ async function fromOWID(){
     const v=parseFloat(r[iv]), y=+r[iy];
     if(!plausible(v)) continue;
     if(!out[r[ic]] || y>out[r[ic]].year) out[r[ic]]={value:v, year:y};
+    const iso=r[ii]; if(iso && !iso.startsWith('OWID') && (!byIso[iso] || y>byIso[iso].year)) byIso[iso]={value:v, year:y};
   }
   return out;
 }
@@ -123,6 +125,19 @@ const q=s=>`'${s.replace(/'/g,"\\'")}',`;
 const lines=regions.map(r=>`    [${q(r.id).padEnd(9)} ${q(r.es).padEnd(28)} ${q(r.en).padEnd(28)} ${String(r.val).padStart(4)}, '${r.year}', ${String(r.ap).padEnd(5)}, ${r.w.toFixed(2)}, ${String(r.wap).padEnd(5)}],`);
 const today=new Date().toISOString().slice(0,10);
 let out = html.slice(0,a+START.length)+'\n'+lines.join('\n')+'\n  '+html.slice(b);
+
+// Resto de países (mapa): ['alfa-2','alfa-3', gCO2e/kWh, 'año']. Solo se actualizan los valores de la lista existente.
+const CS='/*COUNTRIES:START*/', CE='/*COUNTRIES:END*/', ca=out.indexOf(CS), cb=out.indexOf(CE);
+if(ca>=0 && cb>ca){
+  let n=0;
+  const block=out.slice(ca+CS.length,cb).replace(/\['(\w\w)','(\w{3})',(\d+),'(\d{4})'\]/g,(m,a2,a3,v,y)=>{
+    const g=byIso[a3]; if(!g || !plausible(g.value) || g.year<+y) return m;
+    const nv=Math.round(g.value); if(nv===+v && g.year===+y) return m;
+    n++; changes.push(`${a3}: ${v} (${y}) → ${nv} (${g.year})`); return `['${a2}','${a3}',${nv},'${g.year}']`;
+  });
+  out=out.slice(0,ca+CS.length)+block+out.slice(cb);
+  REPORT.countries_updated=n;
+}
 if(changes.length) out = out.replace(/UPDATED: '\d{4}-\d{2}-\d{2}'/, `UPDATED: '${today}'`);
 REPORT.changes=changes;
 REPORT.values=Object.fromEntries(regions.map(r=>[r.id,{gco2e_kwh:r.val,year:r.year}]));
