@@ -109,7 +109,8 @@ a{ color:inherit; }
 .fld{ display:grid; gap:6px; }
 .lbl{ display:flex; align-items:center; gap:6px; font-weight:600; font-size:13px; color:var(--ink-2); }
 .lbl output{ margin-left:auto; font-weight:700; color:var(--ink); }
-.chips{ display:flex; flex-wrap:wrap; gap:6px; }
+.chips{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.chips .chip{ text-align:center; padding:5px 6px; }
 .chip{ padding:5px 10px; border:1px solid var(--line); border-radius:99px; font-size:12.5px; color:var(--ink-2); background:var(--panel); }
 .chip:hover{ border-color:var(--ink-2); color:var(--ink); }
 .chip[aria-pressed="true"]{ background:var(--ink); border-color:var(--ink); color:var(--on-ink); }
@@ -122,6 +123,10 @@ a{ color:inherit; }
 .inp{ width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:var(--r-s); background:var(--panel); }
 .sel:hover,.inp:hover{ border-color:var(--line-2); }
 .row2{ display:grid; grid-template-columns:1fr 96px; gap:8px; }
+.row2b{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.row2b:has(> .hidden){ grid-template-columns:1fr; }
+.note{ font-size:12.5px; color:var(--muted); line-height:1.4; }
+.kpi-u{ margin-left:auto; font-weight:500; color:var(--muted); font-size:12px; text-align:right; }
 .step{ display:grid; grid-template-columns:30px 1fr 30px; border:1px solid var(--line); border-radius:var(--r-s); overflow:hidden; }
 .step button{ font-size:16px; color:var(--ink-2); background:var(--sunk); }
 .step button:hover{ color:var(--ink); background:var(--line); }
@@ -138,7 +143,7 @@ details.adv{ border-top:1px solid var(--line); padding-top:10px; }
 details.adv summary{ cursor:pointer; font-weight:600; color:var(--ink-2); font-size:13px; list-style:none; display:flex; align-items:center; gap:6px; }
 details.adv summary::before{ content:""; width:7px; height:7px; border-right:1.6px solid currentColor; border-bottom:1.6px solid currentColor; transform:rotate(-45deg); transition:transform .15s; }
 details.adv[open] summary::before{ transform:rotate(45deg); }
-details.adv .fld{ margin-top:12px; }
+details.adv .fld{ margin-top:8px; }
 .tgl{ display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13px; }
 .sw{ position:relative; width:34px; height:20px; flex:none; }
 .sw input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
@@ -366,10 +371,17 @@ details.adv .fld{ margin-top:12px; }
   .fcards{ grid-template-columns:1fr; } .energy{ grid-template-columns:1fr; } .rk{ grid-template-columns:110px 1fr 66px; }
 }
 @media (max-width:520px){ .top{ padding:8px 16px; } .top-r .tbtn.hide-s{ display:none; } .kpi-v b{ font-size:26px; } .maphead .seg{ min-width:0; width:100%; } }
-@media (min-width:861px) and (max-height:820px){
-  .task{ gap:10px; padding:14px 16px; } .task .sub{ display:none; } .levers{ padding:14px; gap:8px; } .levers .sub{ display:none; }
+/* Escritorio: todo en una pantalla; en pantallas bajas se ocultan textos secundarios */
+@media (min-width:861px){
+  .task{ gap:8px; padding:12px 16px 10px; } .task .lbl{ font-size:12.5px; } .task .note{ font-size:12px; line-height:1.3; }
+  .task .fld{ gap:4px; } .task .sel, .task .inp{ padding-top:6px; padding-bottom:6px; } .task .step{ height:34px; }
+  .task .seg button{ padding:4px 8px; } .task .chip{ padding:3px 6px; } .ticks{ height:16px; } details.adv{ padding-top:6px; } .row2b{ gap:6px; }
+  .levers{ padding:14px; gap:8px; } .lv{ padding:8px 10px; gap:4px; }
   .kpi{ padding:12px 14px 10px; gap:4px; } .mapcard{ padding:12px 14px; gap:8px; }
 }
+@media (min-width:861px) and (max-height:980px){ .prov{ display:none; } }
+@media (min-width:861px) and (max-height:900px){ .task .sub, .levers .sub{ display:none; } }
+@media (min-width:861px) and (max-height:780px){ .ticks{ display:none; } }
 @media (max-width:860px){ .kpis{ grid-template-columns:1fr; } .kpi-v b{ font-size:34px; } }
 @media (max-width:520px){ .tbtn.primary{ padding:7px 10px; } #btnShare .l{ display:none; } }
 @media (min-width:521px){ #btnShare .s{ display:none; } }
@@ -431,7 +443,8 @@ details.adv .fld{ margin-top:12px; }
         </div>
         <div class="fld">
           <span class="lbl" id="lWl" data-i="t_wl">Tipo de tarea</span>
-          <div class="seg two-rows" role="group" aria-labelledby="lWl" id="segWl"></div>
+          <div class="seg two-rows" role="group" aria-labelledby="lWl" id="segWl" aria-describedby="wlNote"></div>
+          <p class="note" id="wlNote"></p>
         </div>
         <div class="fld" id="fHw">
           <label class="lbl" for="gpu"><span data-i="t_hw">Hardware</span><i class="ib" tabindex="0" data-tipk="tip_hw">i</i><output id="tdpOut"></output></label>
@@ -445,9 +458,19 @@ details.adv .fld{ margin-top:12px; }
           <input id="hours" type="range" min="0" max="1000" step="1">
           <div class="ticks"><button data-h="1">1 h</button><button data-h="24">1 <span data-i="tk_d">día</span></button><button data-h="168">1 <span data-i="tk_w">semana</span></button><button data-h="720">1 <span data-i="tk_m">mes</span></button></div>
         </div>
-        <div class="fld" id="fReq">
-          <label class="lbl" for="reqs"><span data-i="t_reqs">Peticiones en ese tiempo</span><i class="ib" tabindex="0" data-tipk="tip_reqs">i</i></label>
-          <input id="reqs" class="inp" inputmode="numeric" placeholder="0">
+        <div class="fld" id="fUtil">
+          <label class="lbl" for="util"><span data-i="t_util">Uso medio de la GPU</span><i class="ib" tabindex="0" data-tipk="tip_util">i</i><output id="utilOut"></output></label>
+          <input id="util" type="range" min="10" max="100" step="5">
+        </div>
+        <div class="row2b">
+          <div class="fld" id="fReq">
+            <label class="lbl" for="reqs"><span data-i="t_reqs">Peticiones en ese tiempo</span><i class="ib" tabindex="0" data-tipk="tip_reqs">i</i></label>
+            <input id="reqs" class="inp" inputmode="numeric" placeholder="0">
+          </div>
+          <div class="fld" id="fReps">
+            <label class="lbl" for="reps"><span data-i="t_reps">Veces al año</span><i class="ib" tabindex="0" data-tipk="tip_reps">i</i></label>
+            <input id="reps" class="inp" inputmode="numeric" placeholder="1">
+          </div>
         </div>
         <div class="fld">
           <span class="lbl" id="lDc"><span data-i="t_dc">Centro de datos</span><i class="ib" tabindex="0" data-tipk="tip_dc">i</i></span>
@@ -466,20 +489,12 @@ details.adv .fld{ margin-top:12px; }
             <label class="tgl"><span class="sw"><input type="checkbox" id="measOn"><i></i></span><span data-i="t_meas">Tengo los kWh medidos</span><i class="ib" tabindex="0" data-tipk="tip_meas">i</i></label>
             <input id="measKwh" class="inp hidden" inputmode="decimal" placeholder="kWh">
           </div>
-          <div class="fld" id="fUtil">
-            <label class="lbl" for="util"><span data-i="t_util">Uso medio de la GPU</span><i class="ib" tabindex="0" data-tipk="tip_util">i</i><output id="utilOut"></output></label>
-            <input id="util" type="range" min="10" max="100" step="5">
-          </div>
           <div class="fld">
             <label class="tgl"><span class="sw"><input type="checkbox" id="hostOn"><i></i></span><span data-i="t_host">Sumar el resto del servidor</span><i class="ib" tabindex="0" data-tipk="tip_host">i</i></label>
           </div>
           <div class="fld">
             <span class="lbl" id="lLife"><span data-i="t_life">Vida útil del hardware</span><i class="ib" tabindex="0" data-tipk="tip_life">i</i></span>
             <div class="seg" role="group" aria-labelledby="lLife"><button data-life="4">4 <span data-i="yrs">años</span></button><button data-life="5">5 <span data-i="yrs">años</span></button><button data-life="6">6 <span data-i="yrs">años</span></button></div>
-          </div>
-          <div class="fld">
-            <label class="lbl" for="reps"><span data-i="t_reps">Veces al año</span><i class="ib" tabindex="0" data-tipk="tip_reps">i</i></label>
-            <input id="reps" class="inp" inputmode="numeric" placeholder="1">
           </div>
         </details>
         <p class="prov" id="prov"></p>
@@ -489,14 +504,14 @@ details.adv .fld{ margin-top:12px; }
     <!-- =============== Centro: cifras y mapa =============== -->
     <section class="col" aria-label="Resultados">
       <div class="kpis" id="kpis">
-        <article class="panel kpi co2"><div class="kpi-t">CO₂e<i class="ib" tabindex="0" data-tipk="tip_co2">i</i></div>
-          <div class="kpi-v"><b id="vCO2">—</b><span>kg</span></div><p class="kpi-was" id="wCO2"></p>
+        <article class="panel kpi co2"><div class="kpi-t">CO₂e<i class="ib" tabindex="0" data-tipk="tip_co2">i</i><span class="kpi-u" data-unitnote></span></div>
+          <div class="kpi-v"><b id="vCO2">—</b><span id="uCO2">kg</span></div><p class="kpi-was" id="wCO2"></p>
           <div class="stack-w" id="wCO2b"><div class="stack" id="sCO2"></div></div><p class="stack-l" id="lCO2"></p><p class="kpi-eq" id="eCO2"></p></article>
-        <article class="panel kpi kwh"><div class="kpi-t"><span data-i="m_kwh">Energía</span><i class="ib" tabindex="0" data-tipk="tip_kwh">i</i></div>
-          <div class="kpi-v"><b id="vKWH">—</b><span>kWh</span></div><p class="kpi-was" id="wKWH"></p>
+        <article class="panel kpi kwh"><div class="kpi-t"><span data-i="m_kwh">Energía</span><i class="ib" tabindex="0" data-tipk="tip_kwh">i</i><span class="kpi-u" data-unitnote></span></div>
+          <div class="kpi-v"><b id="vKWH">—</b><span id="uKWH">kWh</span></div><p class="kpi-was" id="wKWH"></p>
           <div class="stack-w" id="wKWHb"><div class="stack" id="sKWH"></div></div><p class="stack-l" id="lKWH"></p><p class="kpi-eq" id="eKWH"></p></article>
-        <article class="panel kpi h2o"><div class="kpi-t"><span data-i="m_h2o">Agua</span><i class="ib" tabindex="0" data-tipk="tip_h2o">i</i></div>
-          <div class="kpi-v"><b id="vH2O">—</b><span data-i="u_l">litros</span></div><p class="kpi-was" id="wH2O"></p>
+        <article class="panel kpi h2o"><div class="kpi-t"><span data-i="m_h2o">Agua</span><i class="ib" tabindex="0" data-tipk="tip_h2o">i</i><span class="kpi-u" data-unitnote></span></div>
+          <div class="kpi-v"><b id="vH2O">—</b><span id="uH2O">litros</span></div><p class="kpi-was" id="wH2O"></p>
           <div class="stack-w" id="wH2Ob"><div class="stack" id="sH2O"></div></div><p class="stack-l" id="lH2O"></p><p class="kpi-eq" id="eH2O"></p></article>
       </div>
       <div class="panel mapcard">
@@ -693,6 +708,11 @@ function regionById(id){ return REGION_INDEX.get(id); }
 ============================================================ */
 const I18N = {
 es:{
+  wl_note_train:'Total de la ejecución. Incluye el texto para la Ley de IA.',
+  wl_note_ft:'Total del ajuste. Incluye el texto para la Ley de IA.',
+  wl_note_inf:'Con peticiones, cifras por cada 1.000 (unidad de SCI). Al servir, la GPU suele usarse por debajo del 100 %.',
+  wl_note_exp:'Total de la sesión y, si se repite, el acumulado del año.',
+  per_k:'por 1.000 peticiones', tot_line:'Total en {h} h: {v}', eq_total:'En total,',
   tour_l:'Guía rápida', theme_l:'Cambiar entre modo claro y oscuro',
   tour_n:'Paso {i} de {n}', tour_skip:'Saltar guía', tour_prev:'Atrás', tour_next:'Siguiente', tour_end:'Empezar',
   tour1_t:'Describe tu tarea', tour1_x:'Elige un ejemplo o cambia la GPU, las horas y dónde se ejecuta. Todo se recalcula al momento.',
@@ -710,18 +730,18 @@ es:{
   t_examples:'Empieza con un ejemplo',
   pr0:'Notebook de pruebas', pr1:'Fine-tuning', pr2:'Entrenamiento grande', pr3:'Chatbot en producción',
   pr0_t:'1 T4 durante 3 horas, media mundial', pr1_t:'4 A100 durante 12 horas en Virginia', pr2_t:'64 H100 durante una semana en Virginia', pr3_t:'2 A100 todo el mes, 12 meses al año',
-  t_wl:'Tipo de tarea', wl_train:'Entrenar un modelo', wl_ft:'Fine-tuning', wl_inf:'Servir un modelo (API)', wl_exp:'Pruebas y notebooks',
+  t_wl:'Tipo de tarea', wl_train:'Entrenar', wl_ft:'Fine-tuning', wl_inf:'Servir (API)', wl_exp:'Pruebas', wl_train_l:'Entrenar un modelo', wl_ft_l:'Fine-tuning', wl_inf_l:'Servir un modelo (API)', wl_exp_l:'Pruebas y notebooks',
   t_hw:'Hardware', units_l:'Número de GPU', units_minus:'Una GPU menos', units_plus:'Una GPU más',
   gpu_avg_name:'No lo sé (A100 SXM)',
   t_hours:'Duración', tk_d:'día', tk_w:'sem.', tk_m:'mes', days:'{n} días', day1:'1 día',
-  t_reqs:'Peticiones en ese tiempo',
+  t_reqs:'Peticiones',
   t_dc:'Centro de datos', dc_hyper_s:'Gran nube', dc_avg_s:'Medio o propio',
   dc_hyper:'Gran nube (AWS, Google Cloud, Azure)', dc_avg:'Centro de datos medio o propio',
   t_region:'Dónde se ejecuta',
   t_adv:'Ajustes avanzados', t_meas:'Tengo los kWh medidos', need_meas:'Escribe los kWh medidos en «Ajustes avanzados».', t_util:'Uso medio de la GPU',
-  t_host:'Sumar el resto del servidor', t_life:'Vida útil del hardware', yrs:'años', years:'{n} años', t_reps:'Veces al año que se repite',
+  t_host:'Sumar el resto del servidor', t_life:'Vida útil del hardware', yrs:'años', years:'{n} años', t_reps:'Veces al año',
   tip_hw:'La potencia máxima (TDP) de cada GPU sale de su ficha técnica de NVIDIA. Si no sabes cuál es, usamos la A100 SXM, la más estudiada.',
-  tip_reqs:'Opcional. Con este dato calculamos la huella de cada 1.000 peticiones.',
+  tip_reqs:'Peticiones atendidas durante la duración indicada. Con este dato, las cifras pasan a ser por cada 1.000 peticiones (la unidad funcional de SCI).',
   tip_dc:'Gran nube: PUE 1,13 y 0,27 L de agua por kWh (Google y Microsoft, 2025). Medio o propio: PUE 1,54 (Uptime Institute, 2025) y 0,36 L/kWh (LBNL, 2024). El PUE dice cuánta energía extra gasta el edificio por cada kWh de los servidores.',
   tip_region:'Cada país produce su electricidad de forma distinta: eso cambia el CO₂ y el agua, no los kWh. También puedes elegir en el mapa.',
   tip_meas:'Si mediste el consumo con CodeCarbon, el panel de tu proveedor o un medidor, escríbelo aquí y sustituye a la estimación. Encima se aplica el PUE del centro de datos.',
@@ -742,7 +762,7 @@ es:{
   per_req:'Cada 1.000 peticiones: {v}', per_year:'Al año (×{n}): {v}',
   map_h:'¿Dónde conviene ejecutarla?', map_p:'La misma tarea en la red eléctrica de cada país. Pasa el cursor para ver el detalle y haz clic para elegir.',
   v_map:'Mapa', v_rank:'Ranking', map_hint:'Pasa el cursor para ver el detalle y haz clic para elegir.',
-  lg_co2:'kg de CO₂e de esta tarea (mín., mediana, máx.)', lg_h2o:'litros de agua de esta tarea (mín., mediana, máx.)', lg_none:'Sin datos', lg_you:'Tu elección',
+  lg_co2:'kg de CO₂e de esta tarea (mín., mediana, máx.)', lg_h2o:'litros de agua de esta tarea (mín., mediana, máx.)', lg_co2_k:'g de CO₂e por cada 1.000 peticiones (mín., mediana, máx.)', lg_h2o_k:'mL de agua por cada 1.000 peticiones (mín., mediana, máx.)', lg_none:'Sin datos', lg_you:'Tu elección',
   avg_world:'Media mundial', avg_eu:'Media UE',
   tt_you:'tu elección', tt_vs:'{p} frente a tu elección', tt_grid:'Red: {g} g de CO₂e por kWh (Ember {y})', tt_wf:'Central: {w} L de agua por kWh (WRI){ap}', tt_ap:', aproximado',
   tt_eu:'Sin dato propio: se usa la media de la UE', tt_nodata:'Sin datos de este país', tt_click:'Clic para elegir', tt_marker:'Región de nube',
@@ -752,7 +772,7 @@ es:{
   ins_w:'Donde menos agua gastaría es en {r}: {w} ({wp}). Emitiría {c} de CO₂e ({cp}).',
   ins_range_c:'Entre la red más limpia y la más sucia de la lista, esta tarea emite {x} veces más.',
   tt_same:'igual en todas partes', en_same:'en cualquier país del mapa', en_lead:'La electricidad no cambia de un país a otro: depende del hardware, del tiempo y del centro de datos. Lo que cambia es cuánto CO₂ y agua cuesta producirla.',
-  en_dc:'Según el centro de datos', en_mix:'De dónde salen tus {v} kWh', en_click:'Clic para elegir',
+  en_dc:'Según el centro de datos', en_mix:'De dónde salen tus {v} {u}', en_click:'Clic para elegir',
   en_gpu:'GPU', en_host:'Resto del servidor', en_bld:'Edificio (PUE {pue})', en_meas:'Medido',
   lv_h:'Cómo reducirla', lv_p:'Actívalas y mira su efecto en las tres cifras.',
   lv_region:'Moverla a la red más limpia', lv_region_d:'Noruega, {g} g de CO₂e por kWh. Ojo: sube el agua.',
@@ -803,6 +823,11 @@ es:{
   card_eq:'≈ {km} km en coche · {phone} cargas de móvil · {days} días de agua de una persona',
 },
 en:{
+  wl_note_train:'Total for the run. Includes the AI Act text.',
+  wl_note_ft:'Total for the fine-tune. Includes the AI Act text.',
+  wl_note_inf:'With requests, figures are per 1,000 (the SCI unit). When serving a model, GPU use is usually below 100%.',
+  wl_note_exp:'Total for the session and, if it repeats, the yearly total.',
+  per_k:'per 1,000 requests', tot_line:'Total over {h} h: {v}', eq_total:'In total,',
   tour_l:'Quick guide', theme_l:'Switch between light and dark mode',
   tour_n:'Step {i} of {n}', tour_skip:'Skip guide', tour_prev:'Back', tour_next:'Next', tour_end:'Start',
   tour1_t:'Describe your task', tour1_x:'Pick an example or change the GPU, the hours and where it runs. Everything updates instantly.',
@@ -820,18 +845,18 @@ en:{
   t_examples:'Start from an example',
   pr0:'Test notebook', pr1:'Fine-tuning', pr2:'Large training run', pr3:'Chatbot in production',
   pr0_t:'1 T4 for 3 hours, world average', pr1_t:'4 A100s for 12 hours in Virginia', pr2_t:'64 H100s for a week in Virginia', pr3_t:'2 A100s all month, 12 months a year',
-  t_wl:'Type of task', wl_train:'Train a model', wl_ft:'Fine-tuning', wl_inf:'Serve a model (API)', wl_exp:'Tests and notebooks',
+  t_wl:'Type of task', wl_train:'Train', wl_ft:'Fine-tuning', wl_inf:'Serve (API)', wl_exp:'Tests', wl_train_l:'Train a model', wl_ft_l:'Fine-tuning', wl_inf_l:'Serve a model (API)', wl_exp_l:'Tests and notebooks',
   t_hw:'Hardware', units_l:'Number of GPUs', units_minus:'One GPU fewer', units_plus:'One more GPU',
   gpu_avg_name:'Not sure (A100 SXM)',
   t_hours:'Duration', tk_d:'day', tk_w:'wk', tk_m:'mo', days:'{n} days', day1:'1 day',
-  t_reqs:'Requests in that time',
+  t_reqs:'Requests',
   t_dc:'Data centre', dc_hyper_s:'Large cloud', dc_avg_s:'Average or own',
   dc_hyper:'Large cloud (AWS, Google Cloud, Azure)', dc_avg:'Average or own data centre',
   t_region:'Where it runs',
   t_adv:'Advanced settings', t_meas:'I have measured kWh', need_meas:'Enter the measured kWh under "Advanced settings".', t_util:'Average GPU use',
-  t_host:'Add the rest of the server', t_life:'Hardware lifetime', yrs:'years', years:'{n} years', t_reps:'Times a year it repeats',
+  t_host:'Add the rest of the server', t_life:'Hardware lifetime', yrs:'years', years:'{n} years', t_reps:'Times a year',
   tip_hw:'Each GPU\'s maximum power (TDP) comes from its NVIDIA datasheet. If you are not sure, we use the A100 SXM, the most studied one.',
-  tip_reqs:'Optional. With this we calculate the footprint of every 1,000 requests.',
+  tip_reqs:'Requests served during the stated duration. With this figure, results switch to per 1,000 requests (the SCI functional unit).',
   tip_dc:'Large cloud: PUE 1.13 and 0.27 L of water per kWh (Google and Microsoft, 2025). Average or own: PUE 1.54 (Uptime Institute, 2025) and 0.36 L/kWh (LBNL, 2024). PUE tells how much extra energy the building uses for every kWh of the servers.',
   tip_region:'Every country makes its electricity differently: that changes CO₂ and water, not kWh. You can also choose on the map.',
   tip_meas:'If you measured consumption with CodeCarbon, your provider\'s dashboard or a meter, enter it here and it replaces the estimate. The data centre PUE is applied on top.',
@@ -852,7 +877,7 @@ en:{
   per_req:'Every 1,000 requests: {v}', per_year:'Per year (×{n}): {v}',
   map_h:'Where should it run?', map_p:'The same task on each country\'s grid. Hover for details and click to choose.',
   v_map:'Map', v_rank:'Ranking', map_hint:'Hover for details and click to choose.',
-  lg_co2:'kg CO₂e for this task (min, median, max)', lg_h2o:'litres of water for this task (min, median, max)', lg_none:'No data', lg_you:'Your choice',
+  lg_co2:'kg CO₂e for this task (min, median, max)', lg_h2o:'litres of water for this task (min, median, max)', lg_co2_k:'g CO₂e per 1,000 requests (min, median, max)', lg_h2o_k:'mL of water per 1,000 requests (min, median, max)', lg_none:'No data', lg_you:'Your choice',
   avg_world:'World average', avg_eu:'EU average',
   tt_you:'your choice', tt_vs:'{p} vs your choice', tt_grid:'Grid: {g} g CO₂e per kWh (Ember {y})', tt_wf:'Power plant: {w} L of water per kWh (WRI){ap}', tt_ap:', approximate',
   tt_eu:'No own data: EU average used', tt_nodata:'No data for this country', tt_click:'Click to choose', tt_marker:'Cloud region',
@@ -862,7 +887,7 @@ en:{
   ins_w:'It would use the least water in {r}: {w} ({wp}). It would emit {c} CO₂e ({cp}).',
   ins_range_c:'Between the cleanest and the dirtiest grid in the list, this task emits {x} times more.',
   tt_same:'the same everywhere', en_same:'in any country on the map', en_lead:'Electricity does not change from one country to another: it depends on the hardware, the time and the data centre. What changes is how much CO₂ and water it takes to produce it.',
-  en_dc:'By data centre', en_mix:'Where your {v} kWh come from', en_click:'Click to choose',
+  en_dc:'By data centre', en_mix:'Where your {v} {u} come from', en_click:'Click to choose',
   en_gpu:'GPUs', en_host:'Rest of the server', en_bld:'Building (PUE {pue})', en_meas:'Measured',
   lv_h:'How to reduce it', lv_p:'Turn them on and see the effect on all three figures.',
   lv_region:'Move it to the cleanest grid', lv_region_d:'Norway, {g} g CO₂e per kWh. Note: water goes up.',
@@ -1321,7 +1346,7 @@ const pctTxt = (a,b) => { const p=Math.round((a/b-1)*100); return (p>0?'+':p<0?'
 const regionName = r => LANG==='en' ? r[2] : r[1];
 const gpuRow = id => GPUS.find(g=>g[0]===id) || GPUS[2];
 const gpuName = id => gpuRow(id)[1] || t('gpu_avg_name');
-const wlName  = id => t('wl_'+id);
+const wlName  = id => t('wl_'+id+'_l');
 const dcName  = id => t('dc_'+id);
 const gOrKg  = g  => g>=1000 ? `${fmt(g/1000)} kg` : `${fmt(g)} g`;
 const mlOrL  = ml => ml>=1000 ? `${fmt(ml/1000)} L` : `${fmt(ml)} mL`;
@@ -1426,11 +1451,13 @@ function syncControls(){
   $('gpu').value=state.gpu; $('units').value=state.units; $('tdpOut').textContent=state.mode==='meas'?'':`${state.units} × ${state.watts} W`; $('region').value=state.region;
   $('reqs').value=state.reqs||''; $('reps').value=state.reps>1?state.reps:'';
   $('fReq').classList.toggle('hidden',state.workload!=='inf');
+  $('fReps').classList.toggle('hidden',!['inf','exp'].includes(state.workload) && !(state.reps>1));
+  $('wlNote').textContent=t('wl_note_'+state.workload);
   const meas=state.mode==='meas';
   $('measOn').checked=meas; $('measKwh').classList.toggle('hidden',!meas); $('measKwh').value=state.measKwh||'';
   $('gpu').disabled=meas; $('fUtil').classList.toggle('hidden',meas);
   $('hostOn').checked=state.host;
-  if(meas || state.util<1 || !state.host || state.life!==6 || state.reps>1) $('adv').open=true;
+  if(meas || !state.host || state.life!==6) $('adv').open=true;
   renderHours(); renderUtil();
   $('btnAct').classList.toggle('hidden',!['train','ft'].includes(state.workload));
 }
@@ -1447,20 +1474,28 @@ function wasHTML(b,r,unit){
   const cls=r<b?'dn':'up';
   return `<s>${tf('was',{v:`${fmt(b)} ${unit}`})}</s> <span class="${cls}">${pctTxt(r,b)}</span>`;
 }
+/* Unidad del resultado según el tipo de tarea (unidad funcional R de SCI):
+   servir un modelo con peticiones → por cada 1.000 peticiones; el resto → total de la ejecución */
+const perReqMode = () => state.workload==='inf' && state.reqs>0;
+const dScale = () => perReqMode() ? 1e6/state.reqs : 1;               // kg→g, kWh→Wh, L→mL y ×1.000/peticiones
+const dUnit = m => perReqMode() ? ({co2:'g',kwh:'Wh',h2o:'mL'})[m] : ({co2:'kg',kwh:'kWh',h2o:'L'})[m];
 function extraLine(v,unitFn){
   const out=[];
-  if(state.workload==='inf' && state.reqs>0) out.push(tf('per_req',{v:unitFn(v*1000*1000/state.reqs)}));
+  if(perReqMode()) out.push(tf('tot_line',{h:state.hours,v:unitFn(v*1000)}));
   if(state.reps>1) out.push(tf('per_year',{n:state.reps,v:unitFn(v*state.reps*1000)}));
   return out.length?`<span class="kpi-x">${out.join(' · ')}</span>`:'';
 }
 function renderKpis(B,R){
-  tween($('vCO2'),R.co2); tween($('vKWH'),R.kwh); tween($('vH2O'),R.water);
-  $('wCO2').innerHTML=wasHTML(B.co2,R.co2,'kg'); $('wKWH').innerHTML=wasHTML(B.kwh,R.kwh,'kWh'); $('wH2O').innerHTML=wasHTML(B.water,R.water,'L');
-  $('sCO2').innerHTML=stackHTML([{l:t('bk_c1'),v:R.operational},{l:t('bk_c2'),v:R.embodied}],'kg',R.co2);
-  $('sKWH').innerHTML=stackHTML([{l:t('bk_e1'),v:R.kwhIT},{l:t('bk_e2'),v:R.overhead}],'kWh',R.kwh);
-  $('sH2O').innerHTML=stackHTML([{l:t('bk_w1'),v:R.waterOn},{l:t('bk_w2'),v:R.waterOff}],'L',R.water);
+  const S=dScale(), pr=perReqMode();
+  tween($('vCO2'),R.co2*S); tween($('vKWH'),R.kwh*S); tween($('vH2O'),R.water*S);
+  $('uCO2').textContent=dUnit('co2'); $('uKWH').textContent=dUnit('kwh'); $('uH2O').textContent=pr?'mL':t('u_l');
+  document.querySelectorAll('[data-unitnote]').forEach(e=>e.textContent=pr?t('per_k'):'');
+  $('wCO2').innerHTML=wasHTML(B.co2*S,R.co2*S,dUnit('co2')); $('wKWH').innerHTML=wasHTML(B.kwh*S,R.kwh*S,dUnit('kwh')); $('wH2O').innerHTML=wasHTML(B.water*S,R.water*S,dUnit('h2o'));
+  $('sCO2').innerHTML=stackHTML([{l:t('bk_c1'),v:R.operational*S},{l:t('bk_c2'),v:R.embodied*S}],dUnit('co2'),R.co2*S);
+  $('sKWH').innerHTML=stackHTML([{l:t('bk_e1'),v:R.kwhIT*S},{l:t('bk_e2'),v:R.overhead*S}],dUnit('kwh'),R.kwh*S);
+  $('sH2O').innerHTML=stackHTML([{l:t('bk_w1'),v:R.waterOn*S},{l:t('bk_w2'),v:R.waterOff*S}],dUnit('h2o'),R.water*S);
   // Barra que encoge con lo que ahorras: la trama es lo que ya no se emite; la marca, dónde estabas
-  [['CO2',B.co2,R.co2,'kg'],['KWH',B.kwh,R.kwh,'kWh'],['H2O',B.water,R.water,'L']].forEach(([k,b,r,u])=>{
+  [['CO2',B.co2*S,R.co2*S,dUnit('co2')],['KWH',B.kwh*S,R.kwh*S,dUnit('kwh')],['H2O',B.water*S,R.water*S,dUnit('h2o')]].forEach(([k,b,r,u])=>{
     const w=$('w'+k+'b'), on=state.active.size>0 && Math.abs(r-b)/Math.max(b,1e-12)>=0.005, mx=Math.max(b,r)||1;
     $('s'+k).style.width = on ? (r/mx*100).toFixed(2)+'%' : '100%';
     w.classList.toggle('saved', on && r<b);
@@ -1475,10 +1510,10 @@ function renderKpis(B,R){
   // Sin energía (kWh medidos todavía vacíos): no hay desglose que mostrar; se pide el dato
   if(!(R.kwh>0)){ ['lKWH','lH2O'].forEach(id=>$(id).innerHTML=''); if(!(R.co2>0)) $('lCO2').innerHTML='';
     if(state.mode==='meas') ['wCO2','wKWH','wH2O'].forEach(id=>$(id).textContent=t('need_meas')); }
-  const E=DATA.EQ;
-  $('eCO2').innerHTML=`<span data-tipk="eq_car_t">${tf('eq_car',{n:`<b>${fmt(R.co2*1000/E.car)}</b>`})}</span>`+extraLine(R.co2,gOrKg);
-  $('eKWH').innerHTML=`<span data-tipk="eq_phone_t">${tf('eq_phone',{n:`<b>${fmt(R.kwh/E.phone)}</b>`})}</span>`+extraLine(R.kwh,whOrKwh);
-  $('eH2O').innerHTML=`<span data-tipk="eq_water_t">${tf('eq_water',{n:`<b>${fmt(R.water/E.waterDay)}</b>`})}</span>`+extraLine(R.water,mlOrL);
+  const E=DATA.EQ, pre=pr?`${t('eq_total')} `:'';
+  $('eCO2').innerHTML=`<span data-tipk="eq_car_t">${pre}${tf('eq_car',{n:`<b>${fmt(R.co2*1000/E.car)}</b>`})}</span>`+extraLine(R.co2,gOrKg);
+  $('eKWH').innerHTML=`<span data-tipk="eq_phone_t">${pre}${tf('eq_phone',{n:`<b>${fmt(R.kwh/E.phone)}</b>`})}</span>`+extraLine(R.kwh,whOrKwh);
+  $('eH2O').innerHTML=`<span data-tipk="eq_water_t">${pre}${tf('eq_water',{n:`<b>${fmt(R.water/E.waterDay)}</b>`})}</span>`+extraLine(R.water,mlOrL);
 }
 
 /* ============================================================
@@ -1525,15 +1560,15 @@ function buildMap(){
   svg.addEventListener('click',e=>{ const el=e.target.closest('[data-r]'); if(el) setRegion(el.dataset.r); });
   svg.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.dataset && e.target.dataset.r){ e.preventDefault(); setRegion(e.target.dataset.r); } });
 }
-const metricVal = (r,m) => m==='co2' ? r.co2 : r.water;
-const unitOf = m => m==='co2' ? 'kg' : 'L';
+const metricVal = (r,m) => (m==='co2' ? r.co2 : r.water)*dScale();
+const unitOf = m => dUnit(m);
 function regionTip(id,marker){
   const reg=regionById(id), r=regionVals[id]||computeAt(id), me=computeAt(state.region);
   const you = id===state.region;
   const line=(lab,v,b,u,ap)=>`<div class="tk" style="--tc:var(--${lab==='CO₂e'?'co2':'h2o'})">${lab}: <b>${ap?'≈ ':''}${fmt(v)} ${u}</b>${you?'':` · ${tf('tt_vs',{p:pctTxt(v,b)})}`}</div>`;
   return `<b>${regionName(reg)}</b>${you?` · ${t('tt_you')}`:''}${marker?`<small style="margin:0 0 4px">${t('tt_marker')}</small>`:''}`+
-    line('CO₂e',r.co2,me.co2,'kg')+line(t('m_h2o'),r.water,me.water,'L',!waterKnown(reg))+
-    `<div class="tk" style="--tc:var(--kwh)">${t('m_kwh')}: <b>${fmt(r.kwh)} kWh</b>${you?'':` · ${t('tt_same')}`}</div>`+
+    line('CO₂e',r.co2*dScale(),me.co2*dScale(),dUnit('co2'))+line(t('m_h2o'),r.water*dScale(),me.water*dScale(),dUnit('h2o'),!waterKnown(reg))+
+    `<div class="tk" style="--tc:var(--kwh)">${t('m_kwh')}: <b>${fmt(r.kwh*dScale())} ${dUnit('kwh')}</b>${you?'':` · ${t('tt_same')}`}</div>`+
     `<small>${tf('tt_grid',{g:reg[3],y:reg[4]})}<br>${waterKnown(reg)?tf('tt_wf',{w:dec(reg[6]),ap:reg[7]?t('tt_ap'):''}):tf('tt_wf_na',{w:dec(reg[6])})}</small>`+
     (you?'':`<small>${t('tt_click')}</small>`);
 }
@@ -1580,7 +1615,7 @@ function renderMap(){
   // Leyenda: rampa con los valores reales de esta tarea
   const scale=`linear-gradient(90deg,${ramp(m).join(',')})`; // taste-skill-ignore: la rampa de la leyenda es la escala del dato
   $('legend').innerHTML=`<span class="rampw"><span class="ramp" style="background:${scale}"></span><span class="rampl"><span>${fmt(lo)}</span><span>${fmt(med)}</span><span>${fmt(hi)} ${unitOf(m)}</span></span></span>
-    <span class="lg-t">${t(m==='co2'?'lg_co2':'lg_h2o')}</span>
+    <span class="lg-t">${t((m==='co2'?'lg_co2':'lg_h2o')+(perReqMode()?'_k':''))}</span>
     ${m==='h2o'?`<span class="lg-k"><svg width="12" height="12"><rect width="12" height="12" rx="3" fill="url(#hatch)"/></svg>${t('lg_nowater')}</span>`:''}
     <span class="lg-k"><i style="background:var(--nodata)"></i>${t('lg_none')}</span>
     <span class="hint">${t('map_hint')}</span>
@@ -1610,7 +1645,7 @@ function renderInsight(){
   let h;
   if(best.reg[0]===state.region) h=t(m==='co2'?'ins_best_c':'ins_best_w');
   else h=tf(m==='co2'?'ins_c':'ins_w',{ r:`<b>${regionName(best.reg)}</b>`,
-    c:`<b>${fmt(best.r.co2)} kg</b>`, cp:pctTxt(best.r.co2,me.co2), w:`<b>${fmt(best.r.water)} L</b>`, wp:pctTxt(best.r.water,me.water) });
+    c:`<b>${fmt(best.r.co2*dScale())} ${dUnit('co2')}</b>`, cp:pctTxt(best.r.co2,me.co2), w:`<b>${fmt(best.r.water*dScale())} ${dUnit('h2o')}</b>`, wp:pctTxt(best.r.water,me.water) });
   $('insight').innerHTML=h;
 }
 function withState(patch,fn){ const prev={}; for(const k in patch){ prev[k]=state[k]; state[k]=patch[k]; } try{ return fn(); } finally{ Object.assign(state,prev); } }
@@ -1624,12 +1659,13 @@ function renderEnergy(){
   else { const gpu=state.watts*state.units*state.hours*state.util/1000*em; parts=[{l:t('en_gpu'),v:gpu},{l:t('en_host'),v:R.kwhIT-gpu}]; }
   parts.push({l:tf('en_bld',{pue:dec(R.pue)}),v:R.overhead}); parts=parts.filter(p=>p.v>1e-9);
   const tot=R.kwh||1, shades=['var(--kwh)','var(--kwh-2)','var(--kwh-3)'];
-  $('flatnote').innerHTML=`<b>${fmt(R.kwh)} kWh</b><span>${t('en_same')}</span>`;
+  const S=dScale(), U=dUnit('kwh');
+  $('flatnote').innerHTML=`<b>${fmt(R.kwh*S)} ${U}</b><span>${t('en_same')}</span>`;
   const effDc = state.active.has('hyper') ? 'hyper' : state.dc;
-  $('energy').innerHTML=`<div class="eb"><h4>${t('en_dc')}</h4>${dcs.map(d=>`<button class="ebar has-tip${d.id===effDc?' me':''}" data-dc2="${d.id}" data-tip="${dcName(d.id)}<br><b>${fmt(d.r.kwh)} kWh</b> · PUE ${dec(d.r.pue)}<small>${t('en_click')}</small>">
-      <span class="nm">${t('dc_'+d.id+'_s')} <small>PUE ${dec(d.r.pue)}</small></span><span class="t"><i style="width:${(d.r.kwh/max*100).toFixed(1)}%"></i></span><span class="v">${fmt(d.r.kwh)} kWh</span></button>`).join('')}</div>
-   <div class="eb"><h4>${tf('en_mix',{v:fmt(R.kwh)})}</h4><div class="mix">${parts.map((p,i)=>`<i class="has-tip" style="flex-grow:${p.v};background:${shades[i]}" data-tip="${p.l}<br><b>${fmt(p.v)} kWh</b> · ${Math.round(p.v/tot*100)}${LANG==='en'?'%':' %'}"></i>`).join('')}</div>
-     <ul class="mixl">${parts.map((p,i)=>`<li><i style="background:${shades[i]}"></i>${p.l}<b>${fmt(p.v)} kWh</b></li>`).join('')}</ul></div>`;
+  $('energy').innerHTML=`<div class="eb"><h4>${t('en_dc')}</h4>${dcs.map(d=>`<button class="ebar has-tip${d.id===effDc?' me':''}" data-dc2="${d.id}" data-tip="${dcName(d.id)}<br><b>${fmt(d.r.kwh*S)} ${U}</b> · PUE ${dec(d.r.pue)}<small>${t('en_click')}</small>">
+      <span class="nm">${t('dc_'+d.id+'_s')} <small>PUE ${dec(d.r.pue)}</small></span><span class="t"><i style="width:${(d.r.kwh/max*100).toFixed(1)}%"></i></span><span class="v">${fmt(d.r.kwh*S)} ${U}</span></button>`).join('')}</div>
+   <div class="eb"><h4>${tf('en_mix',{v:fmt(R.kwh*S),u:U})}</h4><div class="mix">${parts.map((p,i)=>`<i class="has-tip" style="flex-grow:${p.v};background:${shades[i]}" data-tip="${p.l}<br><b>${fmt(p.v*S)} ${U}</b> · ${Math.round(p.v/tot*100)}${LANG==='en'?'%':' %'}"></i>`).join('')}</div>
+     <ul class="mixl">${parts.map((p,i)=>`<li><i style="background:${shades[i]}"></i>${p.l}<b>${fmt(p.v*S)} ${U}</b></li>`).join('')}</ul></div>`;
 }
 $('energy').addEventListener('click',e=>{ const b=e.target.closest('[data-dc2]'); if(b) setDc(b.dataset.dc2); });
 $('segMetric').addEventListener('click',e=>{ const b=e.target.closest('[data-metric]'); if(!b) return; state.metric=b.dataset.metric; renderMap(); syncURL(); });

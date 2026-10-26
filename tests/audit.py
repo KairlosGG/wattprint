@@ -158,20 +158,20 @@ with sync_playwright() as p:
     # ===== C. Interfaz =====
     print('C. Lo que se ve frente a compute()')
     pyfmt = """(n)=>fmt(n)"""
-    ui_cases = random.sample(scen, 60) + [dict(gpu='a100', dc='hyper', mode='est', host=True, hours=720, life=6, levers=[], region='world', units=2,
+    ui_cases = random.sample(scen, 60) + [dict(s, wl=w, reqs=q, reps=y) for s in random.sample(scen, 6) for w in ['train','ft','inf','exp'] for q, y in [(0, 1), (250000, 12)]] + [dict(gpu='a100', dc='hyper', mode='est', host=True, hours=720, life=6, levers=[], region='world', units=2,
                                               util=1.0, meas=0, own=0, schedPct=None, reqs=1000000, reps=12)]
     nC = 0
     for s in ui_cases:
-        cfg = {'w': 'inf' if s.get('reqs') else 'train', 'g': s['gpu'], 'd': s['dc'], 'm': s['mode'], 'k': s['meas'], 'sv': '1' if s['host'] else '0',
+        cfg = {'w': s.get('wl') or ('inf' if s.get('reqs') else 'train'), 'g': s['gpu'], 'd': s['dc'], 'm': s['mode'], 'k': s['meas'], 'sv': '1' if s['host'] else '0',
                'u': s['units'], 'h': s['hours'], 'l': s['life'], 'r': s['region'], 'ut': round(s['util'] * 100), 'oe': s['own'],
                'cs': s['schedPct'], 'c': s['levers'], 'q': s.get('reqs', 0), 'y': s.get('reps', 1)}
         pg.evaluate("cfg=>applyConfig(cfg)", cfg); pg.wait_for_timeout(800)
         got = pg.evaluate("""()=>{ const R=compute({optimized:true}), B=compute();
           const txt=id=>document.getElementById(id).textContent.trim();
-          return {R,B, v:[txt('vCO2'),txt('vKWH'),txt('vH2O')], f:[fmt(R.co2),fmt(R.kwh),fmt(R.water)],
+          return {R,B, v:[txt('vCO2'),txt('vKWH'),txt('vH2O')], f:[fmt(R.co2*dScale()),fmt(R.kwh*dScale()),fmt(R.water*dScale())], u:[txt('uCO2'),txt('uKWH'),txt('uH2O')], pr:perReqMode(),
                   eq:[txt('eCO2'),txt('eKWH'),txt('eH2O')], eqf:[fmt(R.co2*1000/DATA.EQ.car),fmt(R.kwh/DATA.EQ.phone),fmt(R.water/DATA.EQ.waterDay)],
                   st:[txt('lCO2'),txt('lKWH'),txt('lH2O')], was:[txt('wCO2'),txt('wKWH'),txt('wH2O')],
-                  wasf:[fmt(B.co2),fmt(B.kwh),fmt(B.water)], act:activeLevers(), reqs:state.reqs, reps:state.reps,
+                  wasf:[fmt(B.co2*dScale()),fmt(B.kwh*dScale()),fmt(B.water*dScale())], act:activeLevers(), reqs:state.reqs, reps:state.reps,
                   fx:[...document.querySelectorAll('[data-fx]')].map(e=>[e.dataset.fx,e.textContent.trim()]),
                   sel:document.getElementById('region').value, regionState:state.region }; }""")
         nC += 1
@@ -195,9 +195,10 @@ with sync_playwright() as p:
             if ptxt is None: continue
             if d >= 0.005 and ptxt not in fx[lid]: fail(f'C chip {lid} "{fx[lid]}" no contiene {ptxt}')
         # por petición y año
-        if got['reqs'] > 0:
-            want = pg.evaluate("()=>gOrKg(compute({optimized:true}).co2*1e6/state.reqs)")
-            if want not in got['eq'][0]: fail(f'C por 1.000 peticiones: "{got["eq"][0]}" no contiene {want}')
+        if got['reqs'] > 0 and got['pr']:
+            want = pg.evaluate("()=>[gOrKg(compute({optimized:true}).co2*1000), fmt(compute({optimized:true}).co2*1e6/state.reqs)]")
+            if want[0] not in got['eq'][0]: fail(f'C total en modo por petición: "{got["eq"][0]}" no contiene {want[0]}')
+            if got['v'][0] != want[1] or got['u'][0] != 'g': fail(f'C cifra por 1.000 peticiones: {got["v"][0]} {got["u"][0]} / {want[1]} g')
         if got['reps'] > 1:
             want = pg.evaluate("()=>gOrKg(compute({optimized:true}).co2*state.reps*1000)")
             if want not in got['eq'][0]: fail(f'C al año: "{got["eq"][0]}" no contiene {want}')
