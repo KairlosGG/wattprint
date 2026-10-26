@@ -14,7 +14,7 @@
    - energía de los servidores y consumo extra del centro de datos (PUE);
    - agua de refrigeración y agua usada para generar la electricidad.
 3. Si es un servicio de inferencia, calcula la huella **por petición** (la unidad funcional R de SCI). Si se repite, da la **vista anual**.
-4. Propone retos de optimización (región más limpia, cloud hyperscale, ajuste de capacidad, cuantización, planificación según la red) y recalcula al momento, incluidos los efectos contrarios: pasar a una red con mucha hidráulica baja el carbono pero sube el agua.
+4. Compara la misma tarea en todas las regiones (CO₂e y agua) para responder a «¿es mucho o poco?», explica paso a paso de dónde sale cada cifra y propone formas de reducirla (región más limpia, gran nube, horas de red más limpia, optimización propia), incluidos los efectos contrarios: pasar a una red con mucha hidráulica baja el carbono pero sube el agua.
 5. Exporta un **informe en PDF** (con las hipótesis y las fuentes, pensado para pasárselo a dirección o al área de sostenibilidad), los **datos en CSV**, una tarjeta para redes y un enlace con el resultado.
 
 ## Cómo calcula
@@ -31,9 +31,9 @@ Marco: basada en la especificación **Software Carbon Intensity (SCI)** de la Gr
 
 Retos: carbon-aware scheduling con la referencia de [Dodge et al., FAccT 2022](https://arxiv.org/abs/2206.05229) (medias de 16 regiones de Azure con intensidad marginal de 2020: −26,4 % hasta 1 h y −14,5 % hasta 6 h retrasando el inicio; −11 % en cargas más largas pausando y reanudando), que el usuario puede sustituir por su propio dato. Para otras optimizaciones (auto-scaling, cuantización) no hay un porcentaje general fiable, así que el usuario introduce su ahorro. Todos los supuestos de cada cálculo se muestran en los resultados y en el informe.
 
-Equivalencias de la calculadora de la EPA de EE. UU. y ducha media de la Water Research Foundation (2016).
+Equivalencias: coche de gasolina en la UE en uso real, 166 g CO₂/km ([JRC, 2025](https://publications.jrc.ec.europa.eu/repository/handle/JRC142808)); carga de móvil, 0,019 kWh (EPA); agua que usa en casa una persona en España, 128 L al día ([INE, 2022](https://www.ine.es/dyngs/Prensa/ESSA2022.htm)). Para entrenamientos, genera un texto de partida para la documentación técnica que la Ley de IA exige a los proveedores de modelos de propósito general (anexo XI, consumo energético conocido o estimado).
 
-**Límites y referencias.** No existe ninguna norma que limite la huella de una carga de IA. Las medallas de la herramienta son una escala orientativa propia. Como referencia legal real se muestra el PUE frente a la ley de eficiencia energética de Alemania ([EnEfG § 11](https://www.gesetze-im-internet.de/enefg/__11.html), centros de 300 kW o más: ≤ 1,5 desde 2027 y ≤ 1,3 desde 2030 para los existentes, ≤ 1,2 para los nuevos; una reforma en tramitación subiría los dos primeros a 1,6 y 1,4). La Comisión Europea adoptó el 21 de septiembre de 2026 una [calificación A–G para centros de más de 500 kW](https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_26_1667/IP_26_1667_EN.pdf), basada en PUE y WUE, con las primeras etiquetas previstas para 2027.
+**Límites y referencias.** No existe ninguna norma que limite la huella de una carga de IA. Por eso la herramienta no da notas: compara la misma tarea entre regiones. Como referencia legal real se muestra el PUE frente a la ley de eficiencia energética de Alemania ([EnEfG § 11](https://www.gesetze-im-internet.de/enefg/__11.html), centros de 300 kW o más: ≤ 1,5 desde 2027 y ≤ 1,3 desde 2030 para los existentes, ≤ 1,2 para los nuevos; una reforma en tramitación subiría los dos primeros a 1,6 y 1,4). La Comisión Europea adoptó el 21 de septiembre de 2026 una [calificación A–G para centros de más de 500 kW](https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_26_1667/IP_26_1667_EN.pdf), basada en PUE y WUE, con las primeras etiquetas previstas para 2027.
 
 Son **estimaciones de orden de magnitud, no una medición certificada**. La metodología completa y la tabla de factores por región están dentro de la herramienta, en «Metodología».
 
