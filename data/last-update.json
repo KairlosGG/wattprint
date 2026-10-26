@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-26T09:17:27.591Z",
+  "checked_at": "2026-10-26T11:09:16.213Z",
   "sources": {
     "owid": {
       "url": "https://raw.githubusercontent.com/owid/energy-data/master/owid-energy-data.csv",
@@ -51,6 +51,7 @@
       "states_found": 53
     }
   },
+  "countries_updated": 0,
   "changes": [],
   "values": {
     "world": {
