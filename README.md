@@ -4,7 +4,15 @@
 
 **Pruébala:** https://wattprint-kappa.vercel.app/ · [English version](https://wattprint-kappa.vercel.app/?lang=en)
 
-![Resultados de Wattprint](docs/resultados.png)
+![Vista Comparar de Wattprint: CO₂ frente a agua ponderada por escasez para un ajuste fino en España](docs/comparar.png)
+
+*Vista Comparar (modo oscuro): un ajuste fino con 4 A100 durante 12 horas en España. Los puntos verdes mejoran a la vez su CO₂ y su agua ponderada por escasez.*
+
+<details><summary>Mapa en modo claro</summary>
+
+![Mapa de Wattprint en modo claro con el CO₂ de la misma tarea en cada país](docs/mapa-claro.png)
+
+</details>
 
 ## Qué hace
 
@@ -29,6 +37,7 @@ Marco: basada en la especificación **Software Carbon Intensity (SCI)** de la Gr
 | Agua de refrigeración | `litros = kWh de servidores × WUE` | Centro medio 0,36 L/kWh: media de los centros de EE. UU. en 2023 ([Shehabi et al., LBNL 2024](https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report_1.pdf)); grandes nubes 0,27 L/kWh ([Microsoft, año fiscal 2025](https://datacenters.microsoft.com/sustainability/efficiency/); AWS informa 0,12 de agua extraída en 2025 ([Amazon Sustainability](https://sustainability.aboutamazon.com/products-services/aws-cloud))) |
 | Agua de generación eléctrica | `litros = kWh totales × factor de agua de la red` | [WRI, Reig et al. (2020)](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity), apéndice 2 (49 países) y apéndice 1 (subregiones eGRID de EE. UU.: SRVC para Virginia, NWPP para Oregón), en gal/kWh × 3,785 L/gal; los países sin factor propio usan la media mundial ponderada por generación de la tabla 4 (1,27 gal/kWh = 4,81 L/kWh) y se marcan como aproximados. Atribuyen a la electricidad toda la evaporación de los embalses; mismo marco que [Li et al., *Making AI Less "Thirsty"*](https://arxiv.org/abs/2304.03271) |
 | Agua ponderada por escasez | `litros eq. = litros × factor AWARE del lugar` | AWARE 2.0 ([Seitfudem et al., J. Ind. Ecol. 2025](https://doi.org/10.1111/jiec.70023); [datos](https://doi.org/10.5281/zenodo.15133241), CC BY 4.0), método de consenso de WULCA ([Boulay et al. 2018](https://doi.org/10.1007/s11367-017-1333-8)) que usa la Huella Ambiental de la UE para el agua. Factor anual, usos no agrícolas: países con la definición GLAM, territorios con la de ecoinvent, Virginia y Oregón con su estado (US-VA, US-OR), mundo GLO, UE EU27. Refrigeración y central con el mismo factor |
+| Energía libre de carbono (solo informativa) | % CFE horario de cada región de Google Cloud | [Google, region-carbon-info](https://github.com/GoogleCloudPlatform/region-carbon-info) (2025, Apache 2.0). Mirada de mercado: se muestra junto a la región, pero no entra en ningún cálculo, que sigue siendo location-based |
 
 Opciones para reducirla: carbon-aware scheduling con la referencia de [Dodge et al., FAccT 2022](https://arxiv.org/abs/2206.05229) (medias de 16 regiones de Azure con intensidad marginal de 2020: −26,4 % hasta 1 h y −14,5 % hasta 6 h retrasando el inicio; −11 % en cargas más largas pausando y reanudando), que el usuario puede sustituir por su propio dato. Para otras optimizaciones (auto-scaling, cuantización) no hay un porcentaje general fiable, así que el usuario introduce su ahorro. Todos los supuestos de cada cálculo se muestran en los resultados y en el informe.
 
@@ -56,12 +65,28 @@ python3 -m http.server 8000   # o abre index.html directamente
 
 Los datos (regiones, PUE, WUE, factores de agua, equivalencias) están en el objeto `DATA` de `index.html`, en un solo sitio, para que sea fácil revisarlos o actualizarlos. Los textos en los dos idiomas están en `I18N`.
 
+## Auditoría automática
+
+`tests/audit.py` comprueba la herramienta de punta a punta:
+
+- **Datos:** el carbono de cada una de las 216 regiones frente a OWID/Ember; el agua frente a los apéndices 1 y 2 y la tabla 4 del WRI; las regiones de AWS, Google Cloud y Azure frente a sus listas oficiales; la región de Uptime de cada país frente a una regla geográfica independiente; el factor AWARE 2.0 de cada lugar frente al Excel original; y la energía libre de carbono de Google frente a su CSV.
+- **Fórmulas:** 20.736 escenarios y 373.248 comparaciones, incluida el agua ponderada por escasez (todas las regiones con los dos tipos de centro, GPU, centros de datos, modos, resto del servidor, duraciones, vidas útiles y combinaciones de opciones) frente a una implementación independiente en Python escrita a partir de la metodología.
+- **Comparar:** los puntos, los lugares que mejoran tus dos cifras y la frontera (los que ningún otro mejora en las dos), recalculados en Python.
+- **Interfaz:** cifras, equivalencias, desglose, efecto de cada opción, mapa (incluidos los países atenuados), ranking de energía por región, recomendación, desplegable, por petición y por año.
+- **Enlace compartible:** ida y vuelta del estado.
+- **CSV.**
+- **Entradas inválidas.**
+
+Uso: sirve la carpeta con un servidor estático en el puerto 8799 y ejecuta `OWID_CSV=… WRI_XLSX=… python3 tests/audit.py` (requiere `pip install pycountry-convert`; `AWARE_XLSX` apunta a AWARE20_Countries_and_Regions.xlsx de Zenodo y `GCFE_CSV` al CSV de 2025 de GoogleCloudPlatform/region-carbon-info). Los apéndices del WRI se descargan desde su página de datos.
+
 ## Licencias y créditos
 
 - Código: [MIT](LICENSE) © 2026 Carlos Gallego Galán.
 - Datos de intensidad de carbono: Ember, CC BY 4.0.
 - Factores de agua de la electricidad: World Resources Institute (2020).
-- Tipografías Space Grotesk, Inter y JetBrains Mono: SIL Open Font License 1.1.
+- Factores de escasez de agua: AWARE 2.0 (Seitfudem et al., 2025), CC BY 4.0.
+- Energía libre de carbono de Google Cloud: GoogleCloudPlatform/region-carbon-info, Apache 2.0.
+- Tipografías Archivo y Space Grotesk: SIL Open Font License 1.1.
 - Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.
 
 Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/).
@@ -73,22 +98,9 @@ Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/).
 **How much carbon, energy and water does your AI use?** Wattprint estimates it in about a minute for a training run, a fine-tune or an inference service, per request too. No sign-up, nothing is sent to a server: everything runs in your browser.
 
 - **Try it:** https://wattprint-kappa.vercel.app/?lang=en
-- **Method:** based on Software Carbon Intensity (SCI, ISO/IEC 21031), using annual average rather than marginal grid intensity. Energy from GPU TDP and utilisation plus a fixed share for the rest of the server, or your measured kWh, times PUE. Carbon from Ember grid intensity (location-based) plus amortised embodied emissions. Water = cooling (WUE, LBNL 2024 / Microsoft 2025) + electricity generation (WRI country factors, as in Li et al.).
-- **Outputs:** single-screen dashboard with a choropleth map of the same task on every grid, visual breakdowns, per-request (SCI functional unit) and annual views, reduction options with their effect on CO₂e, energy and water, PDF report, CSV data, share card and link.
+- **Method:** based on Software Carbon Intensity (SCI, ISO/IEC 21031), using annual average rather than marginal grid intensity. Energy from GPU TDP and utilisation plus a fixed share for the rest of the server, or your measured kWh, times PUE (hyperscale 1.13, or the Uptime Institute 2025 regional average). Carbon from Ember grid intensity (location-based) plus amortised embodied emissions. Water = cooling (WUE, LBNL 2024 / Microsoft 2025) + electricity generation (WRI country factors, as in Li et al.), optionally weighted by water scarcity with AWARE 2.0 (the WULCA method used by the EU Environmental Footprint). Google's carbon-free energy share per region is shown for information only.
+- **Outputs:** single-screen dashboard in light and dark mode with a choropleth map of the same task on every grid, a ranking, and a **Compare** view (CO₂ against litres or scarcity-weighted water, marking the places that improve both and the Pareto front), visual breakdowns, per-request (SCI functional unit) and annual views, reduction options with their effect on CO₂e, energy and water, PDF report, CSV data, share card and link.
+- **Audit:** `tests/audit.py` checks every data point against its source and every formula against an independent Python implementation (see below).
 - **Limits:** order-of-magnitude estimates, not certified measurement.
 - **Run locally:** a single HTML file; serve the folder with any static server.
-- **License:** MIT for the code; Ember data under CC BY 4.0; fonts under SIL OFL 1.1.
-
-## Auditoría automática
-
-`tests/audit.py` comprueba la herramienta de punta a punta:
-
-- **Datos:** el carbono de cada una de las 216 regiones frente a OWID/Ember; el agua frente a los apéndices 1 y 2 y la tabla 4 del WRI; las regiones de AWS, Google Cloud y Azure frente a sus listas oficiales; la región de Uptime de cada país frente a una regla geográfica independiente; el factor AWARE 2.0 de cada lugar frente al Excel original; y la energía libre de carbono de Google frente a su CSV.
-- **Fórmulas:** 20.736 escenarios y 373.248 comparaciones, incluida el agua ponderada por escasez, (todas las regiones con los dos tipos de centro, GPU, centros de datos, modos, resto del servidor, duraciones, vidas útiles y combinaciones de opciones) frente a una implementación independiente en Python escrita a partir de la metodología.
-- **Comparar:** los puntos, los lugares que mejoran tus dos cifras y la frontera (los que ningún otro mejora en las dos), recalculados en Python.
-- **Interfaz:** cifras, equivalencias, desglose, efecto de cada opción, mapa (incluidos los países atenuados), ranking de energía por región, recomendación, desplegable, por petición y por año.
-- **Enlace compartible:** ida y vuelta del estado.
-- **CSV.**
-- **Entradas inválidas.**
-
-Uso: sirve la carpeta con un servidor estático en el puerto 8799 y ejecuta `OWID_CSV=… WRI_XLSX=… python3 tests/audit.py` (requiere `pip install pycountry-convert`; `AWARE_XLSX` apunta a AWARE20_Countries_and_Regions.xlsx de Zenodo y `GCFE_CSV` al CSV de 2025 de GoogleCloudPlatform/region-carbon-info). Los apéndices del WRI se descargan desde su página de datos.
+- **License:** MIT for the code; Ember and AWARE 2.0 data under CC BY 4.0; Google region data under Apache 2.0; fonts under SIL OFL 1.1.
