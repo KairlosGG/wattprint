@@ -64,7 +64,7 @@ Los datos (regiones, PUE, WUE, factores de agua, equivalencias) están en el obj
 - Tipografías Space Grotesk, Inter y JetBrains Mono: SIL Open Font License 1.1.
 - Proyecto independiente, sin relación con la Green Software Foundation, Ember, WRI ni los proveedores citados.
 
-Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/). Escribo sobre gobernanza de IA en la newsletter [Neocortech](https://neocortech-kohl.vercel.app/newsletter).
+Hecha por [Carlos Gallego Galán](https://neocortech-kohl.vercel.app/).
 
 ---
 

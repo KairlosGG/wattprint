@@ -628,7 +628,6 @@ details.adv .fld{ margin-top:8px; }
   </div></div>
 </dialog>
 
-<iframe name="kit-sink" title="newsletter" hidden></iframe>
 <div id="report" aria-hidden="true"></div>
 
 <script>
@@ -637,7 +636,6 @@ details.adv .fld{ margin-top:8px; }
    0 · CONFIGURACIÓN
 ============================================================ */
 const CONFIG = {
-  newsletter: { endpoint:'https://app.kit.com/forms/10085804/subscriptions' },
   shareUrl: 'wattprint-kappa.vercel.app',
 };
 
@@ -862,10 +860,6 @@ es:{
   act_t:'Texto para la documentación técnica',
   act_p:'Los proveedores de modelos de IA de propósito general deben documentar el consumo energético conocido o estimado del modelo, y pueden estimarlo a partir de los recursos de cómputo (Ley de IA de la UE, anexo XI, sección 1, punto 2.e). Este es un texto de partida: sustituye la estimación por mediciones si las tienes.',
   act_copy:'Copiar texto', act_only:'Solo para entrenamiento y fine-tuning: el anexo XI pide el consumo de entrenar el modelo.',
-  nl_h:'¿Te interesa el impacto de la IA?',
-  nl_p:'Suscríbete a Neocortech, mi newsletter sobre gobernanza de IA: agentes, IA generativa, ética, riesgos y sostenibilidad.',
-  nl_ph:'tu@email.com', nl_btn:'Suscribirme', nl_done:'Enviado', nl_note:'Sin spam. Baja cuando quieras.',
-  nl_ok:'Casi está: confirma la suscripción en el correo que te acaba de llegar (mira también en spam).',
   m_upd:'Datos de carbono actualizados el {d}.',
   in_wl:'Tipo de tarea', in_mode:'Energía', in_mode_est:'Estimada: {gpu}, uso {u}', in_mode_meas:'Medida: {k} kWh',
   in_host:'Resto del servidor', in_host_y:'Incluido (+0,41 × TDP fijo; nodo completo = {f} × TDP, Latif et al. 2025)', in_host_n:'No incluido',
@@ -995,10 +989,6 @@ en:{
   act_t:'Text for the technical documentation',
   act_p:'Providers of general-purpose AI models must document the model\'s known or estimated energy consumption, and may estimate it from the computational resources used (EU AI Act, Annex XI, section 1, point 2(e)). This is a starting text: replace the estimate with measurements if you have them.',
   act_copy:'Copy text', act_only:'Training and fine-tuning only: Annex XI asks for the energy used to train the model.',
-  nl_h:'Interested in the impact of AI?',
-  nl_p:'Subscribe to Neocortech, my newsletter on AI governance: agents, generative AI, ethics, risk and sustainability (in Spanish).',
-  nl_ph:'you@email.com', nl_btn:'Subscribe', nl_done:'Sent', nl_note:'No spam. Unsubscribe any time.',
-  nl_ok:'Almost there: confirm your subscription in the email you just received (check spam too).',
   m_upd:'Carbon data updated on {d}.',
   in_wl:'Type of task', in_mode:'Energy', in_mode_est:'Estimated: {gpu}, use {u}', in_mode_meas:'Measured: {k} kWh',
   in_host:'Rest of the server', in_host_y:'Included (+0.41 × TDP fixed; full node = {f} × TDP, Latif et al. 2025)', in_host_n:'Not included',
@@ -1169,12 +1159,7 @@ es:[
  { id:'about', nav:'Sobre el proyecto', html:`
   <h3>Sobre el proyecto</h3>
   <p class="lead">Wattprint es un proyecto independiente de ${A('author','Carlos Gallego Galán')}, con el código abierto en ${A('repo','GitHub')}. No tiene relación con la Green Software Foundation, Ember, el WRI ni los proveedores citados.</p>
-  <p>Mapa: Natural Earth (dominio público), proyección Equal Earth.</p>
-  <div style="margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:10px">
-   <h4 style="font-size:16px">{NL_H}</h4><p class="sub" style="margin-top:4px">{NL_P}</p>
-   <form id="nlForm" method="post" target="kit-sink" class="nl"><input id="nlEmail" name="email_address" type="email" required class="inp" autocomplete="email" placeholder="{NL_PH}"><button id="nlBtn" class="btn" type="submit">{NL_BTN}</button></form>
-   <p id="nlMsg" class="sub" style="margin-top:8px;font-size:12.5px">{NL_NOTE}</p>
-  </div>`},
+  <p>Mapa: Natural Earth (dominio público), proyección Equal Earth.</p>`},
 ],
 en:[
  { id:'sum', nav:'Summary', html:`
@@ -1281,12 +1266,7 @@ en:[
  { id:'about', nav:'About', html:`
   <h3>About the project</h3>
   <p class="lead">Wattprint is an independent project by ${A('author','Carlos Gallego Galán')}, open source on ${A('repo','GitHub')}. It is not affiliated with the Green Software Foundation, Ember, WRI or any provider mentioned.</p>
-  <p>Map: Natural Earth (public domain), Equal Earth projection.</p>
-  <div style="margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:10px">
-   <h4 style="font-size:16px">{NL_H}</h4><p class="sub" style="margin-top:4px">{NL_P}</p>
-   <form id="nlForm" method="post" target="kit-sink" class="nl"><input id="nlEmail" name="email_address" type="email" required class="inp" autocomplete="email" placeholder="{NL_PH}"><button id="nlBtn" class="btn" type="submit">{NL_BTN}</button></form>
-   <p id="nlMsg" class="sub" style="margin-top:8px;font-size:12.5px">{NL_NOTE}</p>
-  </div>`},
+  <p>Map: Natural Earth (public domain), Equal Earth projection.</p>`},
 ]};
 
 /* Referencias completas (orden alfabético). Cada cifra de la herramienta remite a una de ellas. */
@@ -2012,8 +1992,7 @@ function renderMethod(){
   const s=secs.find(x=>x.id===mSec)||secs[0];
   const upd=tf('m_upd',{d:new Date(DATA.UPDATED+'T12:00:00Z').toLocaleDateString(loc(),{year:'numeric',month:'long',day:'numeric'})});
   $('mBody').innerHTML=`<button class="dlg-x" data-close aria-label="${t('close')}">×</button>`+
-    s.html.replace('{REGIONS}',regionsTable([regionById('world'),regionById('eu'),...[...CLOUD_ROWS].sort((a,b)=>regionName(a).localeCompare(regionName(b),loc()))])).replace('{ALLREGIONS}',regionsTable(ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).sort((a,b)=>regionName(a).localeCompare(regionName(b),loc())))).replace('{NALL}',ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).length).replace(/{NCLOUD}/g,new Set(CLOUD_ROWS.map(r=>r[0]==='use'||r[0]==='usw'?'us':r[0])).size).replace('{NWRI}',Object.keys(DATA.WRI_GAL).length).replace('{UPDATED}',upd).replace('{REFLIST}',refList(LANG))
-      .replace('{NL_H}',t('nl_h')).replace('{NL_P}',t('nl_p')).replace('{NL_PH}',t('nl_ph')).replace('{NL_BTN}',t('nl_btn')).replace('{NL_NOTE}',t('nl_note'));
+    s.html.replace('{REGIONS}',regionsTable([regionById('world'),regionById('eu'),...[...CLOUD_ROWS].sort((a,b)=>regionName(a).localeCompare(regionName(b),loc()))])).replace('{ALLREGIONS}',regionsTable(ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).sort((a,b)=>regionName(a).localeCompare(regionName(b),loc())))).replace('{NALL}',ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).length).replace(/{NCLOUD}/g,new Set(CLOUD_ROWS.map(r=>r[0]==='use'||r[0]==='usw'?'us':r[0])).size).replace('{NWRI}',Object.keys(DATA.WRI_GAL).length).replace('{UPDATED}',upd).replace('{REFLIST}',refList(LANG));
   $('mBody').scrollTop=0;
 }
 $('mNav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(!b) return; mSec=b.dataset.sec; renderMethod(); $('mBody').focus({preventScroll:true}); });
@@ -2032,13 +2011,7 @@ document.addEventListener('click',e=>{
 $('btnShare').addEventListener('click',()=>openDlg('share'));
 $('btnAct').addEventListener('click',()=>openDlg('act'));
 $('actCopy').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText($('actText').value); toast(t('t_act')); }catch(_){ $('actText').select(); } });
-document.addEventListener('submit',e=>{
-  if(e.target.id!=='nlForm') return;
-  const form=e.target, email=$('nlEmail').value.trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ e.preventDefault(); $('nlEmail').focus(); return; }
-  form.action=CONFIG.newsletter.endpoint; // envío normal al iframe oculto
-  setTimeout(()=>{ $('nlBtn').disabled=true; $('nlBtn').textContent=t('nl_done'); $('nlMsg').textContent=t('nl_ok'); $('nlMsg').style.color='var(--good)'; },50);
-});
+
 
 
 /* ============================================================
