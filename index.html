@@ -195,6 +195,26 @@ details.adv .fld{ margin-top:8px; }
 #map.flat .c.d, #map.flat .mk{ fill:var(--kwh-soft) !important; }
 #map.flat .c.me, #map.flat .mk.me{ fill:var(--kwh-2) !important; }
 .c.nw{ fill:url(#hatch); }
+/* Comparar: CO₂ frente a agua */
+.cmp{ width:100%; flex:1; min-height:0; display:block; }
+.cmp .g{ stroke:var(--line); stroke-width:1; }
+.cmp .tk{ font-size:11.5px; fill:var(--muted); }
+.cmp .ax{ font-size:12px; fill:var(--ink-2); font-weight:600; }
+.cmp .ref{ stroke:var(--ink); stroke-width:1.5; stroke-dasharray:5 5; opacity:.7; }
+.cmp .q-better{ fill:var(--good); opacity:.09; } .cmp .q-trade{ fill:var(--h2o); opacity:.08; }
+.cmp .pt{ stroke:var(--panel); stroke-width:2; cursor:pointer; }
+.cmp .pt:hover, .cmp .pt:focus-visible{ stroke:var(--ink); stroke-width:2; outline:none; }
+.cmp .pt.fr{ stroke:var(--ink); stroke-width:2.2; }
+.cmp .pt.me{ fill:var(--panel); stroke:var(--ink); stroke-width:3.5; }
+.c-better{ fill:var(--good); background:var(--good); } .c-trade{ fill:var(--h2o); background:var(--h2o); } .c-worse{ fill:var(--muted); background:var(--muted); opacity:.75; }
+.cmp .lb{ font-size:12.5px; font-weight:650; fill:var(--ink); paint-order:stroke; stroke:var(--panel); stroke-width:3.5px; stroke-linejoin:round; pointer-events:none; }
+.cmp .lb.meb{ font-weight:800; }
+.lg-k .cdot{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+.lg-k .cdot.fr{ background:transparent; border:2.2px solid var(--ink); box-sizing:border-box; opacity:1; }
+.wseg{ display:inline-grid; } .wseg button{ padding:3px 9px; font-size:12px; }
+.kpi-sc{ font-size:12.5px; color:var(--ink-2); line-height:1.35; }
+.kpi-sc b{ color:var(--ink); font-weight:700; }
+
 .c.d.nc{ fill-opacity:.32; } .c.d.nc:hover, .c.d.nc.me{ fill-opacity:.75; }
 .lg-k .ncsw{ background:var(--ink-2); opacity:.3; }
 #tip small.tcl{ color:inherit; opacity:.92; }
@@ -367,7 +387,7 @@ details.adv .fld{ margin-top:8px; }
   .app{ height:auto; display:block; }
   .main{ display:flex; flex-direction:column; }
   .col.right{ display:flex; }
-  .mapwrap{ min-height:0; } .mapwrap svg{ flex:none; height:auto; aspect-ratio:960/440; }
+  .mapwrap{ min-height:0; } .mapwrap svg{ flex:none; height:auto; aspect-ratio:960/440; } .mapwrap svg.cmp{ aspect-ratio:auto; height:340px; }
   .brand span{ display:none; }
   .kpis{ gap:6px; } .kpi{ padding:12px 10px 10px 14px; } .kpi-eq{ font-size:12px; }
   .dlg-in{ grid-template-columns:1fr; } .dlg-nav{ flex-direction:row; overflow:auto; border-right:0; border-bottom:1px solid var(--line); } .dlg-nav h2{ display:none; }
@@ -515,7 +535,7 @@ details.adv .fld{ margin-top:8px; }
           <div class="stack-w" id="wKWHb"><div class="stack" id="sKWH"></div></div><p class="stack-l" id="lKWH"></p><p class="kpi-eq" id="eKWH"></p></article>
         <article class="panel kpi h2o"><div class="kpi-t"><span data-i="m_h2o">Agua</span><i class="ib" tabindex="0" data-tipk="tip_h2o">i</i><span class="kpi-u" data-unitnote></span></div>
           <div class="kpi-v"><b id="vH2O">—</b><span id="uH2O">litros</span></div><p class="kpi-was" id="wH2O"></p>
-          <div class="stack-w" id="wH2Ob"><div class="stack" id="sH2O"></div></div><p class="stack-l" id="lH2O"></p><p class="kpi-eq" id="eH2O"></p></article>
+          <div class="stack-w" id="wH2Ob"><div class="stack" id="sH2O"></div></div><p class="stack-l" id="lH2O"></p><p class="kpi-eq" id="eH2O"></p><p class="kpi-sc" id="scH2O"></p></article>
       </div>
       <div class="panel mapcard">
         <div class="maphead">
@@ -524,7 +544,7 @@ details.adv .fld{ margin-top:8px; }
             <button data-metric="co2" aria-pressed="true">CO₂e</button><button data-metric="h2o" aria-pressed="false" data-i="m_h2o">Agua</button><button data-metric="kwh" aria-pressed="false" data-i="m_kwh">Energía</button>
           </div>
           <div class="seg" role="group" id="segView">
-            <button data-view="map" aria-pressed="true" data-i="v_map">Mapa</button><button data-view="rank" aria-pressed="false" data-i="v_rank">Ranking</button>
+            <button data-view="map" aria-pressed="true" data-i="v_map">Mapa</button><button data-view="rank" aria-pressed="false" data-i="v_rank">Ranking</button><button data-view="cmp" aria-pressed="false" data-i="v_cmp" data-tipk="tip_cmp">Comparar</button>
           </div>
         </div>
         <p class="insight" id="insight" aria-live="polite"></p>
@@ -532,6 +552,7 @@ details.adv .fld{ margin-top:8px; }
           <svg id="map" role="img" aria-labelledby="mapTitle"><title id="mapTitle"></title></svg>
           <div id="flatnote" class="flatnote hidden" aria-hidden="true"></div>
           <div id="rank" class="rank hidden"></div>
+          <svg id="cmp" class="cmp hidden" role="img"></svg>
           <div id="energy" class="energy hidden"></div>
         </div>
         <div class="legend" id="legend"></div>
@@ -668,11 +689,17 @@ const DATA = {
   // Regiones de nube por país (A = AWS, G = Google Cloud, M = Microsoft Azure). Listas oficiales consultadas el 26-10-2026:
   // AWS: docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html (+ China: Beijing y Ningxia, cuenta AWS China)
   // Azure: learn.microsoft.com/azure/reliability/regions-list (disponibles; sin las 'coming soon')
-  // Google Cloud: docs.cloud.google.com (lista de regiones)
-  CLOUD: {"ae":"AM","au":"AGM","at":"M","be":"GM","bh":"A","br":"AGM","ca":"AGM","ch":"AGM","cl":"GM","dk":"M","fi":"G","hk":"AGM","id":"AGM","il":"AGM","it":"AGM","kr":"AGM","mx":"AGM","my":"AM","nl":"GM","nz":"AM","qa":"GM","sa":"G","th":"A","tw":"AG","za":"AGM","no":"M","se":"AGM","fr":"AGM","es":"AGM","uk":"AGM","ie":"AM","de":"AGM","us":"AGM","jp":"AGM","cn":"A","pl":"GM","in":"AGM","sg":"AGM","use":"AGM","usw":"AGM"},
+  // Google Cloud: docs.cloud.google.com/compute/docs/regions-zones (incluye Bangkok, asia-southeast3, abierta el 21-01-2026)
+  CLOUD: {"ae":"AM","au":"AGM","at":"M","be":"GM","bh":"A","br":"AGM","ca":"AGM","ch":"AGM","cl":"GM","dk":"M","fi":"G","hk":"AGM","id":"AGM","il":"AGM","it":"AGM","kr":"AGM","mx":"AGM","my":"AM","nl":"GM","nz":"AM","qa":"GM","sa":"G","th":"AG","tw":"AG","za":"AGM","no":"M","se":"AGM","fr":"AGM","es":"AGM","uk":"AGM","ie":"AM","de":"AGM","us":"AGM","jp":"AGM","cn":"A","pl":"GM","in":"AGM","sg":"AGM","use":"AGM","usw":"AGM"},
   // PUE medio por región del mundo, Uptime Institute Global Data Center Survey 2025: regional view (UII Data Report 183, agosto de 2025)
   PUE_UPTIME: {cn:1.4, apac:1.52, eu:1.50, na:1.49, latam:1.65, mea:1.68, world:1.54},
   // Región de Uptime de cada país; los que no tienen una asignación clara (p. ej. Rusia, Turquía, Asia central, Caribe anglófono) usan la media mundial
+  // Factor de escasez de agua AWARE 2.0 (WULCA), uso no agrícola, media anual, m3 equivalentes mundiales por m3 consumido.
+  // Seitfudem, Berger, Müller Schmied y Boulay (2025), J. Ind. Ecol. 29(3):891-907, doi 10.1111/jiec.70023; datos: doi 10.5281/zenodo.15133241 (CC BY 4.0).
+  // Países con la definición GLAM (ISO3); territorios sin fila GLAM con la definición de ecoinvent; Virginia y Oregón: US-VA y US-OR; mundo: GLO; UE: EU27. null = sin factor.
+  AWARE: {"aw":null,"af":41.3,"ao":13.1,"al":19.2,"ae":59.5,"ar":6.23,"am":32.7,"as":1.26,"ag":63.9,"au":34.1,"at":2.06,"az":38.1,"bi":70.7,"be":3.52,"bj":8.52,"bf":13.9,"bd":6.88,"bg":10.6,"bh":1.9,"bs":11.5,"ba":1.94,"by":3.34,"bz":1.35,"bm":3.02,"bo":3.83,"br":4.38,"bb":59.7,"bn":0.228,"bt":4.58,"bw":37.6,"cf":9.93,"ca":2.97,"ch":1.38,"cl":45.5,"ci":8.28,"cm":3.38,"cd":13.6,"cg":0.759,"ck":1.37,"co":1.12,"km":10.7,"cv":82.8,"cr":0.995,"cu":7.19,"ky":33.9,"cy":62.8,"cz":3.14,"dj":17.4,"dm":11.9,"dk":2.12,"do":9.25,"dz":51.9,"ec":3.69,"eg":71.4,"er":48,"ee":1.87,"et":48.3,"fi":2.17,"fj":1.03,"fk":2.92,"fo":0.519,"ga":0.808,"ge":18.7,"gh":20.2,"gi":36,"gn":17.1,"gp":25.4,"gm":9.23,"gw":3.63,"gq":0.591,"gr":40.2,"gd":83.9,"gl":null,"gt":1.55,"gf":0.948,"gu":2.77,"gy":0.774,"hk":10.8,"hn":2.18,"hr":1.98,"ht":3.45,"hu":2.09,"id":9.07,"ir":44.5,"iq":40.1,"is":0.663,"il":66.1,"it":19,"jm":6.92,"jo":59.8,"kz":34.7,"ke":26.4,"kg":65.2,"kh":4.72,"ki":2.26,"kn":70.8,"kr":1.65,"kw":53.9,"la":3.59,"lb":61.7,"lr":2.34,"ly":39.4,"lc":64.6,"lk":11.6,"ls":92.3,"lt":2.27,"lu":1.4,"lv":1.9,"mo":1.02,"ma":57.3,"md":3.09,"mg":5.54,"mv":null,"mx":20.3,"mk":31.3,"ml":27.6,"mt":4.95,"mm":2.25,"me":1.35,"mn":35.6,"mz":7.39,"mr":56.1,"ms":49.7,"mq":5.43,"mu":29.3,"mw":6.31,"my":0.57,"na":48.9,"nc":4.26,"ne":24,"ng":12.6,"ni":1.64,"nl":1.89,"np":51,"nr":null,"nz":1.6,"om":41.6,"pk":46.1,"pa":0.928,"pe":24.4,"ph":6.39,"pg":0.394,"pr":2.93,"kp":3.25,"pt":19.2,"py":2.33,"ps":61.9,"pf":7.07,"qa":51.9,"re":4.11,"ro":3.02,"ru":4.48,"rw":72.4,"sa":39.6,"sd":68.3,"sn":36.4,"sh":100,"sb":0.413,"sl":3.49,"sv":2.08,"so":59.7,"pm":0.792,"rs":5.81,"ss":77.7,"st":28.4,"sr":0.764,"sk":2.13,"si":1.95,"sz":6.39,"sc":4.59,"sy":60.2,"tc":34.3,"td":39.2,"tg":8.71,"th":6.95,"tj":52.6,"tm":59.6,"tl":9.71,"to":1.55,"tt":2.82,"tn":56.5,"tr":25.1,"tw":6.88,"tz":34.7,"ug":74.5,"ua":6.8,"uy":0.668,"uz":59.8,"vc":36.2,"ve":11.1,"vg":22.8,"vi":43.5,"vn":6.39,"vu":1.11,"ws":1.06,"ye":65.8,"za":49.8,"zm":5.88,"zw":10.9,"no":0.744,"se":2.17,"fr":4.99,"es":35.5,"uk":2.29,"ie":1.17,"de":2.09,"us":11.3,"jp":0.637,"sg":0.867,"cn":6.31,"pl":3.16,"in":37.8,"use":1.62,"usw":3.89,"world":17.9,"eu":8.21},
+  // Energía libre de carbono de Google por región (Google CFE, media horaria), 2025. github.com/GoogleCloudPlatform/region-carbon-info (Apache 2.0). Solo informativo.
+  GCFE: {"za":[["africa-south1","Johannesburg",0.15]],"tw":[["asia-east1","Taiwan",0.15]],"hk":[["asia-east2","Hong Kong",0.02]],"jp":[["asia-northeast1","Tokyo",0.23],["asia-northeast2","Osaka",0.45]],"kr":[["asia-northeast3","Seoul",0.37]],"in":[["asia-south1","Mumbai",0.2],["asia-south2","Delhi",0.39]],"sg":[["asia-southeast1","Singapore",0.05]],"id":[["asia-southeast2","Jakarta",0.15]],"th":[["asia-southeast3","Bangkok",0.19]],"au":[["australia-southeast1","Sydney",0.37],["australia-southeast2","Melbourne",0.44]],"pl":[["europe-central2","Warsaw",0.81]],"fi":[["europe-north1","Finland",0.98]],"se":[["europe-north2","Stockholm",1.0]],"es":[["europe-southwest1","Madrid",0.87]],"be":[["europe-west1","Belgium",0.79]],"uk":[["europe-west2","London",0.75]],"de":[["europe-west3","Frankfurt",0.7],["europe-west10","Berlin",0.7]],"nl":[["europe-west4","Eemshaven",0.82]],"ch":[["europe-west6","Zürich",0.97]],"it":[["europe-west8","Milan",0.79],["europe-west12","Turin",0.79]],"fr":[["europe-west9","Paris",0.96]],"qa":[["me-central1","Doha",0.0]],"sa":[["me-central2","Dammam",0.01]],"il":[["me-west1","Tel Aviv",0.13]],"ca":[["northamerica-northeast1","Montréal",0.97],["northamerica-northeast2","Toronto",0.8]],"mx":[["northamerica-south1","Mexico",0.25]],"br":[["southamerica-east1","Sāo Paulo",0.87]],"cl":[["southamerica-west1","Santiago",0.9]],"us":[["us-central1","Iowa",0.88],["us-central2","Oklahoma",0.84],["us-east1","South Carolina",0.31],["us-east2","Georgia",0.42],["us-east4","Northern Virginia",0.57],["us-east5","Columbus",0.57],["us-east7","Alabama and Tennessee",0.58],["us-south1","Dallas",0.83],["us-west1","Oregon",0.83],["us-west2","Los Angeles",0.66],["us-west3","Salt Lake City",0.36],["us-west4","Las Vegas",0.65]],"use":[["us-east4","Northern Virginia",0.57]],"usw":[["us-west1","Oregon",0.83]]},
   UPTIME_REGION: {"ao":"mea","al":"eu","ae":"mea","ar":"latam","as":"apac","au":"apac","at":"eu","bi":"mea","be":"eu","bj":"mea","bf":"mea","bd":"apac","bg":"eu","bh":"mea","ba":"eu","by":"eu","bz":"latam","bo":"latam","br":"latam","bn":"apac","bt":"apac","bw":"mea","cf":"mea","ca":"na","ch":"eu","cl":"latam","ci":"mea","cm":"mea","cd":"mea","cg":"mea","ck":"apac","co":"latam","km":"mea","cv":"mea","cr":"latam","cu":"latam","cy":"eu","cz":"eu","dj":"mea","dk":"eu","do":"latam","dz":"mea","ec":"latam","eg":"mea","er":"mea","ee":"eu","et":"mea","fi":"eu","fj":"apac","fk":"latam","fo":"eu","ga":"mea","gh":"mea","gi":"eu","gn":"mea","gm":"mea","gw":"mea","gq":"mea","gr":"eu","gt":"latam","gf":"latam","gu":"apac","gy":"latam","hn":"latam","hr":"eu","ht":"latam","hu":"eu","id":"apac","ir":"mea","iq":"mea","is":"eu","il":"mea","it":"eu","jo":"mea","ke":"mea","kh":"apac","ki":"apac","kr":"apac","kw":"mea","la":"apac","lb":"mea","lr":"mea","ly":"mea","lk":"apac","ls":"mea","lt":"eu","lu":"eu","lv":"eu","ma":"mea","md":"eu","mg":"mea","mv":"apac","mx":"latam","mk":"eu","ml":"mea","mt":"eu","mm":"apac","me":"eu","mn":"apac","mz":"mea","mr":"mea","mu":"mea","mw":"mea","my":"apac","na":"mea","nc":"apac","ne":"mea","ng":"mea","ni":"latam","nl":"eu","np":"apac","nr":"apac","nz":"apac","om":"mea","pk":"apac","pa":"latam","pe":"latam","ph":"apac","pg":"apac","pr":"latam","kp":"apac","pt":"eu","py":"latam","ps":"mea","pf":"apac","qa":"mea","re":"mea","ro":"eu","rw":"mea","sa":"mea","sd":"mea","sn":"mea","sh":"mea","sb":"apac","sl":"mea","sv":"latam","so":"mea","rs":"eu","ss":"mea","st":"mea","sr":"latam","sk":"eu","si":"eu","sz":"mea","sc":"mea","sy":"mea","td":"mea","tg":"mea","th":"apac","to":"apac","tn":"mea","tw":"apac","tz":"mea","ug":"mea","ua":"eu","uy":"latam","ve":"latam","vn":"apac","vu":"apac","ws":"apac","ye":"mea","za":"mea","zm":"mea","zw":"mea","no":"eu","se":"eu","fr":"eu","es":"eu","uk":"eu","ie":"eu","de":"eu","us":"na","jp":"apac","cn":"cn","pl":"eu","in":"apac","sg":"apac","use":"na","usw":"na","eu":"eu","gp":"latam","mq":"latam","tl":"apac"},
   COUNTRIES: [ /*COUNTRIES:START*/
     ['AW','ABW',550,'2024'],['AF','AFG',131,'2024'],['AO','AGO',185,'2024'],['AL','ALB',25,'2024'],['AE','ARE',468,'2024'],['AR','ARG',346,'2025'],['AM','ARM',212,'2025'],['AS','ASM',611,'2024'],
@@ -732,6 +759,18 @@ es:{
   tour3_t:'¿Es mucho o poco? Depende de dónde', tour3_x:'El mapa muestra la misma tarea en la red de cada país. Pasa el cursor para comparar y haz clic para elegir. En «Energía» verás por qué los kWh no cambian.',
   tour4_t:'Redúcela', tour4_x:'Activa una opción y las tres cifras cambian a la vez: verás lo que ganas y lo que pierdes, como el agua al irte a Noruega.',
   tour5_t:'Llévatelo', tour5_x:'Informe PDF, datos en CSV, imagen para redes o un enlace que guarda todos tus datos.',
+  bk_ws:'Agua ponderada por escasez (AWARE 2.0)', v_cmp:'Comparar', tip_cmp:'Cada punto es la misma tarea en un lugar con nube grande: CO₂ en horizontal y agua en vertical. Sirve para ver de un vistazo qué lugares mejoran tus dos cifras.',
+  m_h2os:'Agua por escasez', w_mode:'Cómo medir el agua', w_l:'Litros', w_s:'Por escasez',
+  tip_scarce:'Litros multiplicados por el factor de escasez del lugar (AWARE 2.0, del grupo WULCA de la Life Cycle Initiative de la ONU). Un factor de 1 es la media mundial; 10, diez veces menos agua disponible. Se mide en litros equivalentes mundiales (L eq.).',
+  sc_line:'Por escasez: {v} {u} (factor {f})', sc_na:'Por escasez: sin factor AWARE para este lugar',
+  tt_cf:'Escasez de agua: factor {f} (AWARE 2.0)', tt_cf_na:'Escasez de agua: sin factor AWARE',
+  tt_gcfe:'Google: {p} de energía libre de carbono cada hora en su región ({c}, 2025)',
+  lg_h2os:'litros equivalentes por escasez de esta tarea (mín., mediana, máx.)', lg_h2os_k:'mL equivalentes por escasez cada 1.000 peticiones (mín., mediana, máx.)', lg_noscarce:'Sin dato de agua o de escasez',
+  ins_s:'En {r} esta tarea pesaría {s} por escasez de agua ({sp}).', ins_best_s:'Ya estás en el lugar con menos impacto por escasez de agua de los países con nube grande.', ins_s_na:'Este lugar no tiene dato de agua o de escasez. Elige otro para comparar.',
+  cmp_h:'CO₂ frente a agua de esta tarea en cada lugar con nube grande', cmp_log:'escala logarítmica', cmp_more:'y {n} más',
+  cmp_better:'Mejoran tus dos cifras a la vez: {l}.', cmp_front:'Ningún lugar con nube grande mejora tus dos cifras a la vez. Para bajar una, tendrías que subir la otra.',
+  cmp_front_nc:'Ningún lugar con nube grande mejora a la vez las dos cifras de {r}.', cmp_nodata:'Tu lugar no tiene dato de agua propio: solo se compara el CO₂.', cmp_nodata_s:'Tu lugar no tiene dato de agua o de escasez: solo se compara el CO₂.',
+  cmp_k_better:'Mejora las dos', cmp_k_trade:'Menos CO₂, más agua', cmp_k_worse:'Más CO₂', cmp_k_front:'Nadie la mejora en las dos ({n})', cmp_hint:'Clic en un punto para elegirlo.',
   grp_cloud:'Con regiones de AWS, Google Cloud o Azure', grp_avg:'Medias', grp_all:'Otros países: solo su red eléctrica',
   rank_all:'Ver todos los países ({n})', rank_cloud:'Ver solo los países con nube grande',
   tt_cloud:'Hay regiones de {p}.', tt_avg:'Es una media: sirve para comparar, no es un sitio donde ejecutar.', tt_nocloud:'Sin regiones de AWS, Google Cloud ni Azure. Úsalo si tu centro de datos (propio o local) está aquí.',
@@ -805,7 +844,7 @@ es:{
   lv_already:'Ya lo aplicas', lv_na:'Escribe el % para ver su efecto',
   ba_h:'Antes y ahora', ba_none:'Activa una opción de arriba para ver aquí cuánto cambia.', ba_tot:'{p} de CO₂e con lo que has activado',
   b_how:'Ver el cálculo', b_pdf:'Informe PDF', b_csv:'Datos en CSV', b_card:'Imagen para redes', b_link:'Copiar enlace', b_act:'Texto Ley de IA',
-  f_est:'Estimación de orden de magnitud.', prov:'Carbono: Ember, datos actualizados el {d}. Agua de la central: WRI (Reig et al., 2020). Centros de datos: Uptime Institute, Google, Microsoft y LBNL.', f_refs:'Referencias', th_reg:'Región', th_csrc:'Carbono: fuente y año', th_w:'L/kWh central', th_wsrc:'Agua: fuente', th_pue:'PUE medio (Uptime)', th_cloud:'Nube grande', ws_a2:'WRI, apéndice 2 (país)', ws_srvc:'WRI, apéndice 1 (subregión SRVC)', ws_nwpp:'WRI, apéndice 1 (subregión NWPP)', ws_t4:'WRI, tabla 4 (media mundial)', f_src:'Ver fuentes',
+  f_est:'Estimación de orden de magnitud.', prov:'Carbono: Ember, datos actualizados el {d}. Agua de la central: WRI (Reig et al., 2020). Centros de datos: Uptime Institute, Google, Microsoft y LBNL.', f_refs:'Referencias', th_reg:'Región', th_csrc:'Carbono: fuente y año', th_w:'L/kWh central', th_wsrc:'Agua: fuente', th_aware:'Escasez (AWARE)', th_pue:'PUE medio (Uptime)', th_cloud:'Nube grande', ws_a2:'WRI, apéndice 2 (país)', ws_srvc:'WRI, apéndice 1 (subregión SRVC)', ws_nwpp:'WRI, apéndice 1 (subregión NWPP)', ws_t4:'WRI, tabla 4 (media mundial)', f_src:'Ver fuentes',
   copied:'Enlace copiado', na:'No disponible', t_card:'Imagen descargada', t_card_err:'No se pudo generar la imagen. Recarga e inténtalo de nuevo.',
   t_pdf:'Elige «Guardar como PDF» en la ventana de impresión', t_csv:'CSV descargado', t_act:'Texto copiado', generating:'Generando…',
   share_h:'Exportar y compartir', share_p:'El enlace guarda todos tus datos: quien lo abra verá exactamente lo mismo.',
@@ -853,6 +892,18 @@ en:{
   tour3_t:'Is that a lot? It depends on where', tour3_x:'The map shows the same task on each country\'s grid. Hover to compare and click to choose. Under "Energy" you\'ll see why kWh do not change.',
   tour4_t:'Reduce it', tour4_x:'Turn on an option and all three figures change at once: you see what you gain and what you lose, like water when moving to Norway.',
   tour5_t:'Take it with you', tour5_x:'PDF report, CSV data, an image for social media or a link that keeps all your inputs.',
+  bk_ws:'Scarcity-weighted water (AWARE 2.0)', v_cmp:'Compare', tip_cmp:'Each dot is the same task in a place with a large cloud: CO₂ across and water up. It shows at a glance which places improve both your figures.',
+  m_h2os:'Water by scarcity', w_mode:'How to measure water', w_l:'Litres', w_s:'By scarcity',
+  tip_scarce:'Litres multiplied by the scarcity factor of the place (AWARE 2.0, from the WULCA group of the UN Life Cycle Initiative). A factor of 1 is the world average; 10 means ten times less water available. Measured in world-equivalent litres (L eq.).',
+  sc_line:'By scarcity: {v} {u} (factor {f})', sc_na:'By scarcity: no AWARE factor for this place',
+  tt_cf:'Water scarcity: factor {f} (AWARE 2.0)', tt_cf_na:'Water scarcity: no AWARE factor',
+  tt_gcfe:'Google: {p} carbon-free energy each hour in its region ({c}, 2025)',
+  lg_h2os:'scarcity-weighted litres for this task (min, median, max)', lg_h2os_k:'scarcity-weighted mL per 1,000 requests (min, median, max)', lg_noscarce:'No water or scarcity data',
+  ins_s:'In {r} this task would weigh {s} by water scarcity ({sp}).', ins_best_s:'You are already in the place with the lowest water-scarcity impact among countries with large clouds.', ins_s_na:'This place has no water or scarcity data. Choose another to compare.',
+  cmp_h:'CO₂ against water for this task in every place with a large cloud', cmp_log:'log scale', cmp_more:'and {n} more',
+  cmp_better:'These improve both your figures at once: {l}.', cmp_front:'No place with a large cloud improves both your figures at once. Lowering one would raise the other.',
+  cmp_front_nc:'No place with a large cloud improves both figures of {r} at once.', cmp_nodata:'Your place has no water data of its own: only CO₂ is compared.', cmp_nodata_s:'Your place has no water or scarcity data: only CO₂ is compared.',
+  cmp_k_better:'Improves both', cmp_k_trade:'Less CO₂, more water', cmp_k_worse:'More CO₂', cmp_k_front:'Nothing beats it on both ({n})', cmp_hint:'Click a dot to choose it.',
   grp_cloud:'With AWS, Google Cloud or Azure regions', grp_avg:'Averages', grp_all:'Other countries: grid only',
   rank_all:'Show all countries ({n})', rank_cloud:'Show only countries with large clouds',
   tt_cloud:'{p} regions here.', tt_avg:'An average: useful to compare, not a place to run.', tt_nocloud:'No AWS, Google Cloud or Azure regions. Use it if your data centre (own or local) is here.',
@@ -926,7 +977,7 @@ en:{
   lv_already:'Already applied', lv_na:'Enter the % to see its effect',
   ba_h:'Before and now', ba_none:'Turn on an option above to see here how much it changes.', ba_tot:'{p} CO₂e with what you turned on',
   b_how:'See the calculation', b_pdf:'PDF report', b_csv:'CSV data', b_card:'Image for social media', b_link:'Copy link', b_act:'AI Act text',
-  f_est:'Order-of-magnitude estimate.', prov:'Carbon: Ember, data updated on {d}. Power plant water: WRI (Reig et al., 2020). Data centres: Uptime Institute, Google, Microsoft and LBNL.', f_refs:'References', th_reg:'Region', th_csrc:'Carbon: source and year', th_w:'L/kWh power plant', th_wsrc:'Water: source', th_pue:'Average PUE (Uptime)', th_cloud:'Large cloud', ws_a2:'WRI, appendix 2 (country)', ws_srvc:'WRI, appendix 1 (SRVC subregion)', ws_nwpp:'WRI, appendix 1 (NWPP subregion)', ws_t4:'WRI, table 4 (world average)', f_src:'See sources',
+  f_est:'Order-of-magnitude estimate.', prov:'Carbon: Ember, data updated on {d}. Power plant water: WRI (Reig et al., 2020). Data centres: Uptime Institute, Google, Microsoft and LBNL.', f_refs:'References', th_reg:'Region', th_csrc:'Carbon: source and year', th_w:'L/kWh power plant', th_wsrc:'Water: source', th_aware:'Scarcity (AWARE)', th_pue:'Average PUE (Uptime)', th_cloud:'Large cloud', ws_a2:'WRI, appendix 2 (country)', ws_srvc:'WRI, appendix 1 (SRVC subregion)', ws_nwpp:'WRI, appendix 1 (NWPP subregion)', ws_t4:'WRI, table 4 (world average)', f_src:'See sources',
   copied:'Link copied', na:'Not available', t_card:'Image downloaded', t_card_err:'The image could not be created. Reload and try again.',
   t_pdf:'Choose "Save as PDF" in the print window', t_csv:'CSV downloaded', t_act:'Text copied', generating:'Creating…',
   share_h:'Export and share', share_p:'The link keeps all your inputs: anyone who opens it sees exactly the same.',
@@ -976,6 +1027,11 @@ const SRC = {
   latif:'https://eta-publications.lbl.gov/sites/default/files/2026-07/single-node_power_demand_during_ai_training.pdf',
   uptime:'https://intelligence.uptimeinstitute.com/resource/uptime-institute-global-data-center-survey-2025',
   uptimereg:'https://intelligence.uptimeinstitute.com/sites/default/files/2025-08/UI%20Field%20report%20183_Annual%20survey%20-%20regional%20view%202025.pdf',
+  aware:'https://doi.org/10.1007/s11367-017-1333-8',
+  aware2:'https://doi.org/10.1111/jiec.70023',
+  aware2data:'https://doi.org/10.5281/zenodo.15133241',
+  efjrc:'https://eplca.jrc.ec.europa.eu/LCDN/developerEF.html',
+  gcfe:'https://github.com/GoogleCloudPlatform/region-carbon-info',
   awsreg:'https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html',
   azreg:'https://learn.microsoft.com/azure/reliability/regions-list',
   gcpreg:'https://docs.cloud.google.com/compute/docs/regions-zones',
@@ -1041,6 +1097,7 @@ es:[
    <li><b>Todos los países del mapa</b>Además de la lista principal, el mapa incluye unos 200 países con la intensidad de Ember (el último año disponible, 2022 o posterior). El año de cada dato aparece al pasar el cursor.</li>
    <li><b>Regiones de nube</b>Virginia y Oregón usan los datos de Ember por estado (${A('emberus','US Electricity Data')}) y se marcan como aproximadas: una región de nube no coincide exactamente con un estado.</li>
    <li><b>Método location-based</b>Se usa la red física, como pide SCI. No se descuentan compras de renovables ni compensaciones.</li>
+   <li><b>La mirada de mercado, solo informativa</b>Google publica, para cada una de sus regiones, qué parte de las horas funciona con energía libre de carbono contando sus contratos de renovables (${A('gcfe','Google CFE 2025')}, Apache 2.0). Wattprint lo muestra al pasar el cursor por un país con región de Google, pero no lo resta del CO₂.</li>
    <li><b>Actualización</b>Cada mes se comprueba automáticamente si Ember ha publicado datos nuevos. {UPDATED}</li>
   </ul>`},
  { id:'water', nav:'Agua', html:`
@@ -1051,6 +1108,9 @@ es:[
    <li><b>Central eléctrica: kWh totales × factor de consumo de agua de la red</b>Fuente: ${A('wri','Reig, Luo, Christensen y Sinistore (2020)')}, WRI, con sus apéndices de datos (${A('wridata','dataset del WRI')}). Apéndice 2: factores de {NWRI} países. Apéndice 1: subregiones eGRID de EE. UU.; Virginia usa SRVC y Oregón usa NWPP, marcado como aproximado porque la subregión es mayor que el estado. Mix de generación de 2016. Los factores vienen en galones por kWh y se convierten con 3,785 L/gal, el factor que recomienda el estudio. Es el mismo marco que usan ${A('li','Li et al.')} en <i>Making AI Less "Thirsty"</i>.</li>
    <li><b>Países sin factor propio</b>Se usa la media mundial ponderada por generación del estudio: 1,27 gal/kWh, es decir 4,81 L/kWh (tabla 4 del informe). Lo mismo para la media mundial, la media UE y Singapur. Todos se marcan con ≈ y, en el mapa de agua, aparecen rayados en lugar de coloreados.</li>
    <li><b>Por qué Noruega gasta más agua</b>El WRI atribuye a la electricidad toda la evaporación de los embalses hidroeléctricos, un criterio que el propio estudio llama conservador. Por eso las redes con mucha hidráulica salen con poco CO₂ y más agua.</li>
+   <li><b>Agua ponderada por escasez</b>Un litro no pesa lo mismo donde sobra el agua que donde falta. Por eso Wattprint da una segunda cifra: los litros multiplicados por el factor de escasez AWARE del lugar. AWARE es el método de consenso del grupo WULCA de la Life Cycle Initiative del PNUMA (${A('aware','Boulay et al., 2018')}) y el que usa la Huella Ambiental de la UE para el agua (${A('efjrc','paquete EF de la JRC')}). Wattprint usa su versión 2.0 (${A('aware2','Seitfudem et al., 2025')}; ${A('aware2data','datos')}, CC BY 4.0), con el factor anual para usos no agrícolas: 1 es la media mundial y 10, diez veces menos agua disponible. El resultado se da en litros equivalentes mundiales (L eq.).</li>
+   <li><b>Qué factor se usa en cada lugar</b>Países, con la definición de país de GLAM. Hong Kong, Taiwán y otros territorios sin fila GLAM, con la de ecoinvent del mismo conjunto de datos. Virginia y Oregón, con el dato de su estado (US-VA 1,62 y US-OR 3,89). Media mundial: GLO (17,9). Media UE: EU27 (8,21). Refrigeración y central se ponderan con el mismo factor, el del lugar donde se ejecuta la tarea. Es una media de país: dentro de un país la escasez cambia mucho de una cuenca a otra.</li>
+   <li><b>Agua consumida, no extraída</b>AWARE se aplica al agua consumida, la que no vuelve a su cuenca. Las tres fuentes de litros miden consumo: el factor del WRI, la WUE de LBNL (consumo directo) y la de Microsoft (agua consumida por kWh de IT).</li>
   </ul>`},
  { id:'emb', nav:'Fabricación', html:`
   <h3>Fabricación del hardware</h3>
@@ -1092,6 +1152,7 @@ es:[
   <h3>Preguntas frecuentes</h3>
   <div class="faq">
    <details open><summary>¿Por qué la energía cambia por región y no por país?</summary><p>La máquina consume lo mismo esté donde esté: los kWh de los servidores dependen del hardware y de las horas. Lo que cambia es el edificio (PUE). Con una gran nube se usa 1,13 en todas partes, porque Google y Microsoft solo publican la media de su flota. Con un centro medio se usa la media de su región del mundo de Uptime Institute (de 1,40 a 1,68), porque no hay datos fiables de PUE país a país. El país sí cambia, y mucho, cuánto CO₂ y agua cuesta producir esa electricidad.</p></details>
+   <details><summary>¿Entonces Noruega es buena o mala opción para el agua?</summary><p>Depende de cómo midas. En litros gasta más, porque el WRI carga a su electricidad el agua que se evapora en los embalses. Ponderada por escasez, la diferencia se reduce mucho, porque en Noruega sobra el agua (factor 0,74, frente a 1,62 en Virginia). En la vista «Comparar» puedes cambiar entre las dos medidas y ver qué lugares mejoran tus dos cifras a la vez.</p></details>
    <details><summary>¿Hay centros de datos en todos los países del mapa?</summary><p>No de las grandes nubes. AWS, Google Cloud y Azure tienen regiones en {NCLOUD} lugares; en el mapa son los países a todo color, y el ranking y la recomendación solo los usan a ellos. El resto aparecen atenuados: sirven para saber cuánto CO₂ y agua cuesta su electricidad si tu centro de datos (propio o de un proveedor local) está allí.</p></details>
    <details><summary>¿Por qué no usa datos en tiempo real?</summary><p>La intensidad de la red cambia cada hora, pero Wattprint estima una tarea completa, muchas veces antes de ejecutarla, y para eso la media anual es la referencia adecuada. Además, los datos horarios por país requieren una clave de acceso de un proveedor de datos, que no puede ir dentro de una página pública. Si quieres ver cómo está tu red ahora mismo, mira el mapa en directo de ${A('emaps','Electricity Maps')}. Para estimar cuánto ahorras ejecutando en las horas más limpias, activa esa opción en «Cómo reducirla».</p></details>
    <details><summary>¿Por qué el mapa de agua tiene tantos países rayados?</summary><p>Porque el factor de agua de la central solo existe, país a país, para los {NWRI} países del estudio del WRI. Pintar el resto con la media mundial daría una falsa sensación de dato. El carbono sí está para casi todos: viene de Ember.</p></details>
@@ -1148,6 +1209,7 @@ en:[
    <li><b>Every country on the map</b>Besides the main list, the map includes about 200 countries with Ember's intensity (latest year available, 2022 or later). The year of each figure appears on hover.</li>
    <li><b>Cloud regions</b>Virginia and Oregon use Ember's state data (${A('emberus','US Electricity Data')}) and are marked as approximate: a cloud region does not exactly match a state.</li>
    <li><b>Location-based method</b>We use the physical grid, as SCI requires. Renewable purchases and offsets are not deducted.</li>
+   <li><b>The market view, for information only</b>Google publishes, for each of its regions, the share of hours running on carbon-free energy including its renewable contracts (${A('gcfe','Google CFE 2025')}, Apache 2.0). Wattprint shows it when you hover over a country with a Google region, but does not subtract it from CO₂.</li>
    <li><b>Updates</b>Every month we check automatically whether Ember has published new data. {UPDATED}</li>
   </ul>`},
  { id:'water', nav:'Water', html:`
@@ -1158,6 +1220,9 @@ en:[
    <li><b>Power plant: total kWh × grid water consumption factor</b>Source: ${A('wri','Reig, Luo, Christensen and Sinistore (2020)')}, WRI, with its data appendices (${A('wridata','WRI dataset')}). Appendix 2: factors for {NWRI} countries. Appendix 1: US eGRID subregions; Virginia uses SRVC and Oregon uses NWPP, marked as approximate because the subregion is larger than the state. 2016 generation mix. Factors are given in gallons per kWh and converted with 3.785 L/gal, the factor the study recommends. It is the same framework ${A('li','Li et al.')} use in <i>Making AI Less "Thirsty"</i>.</li>
    <li><b>Countries without their own factor</b>The study's generation-weighted world average is used: 1.27 gal/kWh, i.e. 4.81 L/kWh (table 4 of the report). The same applies to the world average, the EU average and Singapore. All are marked ≈ and, on the water map, are hatched instead of coloured.</li>
    <li><b>Why Norway uses more water</b>WRI allocates all hydropower reservoir evaporation to electricity, an approach the study itself calls conservative. That is why hydro-heavy grids come out with low CO₂ and more water.</li>
+   <li><b>Scarcity-weighted water</b>A litre does not weigh the same where water is plentiful as where it is scarce. That is why Wattprint gives a second figure: litres multiplied by the AWARE scarcity factor of the place. AWARE is the consensus method of the WULCA group of the UNEP Life Cycle Initiative (${A('aware','Boulay et al., 2018')}) and the one the EU Environmental Footprint uses for water (${A('efjrc','JRC EF package')}). Wattprint uses version 2.0 (${A('aware2','Seitfudem et al., 2025')}; ${A('aware2data','data')}, CC BY 4.0), with the annual factor for non-agricultural uses: 1 is the world average and 10 means ten times less water available. The result is given in world-equivalent litres (L eq.).</li>
+   <li><b>Which factor each place uses</b>Countries, with the GLAM country definition. Hong Kong, Taiwan and other territories without a GLAM row, with the ecoinvent definition from the same dataset. Virginia and Oregon, with their state figure (US-VA 1.62 and US-OR 3.89). World average: GLO (17.9). EU average: EU27 (8.21). Cooling and power plant water use the same factor, that of the place where the task runs. It is a country average: within a country, scarcity changes a lot from one basin to another.</li>
+   <li><b>Water consumed, not withdrawn</b>AWARE applies to consumed water, the water that does not return to its basin. All three sources of litres measure consumption: the WRI factor, LBNL's WUE (direct consumption) and Microsoft's (water consumed per kWh of IT load).</li>
   </ul>`},
  { id:'emb', nav:'Manufacturing', html:`
   <h3>Hardware manufacturing</h3>
@@ -1199,6 +1264,7 @@ en:[
   <h3>Frequently asked questions</h3>
   <div class="faq">
    <details open><summary>Why does energy change by region and not by country?</summary><p>The machine uses the same wherever it is: the servers' kWh depend on the hardware and the hours. What changes is the building (PUE). With a large cloud, 1.13 is used everywhere, because Google and Microsoft only publish their fleet average. With an average centre, the Uptime Institute average for its world region is used (1.40 to 1.68), because there is no reliable country-by-country PUE data. The country does change, a lot, how much CO₂ and water it takes to produce that electricity.</p></details>
+   <details><summary>So is Norway a good or bad choice for water?</summary><p>It depends on how you measure. In litres it uses more, because WRI charges its electricity with the water that evaporates from reservoirs. Weighted by scarcity, the difference shrinks a lot, because Norway has plenty of water (factor 0.74, against 1.62 in Virginia). In the "Compare" view you can switch between both measures and see which places improve both your figures at once.</p></details>
    <details><summary>Are there data centres in every country on the map?</summary><p>Not large-cloud ones. AWS, Google Cloud and Azure have regions in {NCLOUD} places; on the map they are the countries in full colour, and the ranking and the recommendation only use them. The rest are faded: they tell you how much CO₂ and water their electricity costs if your data centre (your own or a local provider's) is there.</p></details>
    <details><summary>Why doesn't it use real-time data?</summary><p>Grid intensity changes every hour, but Wattprint estimates a whole task, often before it runs, and for that the annual average is the right reference. Also, hourly country data requires an access key from a data provider, which cannot be placed inside a public page. To see your grid right now, check the ${A('emaps','Electricity Maps')} live map. To estimate how much you save by running in the cleanest hours, turn on that option under "How to reduce it".</p></details>
    <details><summary>Why are so many countries hatched on the water map?</summary><p>Because the power plant water factor only exists, country by country, for the {NWRI} countries in the WRI study. Painting the rest with the world average would suggest data we do not have. Carbon is available for almost every country: it comes from Ember.</p></details>
@@ -1225,6 +1291,7 @@ en:[
 
 /* Referencias completas (orden alfabético). Cada cifra de la herramienta remite a una de ellas. */
 const REFS = [
+  ['Boulay, A.-M., Bare, J., Benini, L., Berger, M., Lathuillière, M. J., Manzardo, A., Margni, M., Motoshita, M., Núñez, M., Pastor, A. V., Ridoutt, B., Oki, T., Worbe, S., Pfister, S. (2018). The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE). <i>The International Journal of Life Cycle Assessment</i>, 23(2), 368–378.', 'https://doi.org/10.1007/s11367-017-1333-8'],
   ['Amazon Web Services. <i>AWS Regions</i>. Lista de regiones (por defecto y opcionales); consultada el 26 de octubre de 2026. China: regiones de Pekín y Ningxia, con cuenta de AWS China.', 'https://docs.aws.amazon.com/global-infrastructure/latest/regions/aws-regions.html'],
   ['Amazon. <i>AWS Cloud – Amazon Sustainability</i> (WUE global de los centros de datos en 2025: 0,12 L de agua extraída por kWh de IT).', 'https://sustainability.aboutamazon.com/products-services/aws-cloud'],
   ['Amazon.com, Inc. (2026). <i>Form 10-K, ejercicio 2025</i>, nota de inmovilizado: servidores y equipos de red, vida útil de cinco a seis años.', 'https://www.sec.gov/Archives/edgar/data/1018724/000101872426000004/amzn-20251231.htm'],
@@ -1233,6 +1300,8 @@ const REFS = [
   ['Ember. <i>US Electricity Data</i>. Intensidad por estado (Virginia, Oregón).', 'https://ember-energy.org/data/us-electricity-data/'],
   ['European Commission (2026). Comunicado IP/26/1667, 21 de septiembre de 2026: sistema de calificación de centros de datos.', 'https://ec.europa.eu/commission/presscorner/api/files/document/print/en/ip_26_1667/IP_26_1667_EN.pdf'],
   ['Gesetz zur Steigerung der Energieeffizienz in Deutschland (Energieeffizienzgesetz, EnEfG), § 11.', 'https://www.gesetze-im-internet.de/enefg/__11.html'],
+  ['European Commission, JRC. <i>Environmental Footprint reference package</i> (categoría «Water use»: modelo AWARE).', 'https://eplca.jrc.ec.europa.eu/LCDN/developerEF.html'],
+  ['Google. <i>Carbon free energy for Google Cloud regions</i>, datos anuales 2025 (GoogleCloudPlatform/region-carbon-info, Apache 2.0).', 'https://github.com/GoogleCloudPlatform/region-carbon-info'],
   ['Google Cloud. <i>Regions and zones</i>. Lista de regiones; consultada el 26 de octubre de 2026.', 'https://docs.cloud.google.com/compute/docs/regions-zones'],
   ['Google. <i>Data centers: efficiency</i> (PUE medio de la flota en 2025: 1,09).', 'https://datacenters.google/efficiency/'],
   ['Green Software Foundation. <i>Software Carbon Intensity (SCI) Specification</i>.', 'https://greensoftware.foundation/standards/sci/'],
@@ -1252,6 +1321,7 @@ const REFS = [
   ['Reglamento (UE) 2024/1689 (Ley de IA), anexo XI, sección 1, punto 2.e.', 'https://ai-act-service-desk.ec.europa.eu/en/ai-act/annex-11'],
   ['Reig, P., Luo, T., Christensen, E., Sinistore, J. (2020). <i>Guidance for Calculating Water Use Embedded in Purchased Electricity</i>. Working Paper. World Resources Institute. Tabla 4 (media mundial ponderada: 1,27 gal/kWh).', 'https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity'],
   ['Schneider, I., Xu, H., Benecke, S., Patterson, D., Huang, K., Ranganathan, P., Elsworth, C. (2025). Life-Cycle Emissions of AI Hardware: A Cradle-To-Grave Approach and Generational Trends. arXiv:2502.01671.', 'https://arxiv.org/abs/2502.01671'],
+  ['Seitfudem, G., Berger, M., Müller Schmied, H., Boulay, A.-M. (2025). The updated and improved method for water scarcity impact assessment in LCA, AWARE2.0. <i>Journal of Industrial Ecology</i>, 29(3), 891–907. Datos: AWARE20_Countries_and_Regions.xlsx, hoja CFs_nonagri, doi 10.5281/zenodo.15133241 (CC BY 4.0).', 'https://doi.org/10.1111/jiec.70023'],
   ['Shehabi, A., et al. (2024). <i>2024 United States Data Center Energy Usage Report</i>. LBNL-2001637. Lawrence Berkeley National Laboratory.', 'https://eta-publications.lbl.gov/sites/default/files/2024-12/lbnl-2024-united-states-data-center-energy-usage-report_1.pdf'],
   ['Suarez Corujo, J., Tansini, A., Ktistakis, M., Laverde Marin, A., Komnos, D., Pavlovic, J., Fontaras, G. (2025). Towards zero CO2 emissions: Insights from EU vehicle on-board data. <i>Science of the Total Environment</i>. doi:10.1016/j.scitotenv.2025.180454 (JRC142808).', 'https://publications.jrc.ec.europa.eu/repository/handle/JRC142808'],
   ['U.S. EPA. <i>Greenhouse Gas Equivalencies Calculator: Calculations and References</i> (carga de móvil: 0,019 kWh).', 'https://www.epa.gov/energy/greenhouse-gas-equivalencies-calculator-calculations-and-references'],
@@ -1259,7 +1329,7 @@ const REFS = [
   ['Uptime Institute (2025). <i>Uptime Institute Global Data Center Survey 2025: regional view</i>. UII Data Report 183, agosto de 2025 (PUE medio por región: China 1,4; Norteamérica 1,49; Europa 1,50; Asia-Pacífico sin China 1,52; Latinoamérica 1,65; Oriente Medio y África 1,68).', 'https://intelligence.uptimeinstitute.com/sites/default/files/2025-08/UI%20Field%20report%20183_Annual%20survey%20-%20regional%20view%202025.pdf'],
   ['World Resources Institute (2020). <i>Dataset: Guidance for Calculating Water Use Embedded in Purchased Electricity</i>, apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países).', 'https://www.wri.org/data/dataset-guidance-calculating-water-use-embedded-purchased-electricity'],
 ];
-const REFS_EN_NOTES = [['Lista de regiones (por defecto y opcionales); consultada el 26 de octubre de 2026. China: regiones de Pekín y Ningxia, con cuenta de AWS China.','List of regions (default and opt-in); checked on 26 October 2026. China: Beijing and Ningxia regions, with an AWS China account.'],['Lista de regiones; consultada el 26 de octubre de 2026.','List of regions; checked on 26 October 2026.'],['Regiones disponibles; consultada el 26 de octubre de 2026.','Available regions; checked on 26 October 2026.'],['UII Data Report 183, agosto de 2025 (PUE medio por región: China 1,4; Norteamérica 1,49; Europa 1,50; Asia-Pacífico sin China 1,52; Latinoamérica 1,65; Oriente Medio y África 1,68).','UII Data Report 183, August 2025 (average PUE by region: China 1.4; North America 1.49; Europe 1.50; Asia-Pacific excluding China 1.52; Latin America 1.65; Middle East and Africa 1.68).'],['(WUE global de los centros de datos en 2025: 0,12 L de agua extraída por kWh de IT)','(global data centre WUE in 2025: 0.12 L of water withdrawn per kWh of IT load)'],['<i>Form 10-K, ejercicio 2025</i>, nota de inmovilizado: servidores y equipos de red, vida útil de cinco a seis años','<i>Form 10-K, fiscal year 2025</i>, property and equipment note: servers and networking equipment, useful life of five to six years'],['<i>Form 10-K, ejercicio 2025</i>: vida útil de la mayoría de servidores y activos de red ampliada a 5,5 años desde el 1 de enero de 2025','<i>Form 10-K, fiscal year 2025</i>: useful life of most servers and network assets extended to 5.5 years from 1 January 2025'],['Intensidad de carbono de la electricidad por país, ciclo de vida','Life-cycle carbon intensity of electricity by country'],['Intensidad por estado (Virginia, Oregón)','Intensity by state (Virginia, Oregon)'],['Comunicado IP/26/1667, 21 de septiembre de 2026: sistema de calificación de centros de datos','Press release IP/26/1667, 21 September 2026: data centre rating scheme'],['(PUE medio de la flota en 2025: 1,09)','(fleet average PUE in 2025: 1.09)'],['Año 2022','Year 2022'],['Mapa del mundo, proyección Equal Earth','World map, Equal Earth projection'],['(dominio público)','(public domain)'],['vía','via'],['columna','column'],['(PUE 1,17 y WUE 0,27 L/kWh, año fiscal 2025)','(PUE 1.17 and WUE 0.27 L/kWh, fiscal year 2025)'],['Reglamento (UE) 2024/1689 (Ley de IA), anexo XI, sección 1, punto 2.e','Regulation (EU) 2024/1689 (AI Act), Annex XI, section 1, point 2(e)'],['Tabla 4 (media mundial ponderada: 1,27 gal/kWh)','Table 4 (generation-weighted world average: 1.27 gal/kWh)'],['apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países)','appendices 1 to 7 (appendix 1: eGRID subregions; appendix 2: countries)'],['(carga de móvil: 0,019 kWh)','(phone charge: 0.019 kWh)'],['(PUE medio: 1,54)','(average PUE: 1.54)']];
+const REFS_EN_NOTES = [['(categoría «Water use»: modelo AWARE)','("Water use" category: AWARE model)'],['datos anuales 2025','annual data 2025'],['Datos: AWARE20_Countries_and_Regions.xlsx, hoja CFs_nonagri','Data: AWARE20_Countries_and_Regions.xlsx, sheet CFs_nonagri'],['Lista de regiones (por defecto y opcionales); consultada el 26 de octubre de 2026. China: regiones de Pekín y Ningxia, con cuenta de AWS China.','List of regions (default and opt-in); checked on 26 October 2026. China: Beijing and Ningxia regions, with an AWS China account.'],['Lista de regiones; consultada el 26 de octubre de 2026.','List of regions; checked on 26 October 2026.'],['Regiones disponibles; consultada el 26 de octubre de 2026.','Available regions; checked on 26 October 2026.'],['UII Data Report 183, agosto de 2025 (PUE medio por región: China 1,4; Norteamérica 1,49; Europa 1,50; Asia-Pacífico sin China 1,52; Latinoamérica 1,65; Oriente Medio y África 1,68).','UII Data Report 183, August 2025 (average PUE by region: China 1.4; North America 1.49; Europe 1.50; Asia-Pacific excluding China 1.52; Latin America 1.65; Middle East and Africa 1.68).'],['(WUE global de los centros de datos en 2025: 0,12 L de agua extraída por kWh de IT)','(global data centre WUE in 2025: 0.12 L of water withdrawn per kWh of IT load)'],['<i>Form 10-K, ejercicio 2025</i>, nota de inmovilizado: servidores y equipos de red, vida útil de cinco a seis años','<i>Form 10-K, fiscal year 2025</i>, property and equipment note: servers and networking equipment, useful life of five to six years'],['<i>Form 10-K, ejercicio 2025</i>: vida útil de la mayoría de servidores y activos de red ampliada a 5,5 años desde el 1 de enero de 2025','<i>Form 10-K, fiscal year 2025</i>: useful life of most servers and network assets extended to 5.5 years from 1 January 2025'],['Intensidad de carbono de la electricidad por país, ciclo de vida','Life-cycle carbon intensity of electricity by country'],['Intensidad por estado (Virginia, Oregón)','Intensity by state (Virginia, Oregon)'],['Comunicado IP/26/1667, 21 de septiembre de 2026: sistema de calificación de centros de datos','Press release IP/26/1667, 21 September 2026: data centre rating scheme'],['(PUE medio de la flota en 2025: 1,09)','(fleet average PUE in 2025: 1.09)'],['Año 2022','Year 2022'],['Mapa del mundo, proyección Equal Earth','World map, Equal Earth projection'],['(dominio público)','(public domain)'],['vía','via'],['columna','column'],['(PUE 1,17 y WUE 0,27 L/kWh, año fiscal 2025)','(PUE 1.17 and WUE 0.27 L/kWh, fiscal year 2025)'],['Reglamento (UE) 2024/1689 (Ley de IA), anexo XI, sección 1, punto 2.e','Regulation (EU) 2024/1689 (AI Act), Annex XI, section 1, point 2(e)'],['Tabla 4 (media mundial ponderada: 1,27 gal/kWh)','Table 4 (generation-weighted world average: 1.27 gal/kWh)'],['apéndices 1 a 7 (apéndice 1: subregiones eGRID; apéndice 2: países)','appendices 1 to 7 (appendix 1: eGRID subregions; appendix 2: countries)'],['(carga de móvil: 0,019 kWh)','(phone charge: 0.019 kWh)'],['(PUE medio: 1,54)','(average PUE: 1.54)']];
 function refList(lang){
   return '<ul class="refs">'+REFS.map(([txt,url])=>{
     let x=txt; if(lang==='en') REFS_EN_NOTES.forEach(([a,b])=>{ x=x.split(a).join(b); });
@@ -1311,6 +1381,14 @@ const CLOUD_ROWS = ALL.filter(r=>hasCloud(r[0]));
 /* Con un centro de datos medio, el PUE depende de la región del mundo (Uptime 2025): la energía cambia de un sitio a otro */
 const eVaries = () => state.dc==='avg' && !state.active.has('hyper');
 const upName = id => t('up_'+(DATA.UPTIME_REGION[id]||'world'));
+/* Agua ponderada por escasez: hace falta el volumen (WRI) y el factor AWARE del lugar */
+const scarceKnown = reg => waterKnown(reg) && DATA.AWARE[reg[0]]!=null;
+/* Métrica efectiva del mapa y el ranking: el agua puede verse en litros o ponderada por escasez */
+const mKey = () => state.metric==='h2o' && state.wmode==='s' ? 'h2os' : state.metric;
+const okFor = (m,reg) => m==='h2os' ? scarceKnown(reg) : m==='h2o' ? waterKnown(reg) : true;
+const gcfeTxt = id => { const g=DATA.GCFE[id]; if(!g) return '';
+  const v=g.map(x=>Math.round(x[2]*100)), lo=Math.min(...v), hi=Math.max(...v), pc=LANG==='en'?'%':' %';
+  return tf('tt_gcfe',{p: lo===hi ? lo+pc : lo+'–'+hi+pc, c:g.map(x=>x[1]).join(', ')}); };
 
 const state = {
   workload:'train', util:1, host:true, ownPct:0, schedPct:null,
@@ -1320,7 +1398,7 @@ const state = {
   dc:'hyper', pue:DATA.PUE_HYPER, wue:DATA.WUE_HYPER,
   life:6, reqs:0, reps:1,
   active:new Set(), preset:null,
-  metric:'co2', view:'map', rankAll:false,
+  metric:'co2', view:'map', rankAll:false, wmode:'l',
 };
 
 /* ============================================================
@@ -1354,9 +1432,11 @@ function compute(o={}){
   const I = intensity*intensityMult;
   const operational = kwh*I/1000;
   const embodied = DATA.EMBODIED_KG*state.units*(state.hours/(state.life*365*24));
-  const waterOn = kwhIT*wue, waterOff = kwh*ewif;
+  const waterOn = kwhIT*wue, waterOff = kwh*ewif, water = waterOn+waterOff;
+  // Escasez (AWARE 2.0): litros × factor del lugar donde se ejecuta. Refrigeración y central se ponderan con el mismo factor.
+  const cf = DATA.AWARE[where[0]] ?? null;
   return { kwhIT, kwhIT0, kwh, overhead:kwh-kwhIT, I, operational, embodied, co2:operational+embodied,
-           waterOn, waterOff, water:waterOn+waterOff, pue, wue, ewif };
+           waterOn, waterOff, water, cf, scarce: cf==null ? null : water*cf, pue, wue, ewif };
 }
 /* Carbon-aware scheduling (Dodge et al., FAccT 2022): medias anuales en 16 regiones de Azure,
    intensidad marginal de WattTime de 2020. Mejor estrategia medida para cada duración. */
@@ -1532,7 +1612,7 @@ function wasHTML(b,r,unit){
    servir un modelo con peticiones → por cada 1.000 peticiones; el resto → total de la ejecución */
 const perReqMode = () => state.workload==='inf' && state.reqs>0;
 const dScale = () => perReqMode() ? 1e6/state.reqs : 1;               // kg→g, kWh→Wh, L→mL y ×1.000/peticiones
-const dUnit = m => perReqMode() ? ({co2:'g',kwh:'Wh',h2o:'mL'})[m] : ({co2:'kg',kwh:'kWh',h2o:'L'})[m];
+const dUnit = m => perReqMode() ? ({co2:'g',kwh:'Wh',h2o:'mL',h2os:'mL eq.'})[m] : ({co2:'kg',kwh:'kWh',h2o:'L',h2os:'L eq.'})[m];
 function extraLine(v,unitFn){
   const out=[];
   if(perReqMode()) out.push(tf('tot_line',{h:state.hours,v:unitFn(v*1000)}));
@@ -1568,6 +1648,8 @@ function renderKpis(B,R){
   $('eCO2').innerHTML=`<span data-tipk="eq_car_t">${pre}${tf('eq_car',{n:`<b>${fmt(R.co2*1000/E.car)}</b>`})}</span>`+extraLine(R.co2,gOrKg);
   $('eKWH').innerHTML=`<span data-tipk="eq_phone_t">${pre}${tf('eq_phone',{n:`<b>${fmt(R.kwh/E.phone)}</b>`})}</span>`+extraLine(R.kwh,whOrKwh);
   $('eH2O').innerHTML=`<span data-tipk="eq_water_t">${pre}${tf('eq_water',{n:`<b>${fmt(R.water/E.waterDay)}</b>`})}</span>`+extraLine(R.water,mlOrL);
+  $('scH2O').innerHTML = R.scarce==null ? `<span data-tipk="tip_scarce">${t('sc_na')}</span>`
+    : `<span data-tipk="tip_scarce">${tf('sc_line',{v:`<b>${fmt(R.scarce*S)}</b>`,u:dUnit('h2os'),f:dec(R.cf)})}</span>`;
 }
 
 /* ============================================================
@@ -1579,7 +1661,7 @@ const RAMPS = {
   light:{ co2:['#FBEDE6','#F2C3AC','#DE8B67','#B4441F','#7A2810'], h2o:['#E6F0FA','#B5D3EE','#6FA7DA','#1F6FB5','#0E437A'], kwh:['#FBF3DC','#F3DF9F','#E0B94E','#C08A00','#7A5600'] },
   dark: { co2:['#33201A','#6B2E1B','#A8431F','#E5774C','#FFC4A6'], h2o:['#10263A','#14456F','#1F6FB5','#4DA6EC','#ADDCFC'], kwh:['#2A2610','#5A4A0E','#B8960F','#FACC15','#FDE68A'] } };
 const isDark = () => document.documentElement.dataset.theme==='dark';
-const ramp = m => RAMPS[isDark()?'dark':'light'][m];
+const ramp = m => RAMPS[isDark()?'dark':'light'][m==='h2os'?'h2o':m];
 const hex2rgb = h => [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 function rampColor(stops,x){
   x=Math.min(1,Math.max(0,x)); const s=x*(stops.length-1), i=Math.min(stops.length-2,Math.floor(s)), f=s-i;
@@ -1614,7 +1696,7 @@ function buildMap(){
   svg.addEventListener('click',e=>{ const el=e.target.closest('[data-r]'); if(el) setRegion(el.dataset.r); });
   svg.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.dataset && e.target.dataset.r){ e.preventDefault(); setRegion(e.target.dataset.r); } });
 }
-const metricVal = (r,m) => (m==='co2' ? r.co2 : m==='h2o' ? r.water : r.kwh)*dScale();
+const metricVal = (r,m) => (m==='co2' ? r.co2 : m==='h2o' ? r.water : m==='h2os' ? r.scarce : r.kwh)*dScale();
 const unitOf = m => dUnit(m);
 function regionTip(id,marker){
   const reg=regionById(id), r=regionVals[id]||computeAt(id), me=computeAt(state.region);
@@ -1623,9 +1705,11 @@ function regionTip(id,marker){
   const line=(lab,v,b,u,ap)=>`<div class="tk" style="--tc:var(--${lab==='CO₂e'?'co2':'h2o'})">${lab}: <b>${ap?'≈ ':''}${fmt(v)} ${u}</b>${you?'':` · ${tf('tt_vs',{p:pctTxt(v,b)})}`}</div>`;
   return `<b>${regionName(reg)}</b>${you?` · ${t('tt_you')}`:''}${marker?`<small style="margin:0 0 4px">${t('tt_marker')}</small>`:''}`+
     line('CO₂e',r.co2*dScale(),me.co2*dScale(),dUnit('co2'))+line(t('m_h2o'),r.water*dScale(),me.water*dScale(),dUnit('h2o'),!waterKnown(reg))+
+    (r.scarce!=null && me.scarce!=null ? `<div class="tk" style="--tc:var(--h2o)">${t('m_h2os')}: <b>${!waterKnown(reg)?'≈ ':''}${fmt(r.scarce*dScale())} ${dUnit('h2os')}</b>${you?'':` · ${tf('tt_vs',{p:pctTxt(r.scarce,me.scarce)})}`}</div>` : '')+
     (eVaries()?line2(r.kwh*dScale(),me.kwh*dScale()):`<div class="tk" style="--tc:var(--kwh)">${t('m_kwh')}: <b>${fmt(r.kwh*dScale())} ${dUnit('kwh')}</b>${you?'':` · ${t('tt_same')}`}</div>`)+
     `<small>${tf('tt_grid',{g:reg[3],y:reg[4]})}<br>${waterKnown(reg)?tf('tt_wf',{w:dec(reg[6]),ap:reg[7]?t('tt_ap'):''}):tf('tt_wf_na',{w:dec(reg[6])})}`+
-    `${state.dc==='avg'?'<br>'+(DATA.UPTIME_REGION[id]?tf('tt_pue',{p:pdec(r.pue),u:upName(id)}):tf('tt_pue_w',{p:pdec(r.pue)})):''}</small>`+
+    `<br>${r.cf!=null?tf('tt_cf',{f:dec(r.cf)}):t('tt_cf_na')}`+
+    `${state.dc==='avg'?'<br>'+(DATA.UPTIME_REGION[id]?tf('tt_pue',{p:pdec(r.pue),u:upName(id)}):tf('tt_pue_w',{p:pdec(r.pue)})):''}${gcfeTxt(id)?'<br>'+gcfeTxt(id):''}</small>`+
     `<small class="tcl">${hasCloud(id)?tf('tt_cloud',{p:cloudNames(id)}):isAvg(id)?t('tt_avg'):t('tt_nocloud')}</small>`+
     (you?'':`<small>${t('tt_click')}</small>`);
 }
@@ -1635,37 +1719,41 @@ function countryTip(c,id){
   return regionTip(id);
 }
 function renderMap(){
-  const m=state.metric, isE=m==='kwh', flat=isE && !eVaries();
+  const m=mKey(), isE=m==='kwh', flat=isE && !eVaries(), cmp=state.view==='cmp' && !flat;
   regionVals={}; ALL.forEach(r=>regionVals[r[0]]=computeAt(r[0]));
   $('segView').classList.toggle('hidden',flat); $('segView').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));
-  $('segMetric').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.metric===m)));
-  const showMap = flat || state.view!=='rank';
+  $('segMetric').classList.toggle('hidden',cmp);
+  $('segMetric').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.metric===state.metric)));
+  const showMap = flat || state.view==='map';
   $('map').classList.toggle('hidden',!showMap);
   $('map').classList.toggle('flat',flat);
-  $('rank').classList.toggle('hidden',showMap);
-  $('energy').classList.toggle('hidden',!isE);
+  $('rank').classList.toggle('hidden',flat || state.view!=='rank');
+  $('cmp').classList.toggle('hidden',!cmp);
+  $('energy').classList.toggle('hidden',!isE || cmp);
   $('flatnote').classList.toggle('hidden',!flat);
   // Países sin regiones de AWS, Google Cloud ni Azure: atenuados, solo como referencia de su red
   document.querySelectorAll('#map .c.d').forEach(p=>p.classList.toggle('nc',!hasCloud(p.dataset.r)&&!isAvg(p.dataset.r)));
   const ncKey=`<span class="lg-k"><i class="ncsw"></i>${t('lg_nocloud')}</span>`;
+  if(cmp){ renderCmp(); return; }
   if(isE) renderEnergy();
   if(flat){ $('arc').style.display='none';
     document.querySelectorAll('#map .c.d,#map .mk').forEach(p=>p.classList.toggle('me',p.dataset.r===state.region));
     $('legend').innerHTML=`${ncKey}<span class="hint">${t('map_hint')}</span>`; $('insight').innerHTML=t('en_lead'); return; }
-  const shownOk = r => m!=='h2o' || waterKnown(r);
+  const shownOk = r => okFor(m,r);
   // Color por percentil: con ~200 países, unos pocos extremos no dejan el resto del mapa en un solo tono
   const vals=ALL.filter(shownOk).map(r=>metricVal(regionVals[r[0]],m)).sort((a,b)=>a-b), lo=vals[0], hi=vals[vals.length-1], med=vals[Math.floor(vals.length/2)];
   const pct=v=>{ let a=0,b=vals.length; while(a<b){ const c=(a+b)>>1; if(vals[c]<v) a=c+1; else b=c; } return vals.length>1?a/(vals.length-1):0.5; };
   const col=v=>rampColor(ramp(m), 0.1+0.9*Math.min(1,pct(v)));
   const shown=shownRegion()[0];
+  const lab=id=>{ const v=metricVal(regionVals[id],m); return `${regionName(regionById(id))}: ${shownOk(regionById(id))?fmt(v)+' '+unitOf(m):t('tt_nodata')}`; };
   document.querySelectorAll('#map .c.d').forEach(p=>{
     const id=p.dataset.r, nw=!shownOk(regionById(id)); p.classList.toggle('nw',nw); p.style.fill=nw?'':col(metricVal(regionVals[id],m));
     p.classList.toggle('me', id===state.region);
     p.setAttribute('tabindex', p===document.querySelector(`#map .c.d[data-r="${id}"]`)?'0':'-1');
-    p.setAttribute('aria-label', `${regionName(regionById(id))}: ${fmt(metricVal(regionVals[id],m))} ${unitOf(m)}`);
+    p.setAttribute('aria-label', lab(id));
   });
-  document.querySelectorAll('#map .mk').forEach(c=>{ const id=c.dataset.r; c.style.fill=col(metricVal(regionVals[id],m)); c.classList.toggle('me',id===state.region);
-    c.setAttribute('tabindex','0'); c.setAttribute('aria-label',`${regionName(regionById(id))}: ${fmt(metricVal(regionVals[id],m))} ${unitOf(m)}`); });
+  document.querySelectorAll('#map .mk').forEach(c=>{ const id=c.dataset.r, ok=shownOk(regionById(id)); c.style.fill=ok?col(metricVal(regionVals[id],m)):'var(--nodata)'; c.classList.toggle('me',id===state.region);
+    c.setAttribute('tabindex','0'); c.setAttribute('aria-label',lab(id)); });
   document.querySelectorAll('#map .mklbl').forEach(l=>l.textContent=regionName(regionById(l.dataset.lbl)).replace(/^EE\. UU\. (Oeste|Este) \(|^US (West|East) \(|\)$/g,''));
   // Flecha de tu región a la red más limpia, cuando esa opción está activa
   const arc=$('arc'), a=MAP.p[state.region], b=MAP.p[shown];
@@ -1676,9 +1764,10 @@ function renderMap(){
   $('mapTitle').textContent=t('map_h');
   // Leyenda: rampa con los valores reales de esta tarea
   const scale=`linear-gradient(90deg,${ramp(m).join(',')})`; // taste-skill-ignore: la rampa de la leyenda es la escala del dato
-  $('legend').innerHTML=`<span class="rampw"><span class="ramp" style="background:${scale}"></span><span class="rampl"><span>${fmt(lo)}</span><span>${fmt(med)}</span><span>${fmt(hi)} ${unitOf(m)}</span></span></span>
-    <span class="lg-t">${t((m==='co2'?'lg_co2':m==='h2o'?'lg_h2o':'lg_kwh')+(perReqMode()?'_k':''))}</span>
-    ${m==='h2o'?`<span class="lg-k"><svg width="12" height="12"><rect width="12" height="12" rx="3" fill="url(#hatch)"/></svg>${t('lg_nowater')}</span>`:''}
+  const isW = state.metric==='h2o';
+  $('legend').innerHTML=`${isW?wSeg():''}<span class="rampw"><span class="ramp" style="background:${scale}"></span><span class="rampl"><span>${fmt(lo)}</span><span>${fmt(med)}</span><span>${fmt(hi)} ${unitOf(m)}</span></span></span>
+    <span class="lg-t">${t(({co2:'lg_co2',h2o:'lg_h2o',h2os:'lg_h2os',kwh:'lg_kwh'})[m]+(perReqMode()?'_k':''))}</span>
+    ${isW?`<span class="lg-k"><svg width="12" height="12"><rect width="12" height="12" rx="3" fill="url(#hatch)"/></svg>${t(m==='h2os'?'lg_noscarce':'lg_nowater')}</span>`:''}
     ${ncKey}<span class="lg-k"><i style="background:var(--nodata)"></i>${t('lg_none')}</span>
     <span class="hint">${t('map_hint')}</span>
     <span class="avgs"><button data-pick="world" aria-pressed="${state.region==='world'}" class="has-tip">${t('avg_world')}</button><button data-pick="eu" aria-pressed="${state.region==='eu'}" class="has-tip">${t('avg_eu')}</button></span>`;
@@ -1686,34 +1775,108 @@ function renderMap(){
   if(state.view==='rank') renderRank(col);
   renderInsight();
 }
-$('legend').addEventListener('click',e=>{ const b=e.target.closest('[data-pick]'); if(b) setRegion(b.dataset.pick); });
+/* Selector del agua: litros o ponderada por escasez (AWARE 2.0) */
+const wSeg = () => `<span class="seg wseg" role="group" aria-label="${t('w_mode')}"><button data-w="l" aria-pressed="${state.wmode!=='s'}">${t('w_l')}</button><button data-w="s" aria-pressed="${state.wmode==='s'}" data-tipk="tip_scarce">${t('w_s')}</button></span>`;
+$('legend').addEventListener('click',e=>{ const w=e.target.closest('[data-w]'); if(w){ state.wmode=w.dataset.w; renderMap(); syncURL(); return; }
+  const b=e.target.closest('[data-pick]'); if(b) setRegion(b.dataset.pick); });
 function renderRank(col){
-  const m=state.metric, src=(state.rankAll?ALL:ALL.filter(r=>hasCloud(r[0])||isAvg(r[0]))).filter(r=>m!=='h2o'||waterKnown(r));
+  const m=mKey(), src=(state.rankAll?ALL:ALL.filter(r=>hasCloud(r[0])||isAvg(r[0]))).filter(r=>okFor(m,r));
   const rows=src.map(r=>({id:r[0],reg:r,v:metricVal(regionVals[r[0]],m)})).sort((a,b)=>a.v-b.v);
   const max=Math.max(...rows.map(x=>x.v))||1;
   $('rank').innerHTML=rows.map(x=>`<button class="rk has-tip${x.id===state.region?' me':''}" data-r="${x.id}">
-    <span class="nm">${regionName(x.reg)}${(m==='co2'?x.reg[5]:m==='h2o'?x.reg[7]:false)?' ≈':''}</span>
+    <span class="nm">${regionName(x.reg)}${(m==='co2'?x.reg[5]:(m==='h2o'||m==='h2os')?x.reg[7]:false)?' ≈':''}</span>
     <span class="t"><i style="width:${(x.v/max*100).toFixed(1)}%;background:${col(x.v)}"></i></span>
     <span class="v">${fmt(x.v)} ${unitOf(m)}</span></button>`).join('')+
-    `<button class="rk-more" data-rankall>${state.rankAll?t('rank_cloud'):tf('rank_all',{n:ALL.filter(r=>m!=='h2o'||waterKnown(r)).length})}</button>`;
+    `<button class="rk-more" data-rankall>${state.rankAll?t('rank_cloud'):tf('rank_all',{n:ALL.filter(r=>okFor(m,r)).length})}</button>`;
   $('rank').querySelectorAll('.rk').forEach(b=>b._tip=()=>regionTip(b.dataset.r));
 }
 $('rank').addEventListener('click',e=>{ if(e.target.closest('[data-rankall]')){ state.rankAll=!state.rankAll; renderMap(); return; }
   const b=e.target.closest('[data-r]'); if(b) setRegion(b.dataset.r); });
 function renderInsight(){
-  const m=state.metric, me=regionVals[state.region];
+  const m=mKey(), me=regionVals[state.region];
   if(m==='kwh'){ // la energía solo cambia con el PUE de la región del mundo
     const pu=Object.entries(DATA.PUE_UPTIME).filter(([k])=>k!=='world').sort((a,b)=>a[1]-b[1]), lo=pu[0], hi=pu[pu.length-1];
     $('insight').innerHTML=tf('en_lead_avg',{lo:pdec(lo[1]),lr:t('up_'+lo[0]),hi:pdec(hi[1]),hr:t('up_'+hi[0])}); return; }
-  const rows=CLOUD_ROWS.map(r=>({reg:r,r:regionVals[r[0]]})).sort((a,b)=>metricVal(a.r,m)-metricVal(b.r,m));
+  const rows=CLOUD_ROWS.filter(r=>okFor(m,r)).map(r=>({reg:r,r:regionVals[r[0]]})).sort((a,b)=>metricVal(a.r,m)-metricVal(b.r,m));
   const best=rows[0];
   let h;
-  if(best.reg[0]===state.region) h=t(m==='co2'?'ins_best_c':'ins_best_w');
-  else h=tf(m==='co2'?'ins_c':'ins_w',{ r:`<b>${regionName(best.reg)}</b>`,
-    c:`<b>${fmt(best.r.co2*dScale())} ${dUnit('co2')}</b>`, cp:pctTxt(best.r.co2,me.co2), w:`<b>${fmt(best.r.water*dScale())} ${dUnit('h2o')}</b>`, wp:pctTxt(best.r.water,me.water) });
+  if(m==='h2os' && me.scarce==null) h=t('ins_s_na');
+  else if(best.reg[0]===state.region) h=t(({co2:'ins_best_c',h2o:'ins_best_w',h2os:'ins_best_s'})[m]);
+  else h=tf(({co2:'ins_c',h2o:'ins_w',h2os:'ins_s'})[m],{ r:`<b>${regionName(best.reg)}</b>`,
+    c:`<b>${fmt(best.r.co2*dScale())} ${dUnit('co2')}</b>`, cp:pctTxt(best.r.co2,me.co2), w:`<b>${fmt(best.r.water*dScale())} ${dUnit('h2o')}</b>`, wp:pctTxt(best.r.water,me.water),
+    s: best.r.scarce!=null?`<b>${fmt(best.r.scarce*dScale())} ${dUnit('h2os')}</b>`:'', sp: (best.r.scarce!=null&&me.scarce!=null)?pctTxt(best.r.scarce,me.scarce):'' });
   if(!hasCloud(state.region) && !isAvg(state.region)) h=tf('ins_nocloud',{r:regionName(regionById(state.region))})+' '+h;
   $('insight').innerHTML=h;
 }
+/* ============================================================
+   9b · COMPARAR: CO₂ frente a agua, para decidir sin inventar pesos
+   Cada punto es la misma tarea en un lugar con regiones de AWS, Google Cloud o Azure.
+   Anillo = ningún otro lugar lo mejora en las dos cifras a la vez (frontera de Pareto).
+============================================================ */
+const dominates = (a,b) => a.x<=b.x && a.y<=b.y && (a.x<b.x || a.y<b.y);
+function cmpData(){
+  const ys = state.wmode==='s' ? 'h2os' : 'h2o', S=dScale();
+  const yv = r => (ys==='h2os' ? r.scarce : r.water);
+  const pts = CLOUD_ROWS.filter(reg=>okFor(ys,reg)).map(reg=>({id:reg[0],reg,x:regionVals[reg[0]].co2*S,y:yv(regionVals[reg[0]])*S}));
+  const meReg=regionById(state.region), meR=regionVals[state.region], meOk=okFor(ys,meReg);
+  const me={id:state.region,reg:meReg,x:meR.co2*S,y:meOk?yv(meR)*S:null,ok:meOk};
+  const front=new Set(pts.filter(p=>!pts.some(o=>dominates(o,p))).map(p=>p.id));
+  const better=meOk ? pts.filter(p=>p.id!==me.id && dominates(p,me)).sort((a,b)=>a.x-b.x) : [];
+  return {ys,pts,me,front,better};
+}
+const listFmt = arr => { try{ return new Intl.ListFormat(loc(),{style:'long',type:'conjunction'}).format(arr); }catch(e){ return arr.join(', '); } };
+function niceTicks(lo,hi,n){ const span=hi-lo||1, step0=span/n, p=Math.pow(10,Math.floor(Math.log10(step0))), f=step0/p;
+  const step=(f<1.5?1:f<3?2:f<7?5:10)*p, out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) out.push(+v.toFixed(10)); return out; }
+function logTicks(lo,hi){ const out=[]; for(let e=Math.floor(Math.log10(lo)); e<=Math.ceil(Math.log10(hi)); e++) for(const m of [1,2,5]){ const v=m*Math.pow(10,e); if(v>=lo*0.999&&v<=hi*1.001) out.push(v); } return out; }
+function renderCmp(){
+  const D=cmpData(), box=$('mapwrap'), small=matchMedia('(max-width:860px)').matches, W=Math.max(300,box.clientWidth), H=small?340:Math.max(200,box.clientHeight);
+  const L=58,R=18,T=14,B=44, svg=$('cmp');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width',W); svg.setAttribute('height',H);
+  const all=D.pts.concat(D.me.ok && !D.pts.find(p=>p.id===D.me.id)?[D.me]:[]);
+  const xs=all.map(p=>p.x), ysv=all.map(p=>p.y).filter(v=>v>0);
+  const xmax=Math.max(...xs, D.me.x)*1.06||1, ymin=Math.min(...ysv), ymax=Math.max(...ysv);
+  const logY = ymax/ymin>20;
+  const X=v=>L+(v/xmax)*(W-L-R);
+  const y0=logY?ymin/1.4:0, y1=logY?ymax*1.4:ymax*1.08;
+  const Y=v=>logY ? T+(1-(Math.log(v)-Math.log(y0))/(Math.log(y1)-Math.log(y0)))*(H-T-B) : T+(1-(v-y0)/(y1-y0))*(H-T-B);
+  const ux=dUnit('co2'), uy=dUnit(D.ys);
+  let h='';
+  // cuadrantes respecto a tu elección
+  if(D.me.ok){ const mx=X(D.me.x), my=Y(D.me.y);
+    h+=`<rect class="q-trade" x="${L}" y="${T}" width="${Math.max(0,mx-L)}" height="${Math.max(0,my-T)}"/><rect class="q-better" x="${L}" y="${my}" width="${Math.max(0,mx-L)}" height="${Math.max(0,H-B-my)}"/>`; }
+  niceTicks(0,xmax,6).forEach(v=>{ h+=`<line class="g" x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${H-B}"/><text class="tk" x="${X(v)}" y="${H-B+18}" text-anchor="middle">${fmt(v)}</text>`; });
+  (logY?logTicks(y0,y1):niceTicks(0,y1,5)).forEach(v=>{ h+=`<line class="g" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tk" x="${L-8}" y="${Y(v)+4}" text-anchor="end">${fmt(v)}</text>`; });
+  h+=`<text class="ax" x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">CO₂e (${ux}) →</text>`;
+  h+=`<text class="ax" transform="translate(14 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">${t(D.ys==='h2os'?'m_h2os':'m_h2o')} (${uy}${logY?', '+t('cmp_log'):''}) →</text>`;
+  if(D.me.ok){ const mx=X(D.me.x), my=Y(D.me.y); h+=`<line class="ref" x1="${mx}" x2="${mx}" y1="${T}" y2="${H-B}"/><line class="ref" x1="${L}" x2="${W-R}" y1="${my}" y2="${my}"/>`; }
+  else h+=`<line class="ref" x1="${X(D.me.x)}" x2="${X(D.me.x)}" y1="${T}" y2="${H-B}"/>`;
+  const cls=p=>{ if(!D.me.ok) return p.x<D.me.x?'c-trade':'c-worse'; if(p.x<=D.me.x && p.y<=D.me.y) return 'c-better'; if(p.x<D.me.x) return 'c-trade'; return 'c-worse'; };
+  const order=[...D.pts].sort((a,b)=>(D.front.has(a.id)?1:0)-(D.front.has(b.id)?1:0));
+  order.forEach(p=>{ if(p.id===D.me.id) return;
+    h+=`<circle class="pt has-tip ${cls(p)}${D.front.has(p.id)?' fr':''}" data-r="${p.id}" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${D.front.has(p.id)?7:6}" tabindex="${D.front.has(p.id)||D.better.includes(p)?0:-1}" role="button" aria-label="${regionName(p.reg)}: ${fmt(p.x)} ${ux}, ${fmt(p.y)} ${uy}"/>`; });
+  if(D.me.ok) h+=`<circle class="pt me has-tip" data-r="${D.me.id}" cx="${X(D.me.x).toFixed(1)}" cy="${Y(D.me.y).toFixed(1)}" r="8" tabindex="0" role="button" aria-label="${regionName(D.me.reg)} (${t('tt_you')})"/>`;
+  // etiquetas sin solaparse: tu elección, las que mejoran las dos y la frontera
+  const placed=[], pw=7.1, ph=15;
+  const free=(x,y,w)=>x>L&&x+w<W-R&&y-ph>T&&y<H-B&&!placed.some(b=>x<b.x+b.w&&x+w>b.x&&y-ph<b.y&&y>b.y-ph)&&!all.some(p=>{ const px=X(p.x),py=Y(p.y); return px>x-4&&px<x+w+4&&py>y-ph-4&&py<y+4; });
+  const want=[...(D.me.ok?[D.me]:[]), ...D.better, ...D.pts.filter(p=>D.front.has(p.id)&&!D.better.includes(p)&&p.id!==D.me.id)];
+  want.forEach(p=>{ const nm=regionName(p.reg).replace(/^EE\. UU\. (Oeste|Este) \((.*)\)$/,'$2').replace(/^US (West|East) \((.*)\)$/,'$2'), w=nm.length*pw, px=X(p.x), py=Y(p.y);
+    for(const [dx,dy] of [[11,5],[-11-w,5],[-w/2,-12],[-w/2,22],[11,-8],[-11-w,-8],[11,18],[-11-w,18]]){ const x=px+dx, y=py+dy;
+      if(free(x,y,w)){ placed.push({x,y,w}); h+=`<text class="lb${p.id===D.me.id?' meb':''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${nm}</text>`; break; } } });
+  svg.innerHTML=h;
+  svg.setAttribute('aria-label', t('cmp_h'));
+  svg.querySelectorAll('[data-r]').forEach(c=>c._tip=()=>regionTip(c.dataset.r));
+  // frase de decisión
+  const names=arr=>listFmt(arr.slice(0,4).map(p=>`<b>${regionName(p.reg)}</b>`))+(arr.length>4?' '+tf('cmp_more',{n:arr.length-4}):'');
+  let ins;
+  if(!D.me.ok) ins=t(D.ys==='h2os'?'cmp_nodata_s':'cmp_nodata');
+  else if(D.better.length) ins=tf('cmp_better',{l:names(D.better)});
+  else ins=hasCloud(state.region)?t('cmp_front'):tf('cmp_front_nc',{r:regionName(D.me.reg)});
+  $('insight').innerHTML=ins;
+  $('legend').innerHTML=`${wSeg()}<span class="lg-k"><i class="cdot c-better"></i>${t('cmp_k_better')}</span><span class="lg-k"><i class="cdot c-trade"></i>${t('cmp_k_trade')}</span><span class="lg-k"><i class="cdot c-worse"></i>${t('cmp_k_worse')}</span><span class="lg-k"><i class="cdot fr"></i>${tf('cmp_k_front',{n:D.front.size})}</span><span class="hint">${t('cmp_hint')}</span>`;
+}
+$('cmp').addEventListener('click',e=>{ const c=e.target.closest('[data-r]'); if(c) setRegion(c.dataset.r); });
+$('cmp').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.dataset && e.target.dataset.r){ e.preventDefault(); setRegion(e.target.dataset.r); } });
+let cmpRz; addEventListener('resize',()=>{ if(state.view!=='cmp') return; clearTimeout(cmpRz); cmpRz=setTimeout(renderMap,120); });
 function withState(patch,fn){ const prev={}; for(const k in patch){ prev[k]=state[k]; state[k]=patch[k]; } try{ return fn(); } finally{ Object.assign(state,prev); } }
 function renderEnergy(){
   const R=compute({optimized:true});
@@ -1840,8 +2003,8 @@ const WSRC = { use:'ws_srvc', usw:'ws_nwpp', world:'ws_t4', eu:'ws_t4', sg:'ws_t
 function waterSrc(r){ if(WSRC[r[0]]) return t(WSRC[r[0]]); return r[7] ? t('ws_t4') : t('ws_a2'); }
 function carbonSrc(r){ return ['usw','use'].includes(r[0]) ? 'Ember US' : 'Ember / OWID'; }
 function regionsTable(rows){
-  return `<div class="tscroll"><table class="dtab"><thead><tr><th>${t('th_reg')}</th><th class="n">gCO₂e/kWh</th><th>${t('th_csrc')}</th><th class="n">${t('th_w')}</th><th>${t('th_wsrc')}</th><th class="n">${t('th_pue')}</th><th>${t('th_cloud')}</th></tr></thead><tbody>`+
-    rows.map(r=>`<tr><td>${regionName(r)}</td><td class="n">${r[5]?'≈ ':''}${r[3]}</td><td>${carbonSrc(r)}, ${r[4]}</td><td class="n">${r[7]?'≈ ':''}${dec(r[6])}</td><td>${waterSrc(r)}</td><td class="n">${pdec(pueAvgAt(r[0]))}</td><td>${hasCloud(r[0])?cloudNames(r[0]):isAvg(r[0])?'':'—'}</td></tr>`).join('')+'</tbody></table></div>';
+  return `<div class="tscroll"><table class="dtab"><thead><tr><th>${t('th_reg')}</th><th class="n">gCO₂e/kWh</th><th>${t('th_csrc')}</th><th class="n">${t('th_w')}</th><th>${t('th_wsrc')}</th><th class="n">${t('th_aware')}</th><th class="n">${t('th_pue')}</th><th>${t('th_cloud')}</th></tr></thead><tbody>`+
+    rows.map(r=>`<tr><td>${regionName(r)}</td><td class="n">${r[5]?'≈ ':''}${r[3]}</td><td>${carbonSrc(r)}, ${r[4]}</td><td class="n">${r[7]?'≈ ':''}${dec(r[6])}</td><td>${waterSrc(r)}</td><td class="n">${DATA.AWARE[r[0]]==null?'—':dec(DATA.AWARE[r[0]])}</td><td class="n">${pdec(pueAvgAt(r[0]))}</td><td>${hasCloud(r[0])?cloudNames(r[0]):isAvg(r[0])?'':'—'}</td></tr>`).join('')+'</tbody></table></div>';
 }
 function renderMethod(){
   const secs=METHOD[LANG];
@@ -1965,6 +2128,7 @@ function resultRows(r){
     ['CO₂e', r.co2, 'kg'], ['  '+t('bk_c1'), r.operational, 'kg'], ['  '+t('bk_c2'), r.embodied, 'kg'],
     [t('bk_e'), r.kwh, 'kWh'], ['  '+t('bk_e1'), r.kwhIT, 'kWh'], ['  '+t('bk_e2'), r.overhead, 'kWh'],
     [t('bk_w'), r.water, 'L'], ['  '+t('bk_w1'), r.waterOn, 'L'], ['  '+t('bk_w2'), r.waterOff, 'L'],
+    [t('bk_ws'), r.scarce, 'L eq.'],
   ];
 }
 const activeLevers = () => LEVERS.filter(id=>state.active.has(id) && leverApplies(id) && !(id==='own' && !(state.ownPct>0)));
@@ -1994,7 +2158,7 @@ function doPdf(){
     <p class="small" style="margin-top:6pt"><b>${t('as_h')}:</b> ${assumptionsText()}</p>
     <p class="small" style="margin-top:6pt">${t('pue_ref')} ${pueVerdict(base.pue)}</p>
     <table style="margin-top:8pt"><tr><th>${t('col_item')}</th><th class="n">${t('col_base')}</th>${has?`<th class="n">${t('col_opt')}</th>`:''}<th>${t('col_unit')}</th></tr>
-      ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${fmt(row[1])}</td>${has?`<td class="n">${fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
+      ${resultRows(base).map((row,i)=>`<tr><td>${row[0].replace(/^  /,'&nbsp;&nbsp;· ')}</td><td class="n">${row[1]==null?'—':fmt(row[1])}</td>${has?`<td class="n">${resultRows(opt)[i][1]==null?'—':fmt(resultRows(opt)[i][1])}</td>`:''}<td>${row[2]}</td></tr>`).join('')}</table>
     ${unit}
     <h2>${t('rp_ch')}</h2><p>${has?tf('rp_ch_on',{list:lv.map(id=>t('lv_'+id)).join(', ')})+` <b>${fmt(opt.co2)} kg CO₂e · ${fmt(opt.kwh)} kWh · ${fmt(opt.water)} L</b> (${pctTxt(opt.co2,base.co2)} CO₂e).`:t('rp_ch_none')}</p>
     <h2>${t('rp_meth')}</h2><p class="small">${tf('rp_meth_t',{year:regionById(state.region)[4]})}</p>
@@ -2005,7 +2169,7 @@ function doPdf(){
 function doCsv(){
   const base=compute(), opt=compute({optimized:true}), has=activeLevers().length>0;
   const sep = LANG==='en' ? ',' : ';';
-  const num = v => { const s=(Math.round(v*1e4)/1e4).toString(); return LANG==='en'?s:s.replace('.',','); };
+  const num = v => { if(v==null) return ''; const s=(Math.round(v*1e4)/1e4).toString(); return LANG==='en'?s:s.replace('.',','); };
   const q = v => `"${String(v).replace(/"/g,'""')}"`;
   const lines=[];
   lines.push([t('col_item'),t('col_val'),t('col_unit')].map(q).join(sep));
@@ -2013,7 +2177,7 @@ function doCsv(){
   lines.push('');
   lines.push([t('col_item'),t('col_base'),...(has?[t('col_opt')]:[]),t('col_unit')].map(q).join(sep));
   const ob=resultRows(opt);
-  const grp=[ 'CO₂e','CO₂e','CO₂e', t('bk_e'),t('bk_e'),t('bk_e'), t('bk_w'),t('bk_w'),t('bk_w') ];
+  const grp=[ 'CO₂e','CO₂e','CO₂e', t('bk_e'),t('bk_e'),t('bk_e'), t('bk_w'),t('bk_w'),t('bk_w'), t('bk_ws') ];
   resultRows(base).forEach((row,i)=>lines.push([q(row[0].startsWith('  ')?grp[i]+' · '+row[0].trim():row[0]),num(row[1]),...(has?[num(ob[i][1])]:[]),q(row[2])].join(sep)));
   if(state.workload==='inf'&&state.reqs>0){ const r=has?opt:base, k=state.reqs;
     lines.push([q('CO₂e / req'),num(r.co2*1000/k),q('g')].join(sep), [q('Energy / req'),num(r.kwh*1000/k),q('Wh')].join(sep), [q('Water / req'),num(r.water*1000/k),q('mL')].join(sep)); }
@@ -2080,6 +2244,8 @@ function shareParams(){
   if(state.reps>1) p.set('y',state.reps);
   if(state.active.size) p.set('c',[...state.active].join('.'));
   if(state.metric!=='co2') p.set('mt',state.metric);
+  if(state.wmode==='s') p.set('wm','s');
+  if(state.view!=='map') p.set('v',state.view);
   if(LANG==='en') p.set('lang','en');
   return p;
 }
@@ -2106,6 +2272,8 @@ function applyConfig(cfg){
   state.reps=Math.max(1,+cfg.y||1);
   state.active.clear(); (cfg.c||[]).forEach(id=>{ if(LEVERS.includes(id)) state.active.add(id); });
   if(['co2','h2o','kwh'].includes(cfg.mt)) state.metric=cfg.mt;
+  if(cfg.wm==='s'||cfg.wm==='l') state.wmode=cfg.wm;
+  if(['map','rank','cmp'].includes(cfg.v)) state.view=cfg.v;
   state.preset=null;
   buildLevers(); syncControls(); markPreset(); render();
 }
@@ -2118,7 +2286,7 @@ function restoreFromURL(){
   let g=val('g'); if(g==='cpu') g='avg';
   const c=(p.get('c')||'').split('.').filter(x=>x && !['auto','quant'].includes(x));
   applyConfig({ w:val('w'), g, d:val('d'), m:p.get('m'), k:p.get('k'), l:p.get('l'), ut:p.get('ut'), sv:p.get('sv'), oe:p.get('oe'), cs:p.get('cs'),
-    u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c, mt:p.get('mt') });
+    u:p.get('u'), h:p.get('h'), r, q:p.get('q'), y:p.get('y'), c, mt:p.get('mt'), wm:p.get('wm'), v:p.get('v') });
   return true;
 }
 async function copyLink(btn){

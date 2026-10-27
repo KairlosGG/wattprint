@@ -5,7 +5,8 @@ OWID: https://github.com/owid/energy-data · WRI (apéndices 1 a 7): https://www
 Requiere: pip install playwright openpyxl pycountry-convert && playwright install chromium
 
 A. Datos: cada región/país frente a sus fuentes (OWID/Ember, WRI apéndices 1 y 2, tabla 4), regiones de
-   AWS/Google Cloud/Azure (listas oficiales, 26-10-2026) y PUE medio por región (Uptime 2025, informe 183).
+   AWS/Google Cloud/Azure (listas oficiales, 26-10-2026), PUE medio por región (Uptime 2025, informe 183),
+   factor de escasez AWARE 2.0 (Zenodo, hoja CFs_nonagri) y energía libre de carbono de Google (CSV 2025).
 B. Fórmulas: implementación de referencia en Python frente a compute() en una rejilla exhaustiva
    (todas las regiones, GPU, centros, modos, servidor, palancas, duraciones, vida útil, %).
 C. Interfaz: lo que se ve (cifras, desglose, equivalencias, por petición/año, mapa, palancas) frente a compute().
@@ -22,6 +23,8 @@ import os
 BASE = os.environ.get('WP_URL', 'http://localhost:8799/')
 OWID_CSV = os.environ.get('OWID_CSV', '/tmp/owid/owid.csv')
 WRI_XLSX = os.environ.get('WRI_XLSX', '/tmp/wri/a.xlsx')
+AWARE_XLSX = os.environ.get('AWARE_XLSX', '/home/claude/data/aware/countries.xlsx')  # AWARE20_Countries_and_Regions.xlsx (doi 10.5281/zenodo.15133241)
+GCFE_CSV = os.environ.get('GCFE_CSV', '/home/claude/data/rci/data/yearly/2025.csv')  # GoogleCloudPlatform/region-carbon-info
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 random.seed(7)
 FAIL = []
@@ -43,6 +46,12 @@ rows = list(wb['Appendix 1 & 2'].iter_rows(min_row=3, values_only=True))
 wri_country = {r[4]: r[6] for r in rows if r[4]}
 wri_sub = {r[0]: r[2] for r in rows if r[0]}
 LPG = 3.785
+awb = openpyxl.load_workbook(AWARE_XLSX, data_only=True, read_only=True)
+_aw = list(awb['CFs_nonagri'].iter_rows(min_row=2, values_only=True))
+AW_GLAM = {r[5]: r[8] for r in _aw if r[1] is True and r[5] not in (None, 'NotDefined')}
+AW_ECO = {r[6]: r[8] for r in _aw if r[6] not in (None, 'NotDefined')}
+AW_ADD = {r[1]: r[14] for r in awb['CFs_add_nonagri'].iter_rows(min_row=2, values_only=True)}
+gcfe_src = [l.split(',') for l in open(GCFE_CSV, encoding='utf-8').read().strip().split('\n')[1:]]
 last_update = json.load(open(os.path.join(ROOT, 'data', 'last-update.json')))
 
 CURATED_OWID = {'world':'World','no':'Norway','se':'Sweden','fr':'France','es':'Spain','eu':'European Union (27)','uk':'United Kingdom',
@@ -59,7 +68,7 @@ PUE_REG = {'cn': 1.4, 'apac': 1.52, 'eu': 1.50, 'na': 1.49, 'latam': 1.65, 'mea'
 # Regiones de nube por país, copiadas a mano de las listas oficiales (26-10-2026)
 AWS = set('US IN JP KR SG AU CA DE IE GB FR SE BR ZA HK ID MY NZ TW TH IT ES CH IL MX BH AE CN'.split())
 AZURE = set('AU AT BE BR CA IN US CL DK HK FR DE ID IL IT JP KR MY MX NZ IE NO PL QA ZA SG ES SE CH AE GB NL'.split())
-GCP = set('US CA MX BR CL PL FI SE ES BE GB DE NL CH IT FR TW HK JP KR SG ID AU IN QA SA IL ZA'.split())
+GCP = set('US CA MX BR CL PL FI SE ES BE GB DE NL CH IT FR TW HK JP KR SG ID AU IN QA SA IL ZA TH'.split())  # TH: Bangkok, 21-01-2026
 def a2_of(rid): return {'uk': 'GB', 'use': 'US', 'usw': 'US'}.get(rid, rid.upper())
 def cloud_of(rid):
     if rid in ('world', 'eu'): return ''
@@ -102,10 +111,14 @@ def ref(s, R, NO):
     it0 = s['meas'] * (1 + extra) if s['mode'] == 'meas' else GPU_W[s['gpu']] * s['units'] * s['hours'] * (s['util'] + extra) / 1000
     it = it0 * em; kwh = it * pue; op = kwh * I * im / 1000
     emb = EMB * s['units'] * s['hours'] / (s['life'] * 365 * 24)
+    water = it * wue + kwh * ew
+    cf = AWARE_EXP.get(where['id'])
     return {'kwhIT': it, 'kwh': kwh, 'operational': op, 'embodied': emb, 'co2': op + emb,
-            'waterOn': it * wue, 'waterOff': kwh * ew, 'water': it * wue + kwh * ew}
+            'waterOn': it * wue, 'waterOff': kwh * ew, 'water': water, 'scarce': None if cf is None else water * cf}
 def close(a, b, tol=1e-9):
+    if a is None or b is None: return a is None and b is None
     return abs(a - b) <= tol * max(1.0, abs(a), abs(b))
+AWARE_EXP = {}  # se rellena en A, desde el Excel de AWARE 2.0
 
 with sync_playwright() as p:
     br = p.chromium.launch(headless=True)
@@ -118,7 +131,7 @@ with sync_playwright() as p:
 
     # ===== A. Datos =====
     print('A. Datos frente a fuentes')
-    data = pg.evaluate("()=>({all:ALL.map(r=>({id:r[0],g:r[3],y:+r[4],ap:r[5],w:r[6],wap:r[7]})), countries:DATA.COUNTRIES, wri:DATA.WRI_GAL, cloud:DATA.REGIONS.map(r=>r[0]), updated:DATA.UPDATED, cl:DATA.CLOUD, upr:DATA.UPTIME_REGION, pue:DATA.PUE_UPTIME})")
+    data = pg.evaluate("()=>({all:ALL.map(r=>({id:r[0],g:r[3],y:+r[4],ap:r[5],w:r[6],wap:r[7]})), countries:DATA.COUNTRIES, wri:DATA.WRI_GAL, cloud:DATA.REGIONS.map(r=>r[0]), updated:DATA.UPDATED, cl:DATA.CLOUD, upr:DATA.UPTIME_REGION, pue:DATA.PUE_UPTIME, aw:DATA.AWARE, gc:DATA.GCFE, a3:Object.fromEntries(DATA.COUNTRIES.map(c=>[c[0].toLowerCase(),c[1]]))})")
     regs = {r['id']: r for r in data['all']}
     nA = 0
     for a2, a3, g, y in data['countries']:
@@ -158,6 +171,30 @@ with sync_playwright() as p:
         if data['upr'].get(rid, 'world') != up_region(rid): fail(f'A región Uptime {rid}: {data["upr"].get(rid)} / regla {up_region(rid)}')
     for rid in data['cl']:
         if rid not in regs: fail(f'A nube: {rid} no es una región de la herramienta')
+    # AWARE 2.0: regla escrita en la metodología, aplicada aquí al Excel original
+    CUR_A3 = {'no':'NOR','se':'SWE','fr':'FRA','es':'ESP','uk':'GBR','ie':'IRL','de':'DEU','us':'USA','jp':'JPN','sg':'SGP','cn':'CHN','pl':'POL','in':'IND'}
+    num = lambda v: v if isinstance(v, (int, float)) else None
+    for rid in regs:
+        if rid == 'world': exp = AW_ADD['GLO']
+        elif rid == 'eu': exp = AW_ADD['EU27']
+        elif rid == 'use': exp = AW_ECO['US-VA']
+        elif rid == 'usw': exp = AW_ECO['US-OR']
+        else:
+            a3 = CUR_A3.get(rid) or data['a3'].get(rid)
+            exp = num(AW_GLAM.get(a3))
+            if exp is None: exp = num(AW_ECO.get(rid.upper()))
+        AWARE_EXP[rid] = exp; nA += 1
+        if data['aw'].get(rid) != exp: fail(f'A AWARE {rid}: herramienta {data["aw"].get(rid)} / Excel {exp}')
+    # Google CFE: cada región del CSV en su lugar
+    city = {'Johannesburg':'za','Taiwan':'tw','Hong Kong':'hk','Tokyo':'jp','Osaka':'jp','Seoul':'kr','Mumbai':'in','Delhi':'in','Singapore':'sg','Jakarta':'id','Bangkok':'th','Sydney':'au','Melbourne':'au','Warsaw':'pl','Finland':'fi','Stockholm':'se','Madrid':'es','Belgium':'be','London':'uk','Frankfurt':'de','Eemshaven':'nl','Zürich':'ch','Milan':'it','Paris':'fr','Berlin':'de','Turin':'it','Doha':'qa','Dammam':'sa','Tel Aviv':'il','Montréal':'ca','Toronto':'ca','Mexico':'mx','Sāo Paulo':'br','Santiago':'cl'}
+    got = {(k, x[0]): x[2] for k, v in data['gc'].items() for x in v}
+    for reg, loc, cfe, _ in gcfe_src:
+        if loc == 'N/A': continue
+        ids = ['us'] + (['use'] if reg == 'us-east4' else []) + (['usw'] if reg == 'us-west1' else []) if reg.startswith('us-') else [city[loc]]
+        for i in ids:
+            nA += 1
+            if got.get((i, reg)) != float(cfe): fail(f'A Google CFE {i} {reg}: {got.get((i, reg))} / CSV {cfe}')
+            if not cloud_of(i) or 'G' not in cloud_of(i): fail(f'A Google CFE en {i}, que no tiene región de Google')
     print(f'  {nA} comprobaciones de regiones; tabla WRI de {len(wri_country)} países; fallos hasta ahora: {len(FAIL)}')
 
     # ===== B. Fórmulas: rejilla exhaustiva =====
@@ -285,6 +322,46 @@ with sync_playwright() as p:
         best = pg.evaluate("()=>regionName(CLOUD_ROWS.map(r=>[r,regionVals[r[0]].co2]).sort((a,b)=>a[1]-b[1])[0][0])")
         if not cloud_of(rid) and rid not in ('world', 'eu') and 'no tiene regiones' not in ins: fail(f'C recomendación: {rid} sin nube y no lo dice')
         if best not in ins and 'Ya estás' not in ins: fail(f'C recomendación en {rid} no nombra {best}: {ins}')
+    # Comparar: puntos, «mejoran las dos» y frontera, calculados aquí con el modelo de referencia
+    nCmp = 0
+    for s in random.sample(scen, 30):
+        wm = random.choice(['l', 's'])
+        cfg = {'w': 'train', 'g': s['gpu'], 'd': s['dc'], 'm': s['mode'], 'k': s['meas'], 'sv': '1' if s['host'] else '0', 'u': s['units'], 'h': s['hours'],
+               'l': s['life'], 'r': s['region'], 'ut': round(s['util'] * 100), 'oe': s['own'], 'cs': s['schedPct'], 'c': s['levers'], 'wm': wm, 'v': 'cmp'}
+        pg.evaluate("cfg=>applyConfig(cfg)", cfg); pg.wait_for_timeout(60)
+        got = pg.evaluate("()=>{ const D=cmpData(); return {pts:D.pts.map(p=>[p.id,p.x,p.y]), front:[...D.front], better:D.better.map(p=>p.id), me:[D.me.x,D.me.y,D.me.ok], S:dScale(), dots:document.querySelectorAll('#cmp circle').length, ins:document.getElementById('insight').textContent, names:Object.fromEntries(ALL.map(r=>[r[0],regionName(r)]))}; }")
+        lv = [x for x in s['levers'] if x != 'region']
+        def val(rid):
+            r = ref({**s, 'levers': lv}, regs[rid], NO)
+            return r['co2'] * got['S'], (r['scarce'] if wm == 's' else r['water'])
+        def ok_y(rid):
+            r = regs[rid]
+            known = not (r['wap'] and rid not in CURATED_OWID and rid not in CURATED_SUB and rid != 'world')
+            return known and (wm == 'l' or AWARE_EXP.get(rid) is not None)
+        pts = {}
+        for rid in regs:
+            if cloud_of(rid) and ok_y(rid):
+                x, y = val(rid); pts[rid] = (x, y * got['S'])
+        gp = {i: (x, y) for i, x, y in got['pts']}
+        if set(gp) != set(pts): fail(f'C comparar: puntos distintos {sorted(set(gp) ^ set(pts))[:6]}')
+        for i in pts:
+            if i in gp and not (close(gp[i][0], pts[i][0], 1e-7) and close(gp[i][1], pts[i][1], 1e-7)): fail(f'C comparar: valor de {i} {gp[i]} / {pts[i]}')
+        dom = lambda a, b: a[0] <= b[0] and a[1] <= b[1] and (a[0] < b[0] or a[1] < b[1])
+        front = {i for i in pts if not any(dom(pts[j], pts[i]) for j in pts)}
+        if set(got['front']) != front: fail(f'C comparar: frontera {sorted(got["front"])} / {sorted(front)}')
+        me_ok = ok_y(s['region'])
+        if me_ok != got['me'][2]: fail(f'C comparar: dato de agua de tu región {got["me"][2]} / {me_ok}')
+        if me_ok:
+            mx, my = val(s['region']); me = (mx, my * got['S'])
+            better = {i for i in pts if i != s['region'] and dom(pts[i], me)}
+            if set(got['better']) != better: fail(f'C comparar: mejoran las dos {sorted(got["better"])} / {sorted(better)}')
+            for i in sorted(better, key=lambda k: pts[k][0])[:4]:
+                if got['names'][i] not in got['ins']: fail(f'C comparar: la frase no nombra {i}: {got["ins"]}')
+            if not better and ('mejoran' in got['ins'].lower()): fail(f'C comparar: frase de mejora sin lugares que mejoren: {got["ins"]}')
+        if got['dots'] < len(pts): fail(f'C comparar: se dibujan {got["dots"]} puntos de {len(pts)}')
+        nCmp += 1
+    pg.evaluate("()=>{ state.view='map'; state.wmode='l'; renderMap(); }")
+    print(f'  comparar: {nCmp} escenarios')
     pg.click('[data-metric="co2"]')
     print(f'  {nC} pantallas comprobadas; fallos hasta ahora: {len(FAIL)}')
 
