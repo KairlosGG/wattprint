@@ -1849,7 +1849,7 @@ function renderMethod(){
   const s=secs.find(x=>x.id===mSec)||secs[0];
   const upd=tf('m_upd',{d:new Date(DATA.UPDATED+'T12:00:00Z').toLocaleDateString(loc(),{year:'numeric',month:'long',day:'numeric'})});
   $('mBody').innerHTML=`<button class="dlg-x" data-close aria-label="${t('close')}">×</button>`+
-    s.html.replace('{REGIONS}',regionsTable([regionById('world'),regionById('eu'),...[...CLOUD_ROWS].sort((a,b)=>regionName(a).localeCompare(regionName(b),loc()))])).replace('{ALLREGIONS}',regionsTable(ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).sort((a,b)=>regionName(a).localeCompare(regionName(b),loc())))).replace('{NALL}',ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).length).replace('{NCLOUD}',CLOUD_ROWS.length).replace('{NWRI}',Object.keys(DATA.WRI_GAL).length).replace('{UPDATED}',upd).replace('{REFLIST}',refList(LANG))
+    s.html.replace('{REGIONS}',regionsTable([regionById('world'),regionById('eu'),...[...CLOUD_ROWS].sort((a,b)=>regionName(a).localeCompare(regionName(b),loc()))])).replace('{ALLREGIONS}',regionsTable(ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).sort((a,b)=>regionName(a).localeCompare(regionName(b),loc())))).replace('{NALL}',ALL.filter(r=>!hasCloud(r[0])&&!isAvg(r[0])).length).replace(/{NCLOUD}/g,new Set(CLOUD_ROWS.map(r=>r[0]==='use'||r[0]==='usw'?'us':r[0])).size).replace('{NWRI}',Object.keys(DATA.WRI_GAL).length).replace('{UPDATED}',upd).replace('{REFLIST}',refList(LANG))
       .replace('{NL_H}',t('nl_h')).replace('{NL_P}',t('nl_p')).replace('{NL_PH}',t('nl_ph')).replace('{NL_BTN}',t('nl_btn')).replace('{NL_NOTE}',t('nl_note'));
   $('mBody').scrollTop=0;
 }
